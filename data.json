@@ -316,13 +316,22 @@
       "admin1": "Smouchi",
       "admin2": "Hajoory",
       "helper1": "Shosho",
-      "helper2": "Raz"
+      "helper2": "Raz",
+      "helper3": "Odo"
     },
     "points": {},
     "totalPoints": {},
     "currentMonthKey": "2026-07"
   },
   "activity_log": [
+    {
+      "ts": 1784480701170,
+      "owner": "amazona",
+      "type": "name_change",
+      "staffKey": "helper3",
+      "staffName": "Odo",
+      "reason": "إضافة اسم جديد"
+    },
     {
       "ts": 1784480699742,
       "owner": "amazona",
