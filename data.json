@@ -374,12 +374,6 @@
       "placeholder": "اسم"
     },
     {
-      "key": "helper5",
-      "role": "helper",
-      "label": "Helper-5",
-      "placeholder": "اسم"
-    },
-    {
       "key": "event1",
       "role": "event",
       "label": "Event-1",
