@@ -380,12 +380,6 @@
       "placeholder": "اسم"
     },
     {
-      "key": "helper6",
-      "role": "helper",
-      "label": "Helper-6",
-      "placeholder": "اسم"
-    },
-    {
       "key": "event1",
       "role": "event",
       "label": "Event-1",
