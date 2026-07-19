@@ -592,6 +592,64 @@ const OWNER_PIN = "SHEHER2026";
 let isOwner = false;
 let ownerName = '';
 
+/* ===== GitHub-as-Database ===== */
+const GH_OWNER = 'SheHerdis';
+const GH_REPO = 'S';
+const GH_BRANCH = 'main';
+const GH_DATA_PATH = 'data.json';
+const GH_RAW_URL = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${GH_DATA_PATH}`;
+const GH_API_URL = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_DATA_PATH}`;
+
+let dbCache = {};
+
+async function ghLoad(){
+  try{
+    const res = await fetch(GH_RAW_URL + '?t=' + Date.now(), { cache: 'no-store' });
+    dbCache = res.ok ? await res.json() : {};
+  }catch(e){ dbCache = {}; console.error(e); }
+}
+
+function getGhToken(){
+  let token = sessionStorage.getItem('gh_token');
+  if(!token){
+    token = prompt('🔑 حطي GitHub Token الخاص فيك (يُحفظ بمتصفحك بس مؤقتًا، ما ينحفظ بالموقع ولا يشوفه غيرك):');
+    if(token) sessionStorage.setItem('gh_token', token.trim());
+  }
+  return token ? token.trim() : null;
+}
+
+let ghSaveQueue = Promise.resolve();
+function queueGhSave(){
+  ghSaveQueue = ghSaveQueue.then(()=> ghSaveRaw()).catch(e=>console.error(e));
+  return ghSaveQueue;
+}
+
+async function ghSaveRaw(){
+  if(!isOwner) return;
+  const token = getGhToken();
+  if(!token){ showToast('⚠ لازم توكن GitHub عشان يحفظ', true); return; }
+  try{
+    const shaRes = await fetch(GH_API_URL, {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    let sha;
+    if(shaRes.ok){ sha = (await shaRes.json()).sha; }
+    else if(shaRes.status === 401){
+      sessionStorage.removeItem('gh_token');
+      showToast('⚠ التوكن غلط أو منتهي', true);
+      return;
+    }
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(dbCache, null, 2))));
+    const res = await fetch(GH_API_URL, {
+      method: 'PUT',
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Update panel data', content, branch: GH_BRANCH, sha })
+    });
+    if(!res.ok){ showToast('⚠ فشل الحفظ', true); }
+  }catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+}
+/* ===== end GitHub-as-Database ===== */
+
 const DEFAULT_DAILY_TASKS = [
   { id:'admin_post_am',   role:'admin',  points:15, label:'منشور المحتوى الصباحي' },
   { id:'admin_post_pm',   role:'admin',  points:15, label:'منشور المحتوى المسائي' },
@@ -745,79 +803,66 @@ let scheduleConfig = [];
 let channelsConfig = [];
 
 async function loadAll(){
-  try{
-    const r = await window.storage.get('staff_data', true).catch(()=>null);
-    if(r && r.value) staffData = JSON.parse(r.value);
-  }catch(e){ console.error(e); }
+  await ghLoad();
+
+  staffData = dbCache.staff_data ? JSON.parse(JSON.stringify(dbCache.staff_data)) : { names:{}, points:{}, totalPoints:{}, currentMonthKey:'' };
   if(!staffData.totalPoints) staffData.totalPoints = {};
   if(!staffData.points) staffData.points = {};
   if(!staffData.names) staffData.names = {};
 
-  try{
-    const r = await window.storage.get('daily_tasks', true).catch(()=>null);
-    if(r && r.value){
-      const parsed = JSON.parse(r.value);
-      dailyTasks = (parsed.date === todayKey) ? parsed : { date: todayKey, tasks:{} };
-    } else dailyTasks = { date: todayKey, tasks:{} };
-  }catch(e){ dailyTasks = { date: todayKey, tasks:{} }; }
+  if(dbCache.daily_tasks && dbCache.daily_tasks.date === todayKey){
+    dailyTasks = JSON.parse(JSON.stringify(dbCache.daily_tasks));
+  } else {
+    dailyTasks = { date: todayKey, tasks:{} };
+  }
 
-  try{
-    const r = await window.storage.get('daily_history', true).catch(()=>null);
-    if(r && r.value) dailyHistory = JSON.parse(r.value);
-  }catch(e){ dailyHistory = {}; }
+  dailyHistory = dbCache.daily_history ? JSON.parse(JSON.stringify(dbCache.daily_history)) : {};
 
-  try{
-    const r = await window.storage.get('weekly_tasks', true).catch(()=>null);
-    if(r && r.value){
-      const parsed = JSON.parse(r.value);
-      weeklyTasks = (parsed.weekKey === currentWeekKey) ? parsed : { weekKey: currentWeekKey, tasks:{} };
-    } else weeklyTasks = { weekKey: currentWeekKey, tasks:{} };
-  }catch(e){ weeklyTasks = { weekKey: currentWeekKey, tasks:{} }; }
+  if(dbCache.weekly_tasks && dbCache.weekly_tasks.weekKey === currentWeekKey){
+    weeklyTasks = JSON.parse(JSON.stringify(dbCache.weekly_tasks));
+  } else {
+    weeklyTasks = { weekKey: currentWeekKey, tasks:{} };
+  }
 
-  try{
-    const r = await window.storage.get('activity_log', true).catch(()=>null);
-    if(r && r.value) activityLog = JSON.parse(r.value);
-  }catch(e){ activityLog = []; }
+  activityLog = dbCache.activity_log ? JSON.parse(JSON.stringify(dbCache.activity_log)) : [];
+  monthArchive = dbCache.month_archive ? JSON.parse(JSON.stringify(dbCache.month_archive)) : [];
 
-  try{
-    const r = await window.storage.get('month_archive', true).catch(()=>null);
-    if(r && r.value) monthArchive = JSON.parse(r.value);
-  }catch(e){ monthArchive = []; }
-
-  try{
-    const r = await window.storage.get('tasks_config', true).catch(()=>null);
-    if(r && r.value){ tasksConfig = JSON.parse(r.value); }
-    else{
-      tasksConfig = { daily: JSON.parse(JSON.stringify(DEFAULT_DAILY_TASKS)), weekly: JSON.parse(JSON.stringify(DEFAULT_WEEKLY_TASKS)) };
-      await saveTasksConfig();
-    }
-  }catch(e){ tasksConfig = { daily: JSON.parse(JSON.stringify(DEFAULT_DAILY_TASKS)), weekly: JSON.parse(JSON.stringify(DEFAULT_WEEKLY_TASKS)) }; }
+  if(dbCache.tasks_config){
+    tasksConfig = JSON.parse(JSON.stringify(dbCache.tasks_config));
+  } else {
+    tasksConfig = { daily: JSON.parse(JSON.stringify(DEFAULT_DAILY_TASKS)), weekly: JSON.parse(JSON.stringify(DEFAULT_WEEKLY_TASKS)) };
+    dbCache.tasks_config = tasksConfig;
+  }
   if(!tasksConfig.daily) tasksConfig.daily = [];
   if(!tasksConfig.weekly) tasksConfig.weekly = [];
 
-  try{
-    const r = await window.storage.get('events_config', true).catch(()=>null);
-    if(r && r.value){ eventsConfig = JSON.parse(r.value); }
-    else{ eventsConfig = JSON.parse(JSON.stringify(DEFAULT_EVENTS)); await saveEventsConfig(); }
-  }catch(e){ eventsConfig = JSON.parse(JSON.stringify(DEFAULT_EVENTS)); }
+  if(dbCache.events_config){
+    eventsConfig = JSON.parse(JSON.stringify(dbCache.events_config));
+  } else {
+    eventsConfig = JSON.parse(JSON.stringify(DEFAULT_EVENTS));
+    dbCache.events_config = eventsConfig;
+  }
 
-  try{
-    const r = await window.storage.get('goals_config', true).catch(()=>null);
-    if(r && r.value){ goalsConfig = JSON.parse(r.value); }
-    else{ goalsConfig = JSON.parse(JSON.stringify(DEFAULT_GOALS)); await saveGoalsConfig(); }
-  }catch(e){ goalsConfig = JSON.parse(JSON.stringify(DEFAULT_GOALS)); }
+  if(dbCache.goals_config){
+    goalsConfig = JSON.parse(JSON.stringify(dbCache.goals_config));
+  } else {
+    goalsConfig = JSON.parse(JSON.stringify(DEFAULT_GOALS));
+    dbCache.goals_config = goalsConfig;
+  }
 
-  try{
-    const r = await window.storage.get('schedule_config', true).catch(()=>null);
-    if(r && r.value){ scheduleConfig = JSON.parse(r.value); }
-    else{ scheduleConfig = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)); await saveScheduleConfig(); }
-  }catch(e){ scheduleConfig = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)); }
+  if(dbCache.schedule_config){
+    scheduleConfig = JSON.parse(JSON.stringify(dbCache.schedule_config));
+  } else {
+    scheduleConfig = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+    dbCache.schedule_config = scheduleConfig;
+  }
 
-  try{
-    const r = await window.storage.get('channels_config', true).catch(()=>null);
-    if(r && r.value){ channelsConfig = JSON.parse(r.value); }
-    else{ channelsConfig = JSON.parse(JSON.stringify(DEFAULT_CHANNELS)); await saveChannelsConfig(); }
-  }catch(e){ channelsConfig = JSON.parse(JSON.stringify(DEFAULT_CHANNELS)); }
+  if(dbCache.channels_config){
+    channelsConfig = JSON.parse(JSON.stringify(dbCache.channels_config));
+  } else {
+    channelsConfig = JSON.parse(JSON.stringify(DEFAULT_CHANNELS));
+    dbCache.channels_config = channelsConfig;
+  }
   if(channelsConfig[0]) channelsConfig[0]._open = true;
 
   await checkMonthlyReset();
@@ -840,48 +885,48 @@ async function loadAll(){
 }
 
 async function saveStaffData(){
-  try{ await window.storage.set('staff_data', JSON.stringify(staffData), true); }
-  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+  dbCache.staff_data = staffData;
+  queueGhSave();
 }
 async function saveTasksConfig(){
-  try{ await window.storage.set('tasks_config', JSON.stringify(tasksConfig), true); }
-  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+  dbCache.tasks_config = tasksConfig;
+  queueGhSave();
 }
 async function saveEventsConfig(){
-  try{ await window.storage.set('events_config', JSON.stringify(eventsConfig), true); }
-  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+  dbCache.events_config = eventsConfig;
+  queueGhSave();
 }
 async function saveGoalsConfig(){
-  try{ await window.storage.set('goals_config', JSON.stringify(goalsConfig), true); }
-  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+  dbCache.goals_config = goalsConfig;
+  queueGhSave();
 }
 async function saveScheduleConfig(){
-  try{ await window.storage.set('schedule_config', JSON.stringify(scheduleConfig), true); }
-  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+  dbCache.schedule_config = scheduleConfig;
+  queueGhSave();
 }
 async function saveChannelsConfig(){
-  try{ await window.storage.set('channels_config', JSON.stringify(channelsConfig), true); }
-  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+  dbCache.channels_config = channelsConfig;
+  queueGhSave();
 }
 async function saveWeeklyTasks(){
-  try{ await window.storage.set('weekly_tasks', JSON.stringify(weeklyTasks), true); }
-  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+  dbCache.weekly_tasks = weeklyTasks;
+  queueGhSave();
 }
 async function saveDailyTasks(){
-  try{ await window.storage.set('daily_tasks', JSON.stringify(dailyTasks), true); }
-  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+  dbCache.daily_tasks = dailyTasks;
+  queueGhSave();
 }
 async function saveDailyHistory(){
-  try{ await window.storage.set('daily_history', JSON.stringify(dailyHistory), true); }
-  catch(e){ console.error(e); }
+  dbCache.daily_history = dailyHistory;
+  queueGhSave();
 }
 async function saveActivityLog(){
-  try{ await window.storage.set('activity_log', JSON.stringify(activityLog), true); }
-  catch(e){ console.error(e); }
+  dbCache.activity_log = activityLog;
+  queueGhSave();
 }
 async function saveMonthArchive(){
-  try{ await window.storage.set('month_archive', JSON.stringify(monthArchive), true); }
-  catch(e){ console.error(e); }
+  dbCache.month_archive = monthArchive;
+  queueGhSave();
 }
 
 async function checkMonthlyReset(){
