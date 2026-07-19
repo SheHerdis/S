@@ -102,6 +102,12 @@
   .trend-val{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:20px; color:var(--green-done);}
   .trend-box.down .trend-val{color:var(--rose-deep);}
 
+  .role-card{margin-bottom:16px;}
+  .role-card-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:18px; color:var(--gold-light); margin-bottom:1px;}
+  .role-card-sub{font-size:10px; color:var(--rose-deep); font-weight:700; margin-bottom:9px; letter-spacing:.3px;}
+  .role-goal{font-size:11px; color:var(--shell); margin-bottom:11px; font-style:italic; padding-bottom:9px; border-bottom:1px dashed rgba(201,160,80,0.25);}
+  .role-task{font-size:11.5px; color:var(--cream); padding:6px 0; display:flex; gap:7px; align-items:flex-start; line-height:1.5;}
+  .role-task::before{content:'◆'; color:var(--gold); font-size:7px; margin-top:5px; flex:0 0 auto;}
   .staff-role-block{margin-bottom:20px; padding-bottom:4px;}
   .staff-role-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid rgba(201,160,80,0.25);}
   .staff-role-header .day-name{font-size:16px;}
@@ -342,6 +348,7 @@
     <div class="tab" data-target="channels"><span class="tab-ico">📡</span><span>القنوات</span></div>
     <div class="tab" data-target="events"><span class="tab-ico">🎉</span><span>الفعاليات</span></div>
     <div class="tab" data-target="goals"><span class="tab-ico">🎯</span><span>الأهداف</span></div>
+    <div class="tab" data-target="roles"><span class="tab-ico">📋</span><span>الأدوار</span></div>
     <div class="tab" data-target="templates"><span class="tab-ico">📢</span><span>القوالب</span></div>
   </div>
 </div>
@@ -510,6 +517,71 @@
   <div id="goalsContainer"></div>
 
   <button class="tpl-add-btn owner-only-btn" id="addGoalBtn" disabled>➕ إضافة مؤشر</button>
+</div>
+
+<div class="section" id="roles">
+  <div class="section-title">الأدوار والمسؤوليات</div>
+  <div class="section-sub">كل رتبة إلها هوية وهدف واضح — مو بس "راقبي الشات وردي على الأعضاء"</div>
+
+  <div class="card role-card">
+    <div class="role-card-title">👑 CEO — Vision Team</div>
+    <div class="role-card-sub">فريق الرؤية والتطوير</div>
+    <div class="role-goal">🎯 الهدف: بناء المجتمع وتطويره</div>
+    <div class="role-task">اختيار "نجمة الأسبوع" من الأعضاء</div>
+    <div class="role-task">كتابة رسالة أسبوعية عن إنجازات السيرفر</div>
+    <div class="role-task">عمل جلسة مفتوحة مع الأعضاء (CEO Talk)</div>
+    <div class="role-task">اعتماد الأفكار الجديدة أو رفضها</div>
+    <div class="role-task">اختيار موضوع/ثيم الأسبوع (مثل: Summer Week، Pink Week)</div>
+    <div class="role-task">مراقبة مستوى رضا الأعضاء</div>
+  </div>
+
+  <div class="card role-card">
+    <div class="role-card-title">💎 Admins — Activity Team</div>
+    <div class="role-card-sub">فريق تنشيط المجتمع</div>
+    <div class="role-goal">🎯 الهدف: جعل السيرفر حي طوال اليوم</div>
+    <div class="role-task">إعادة إحياء الرومات الهادئة</div>
+    <div class="role-task">نشر تحديات يومية قصيرة</div>
+    <div class="role-task">فتح نقاشات مختلفة حسب الوقت</div>
+    <div class="role-task">تشجيع الأعضاء الصامتين على المشاركة</div>
+    <div class="role-task">ربط الأعضاء ببعض (مثلاً إذا اثنين يحبون نفس اللعبة)</div>
+    <div class="role-task">اقتراح فعاليات بناءً على نشاط الأسبوع</div>
+  </div>
+
+  <div class="card role-card">
+    <div class="role-card-title">💙 Helper — Welcome Team</div>
+    <div class="role-card-sub">فريق الاستقبال والدعم</div>
+    <div class="role-goal">🎯 الهدف: يخلي كل عضو جديد يحس إنه مرحب فيه</div>
+    <div class="role-task">استقبال العضو بطريقة شخصية</div>
+    <div class="role-task">تعريفه بالرومات المناسبة له</div>
+    <div class="role-task">اقتراح ناس يتكلم معهم حسب اهتماماته</div>
+    <div class="role-task">متابعة العضو الجديد لمدة ٣ أيام</div>
+    <div class="role-task">سؤال الأعضاء إذا يحتاجون أي مساعدة</div>
+    <div class="role-task">جمع الاقتراحات وإرسالها للإدارة</div>
+  </div>
+
+  <div class="card role-card">
+    <div class="role-card-title">🎀 Event Team — Experience Team</div>
+    <div class="role-card-sub">فريق صناعة التجارب</div>
+    <div class="role-goal">🎯 الهدف: صنع تجارب ممتعة، مو مجرد مسابقات</div>
+    <div class="role-task">ابتكار ألعاب جديدة كل أسبوع</div>
+    <div class="role-task">تصميم مواسم خاصة (Halloween - Ramadan - Summer)</div>
+    <div class="role-task">تجهيز مفاجآت بدون إعلان مسبق</div>
+    <div class="role-task">إدارة ليالي الأفلام أو الألعاب</div>
+    <div class="role-task">تجهيز الجوائز والتحديات</div>
+    <div class="role-task">تقييم نجاح كل فعالية</div>
+  </div>
+
+  <div class="card role-card">
+    <div class="role-card-title">⚠️ Warning System — Safety Team</div>
+    <div class="role-card-sub">فريق الأمان والانضباط</div>
+    <div class="role-goal">🎯 الهدف: حماية أجواء السيرفر بدون تخريب المتعة</div>
+    <div class="role-task">ملاحظة المشاكل قبل ما تكبر</div>
+    <div class="role-task">تنبيه الأعضاء بلطف قبل التحذير الرسمي</div>
+    <div class="role-task">كتابة ملاحظات عن السلوكيات المتكررة</div>
+    <div class="role-task">اقتراح تعديل القوانين إذا لزم</div>
+    <div class="role-task">مراقبة حالات التنمر أو الإزعاج</div>
+    <div class="role-task">التأكد من عدالة جميع الإجراءات</div>
+  </div>
 </div>
 
 <div class="section" id="templates">
