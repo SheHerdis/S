@@ -335,5 +335,67 @@
       "staffName": "Farah",
       "reason": "إضافة اسم جديد"
     }
+  ],
+  "staff_config": [
+    {
+      "key": "ceo1",
+      "role": "ceo",
+      "label": "CEO-1",
+      "placeholder": "اسم المسؤولة الأساسية"
+    },
+    {
+      "key": "ceo2",
+      "role": "ceo",
+      "label": "CEO-2",
+      "placeholder": "اسم الدعم"
+    },
+    {
+      "key": "helper1",
+      "role": "helper",
+      "label": "Helper-1",
+      "placeholder": "اسم"
+    },
+    {
+      "key": "helper2",
+      "role": "helper",
+      "label": "Helper-2",
+      "placeholder": "اسم"
+    },
+    {
+      "key": "helper3",
+      "role": "helper",
+      "label": "Helper-3",
+      "placeholder": "اسم"
+    },
+    {
+      "key": "helper4",
+      "role": "helper",
+      "label": "Helper-4",
+      "placeholder": "اسم"
+    },
+    {
+      "key": "helper5",
+      "role": "helper",
+      "label": "Helper-5",
+      "placeholder": "اسم"
+    },
+    {
+      "key": "helper6",
+      "role": "helper",
+      "label": "Helper-6",
+      "placeholder": "اسم"
+    },
+    {
+      "key": "event1",
+      "role": "event",
+      "label": "Event-1",
+      "placeholder": "اسم"
+    },
+    {
+      "key": "event2",
+      "role": "event",
+      "label": "Event-2",
+      "placeholder": "اسم"
+    }
   ]
 }
