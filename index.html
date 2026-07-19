@@ -1039,8 +1039,7 @@ function renderStaff(){
         <input type="text" data-key="${s.key}" placeholder="${escapeHtml(s.placeholder||'اسم')}" value="${escapeHtml(name)}" ${isOwner?'':'disabled'}>
         <span class="slot-points" data-points="${s.key}">${pts} ⭐</span>
         <div class="slot-actions owner-only" style="display:${isOwner?'flex':'none'};">
-          <button class="pt-btn pt-plus" data-award="${s.key}:10">+10</button>
-          <button class="pt-btn pt-minus" data-award="${s.key}:-5">-5</button>
+          <button class="pt-btn pt-plus" data-customaward="${s.key}">🎯 نقاط مخصصة</button>
           <button class="pt-btn slot-del-btn" data-delslot="${s.key}" style="flex:0 0 auto; background:rgba(217,139,122,0.15); border-color:rgba(217,139,122,0.4); color:var(--rose-deep); padding:5px 8px;">🗑</button>
         </div>
       </div>`;
@@ -1071,12 +1070,17 @@ document.getElementById('staffContainer').addEventListener('keydown', e=>{
 });
 
 document.getElementById('staffContainer').addEventListener('click', e=>{
-  const awardBtn = e.target.closest('[data-award]');
-  if(awardBtn){
+  const customBtn = e.target.closest('[data-customaward]');
+  if(customBtn){
     if(!isOwner) return;
-    const [key, delta] = awardBtn.dataset.award.split(':');
-    const d = parseInt(delta,10);
+    const key = customBtn.dataset.customaward;
     const name = staffData.names[key] || STAFF_LABELS[key];
+
+    const raw = prompt('🎯 كم نقطة تبين تضيفين؟ (اكتبي رقم سالب للخصم، مثال: -5)');
+    if(raw === null) return;
+    const d = parseInt(raw.trim(), 10);
+    if(isNaN(d) || d === 0){ showToast('⚠ اكتبي رقم صحيح', true); return; }
+
     const reason = prompt(`سبب ${d>0?'الإضافة':'الخصم'} (اختياري):`) || '';
 
     const oldPts = staffData.points[key]||0;
