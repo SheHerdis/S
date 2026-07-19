@@ -313,13 +313,22 @@
     "names": {
       "ceo1": "Farah",
       "ceo2": "De",
-      "admin1": "Smouchi"
+      "admin1": "Smouchi",
+      "admin2": "Hajoory"
     },
     "points": {},
     "totalPoints": {},
     "currentMonthKey": "2026-07"
   },
   "activity_log": [
+    {
+      "ts": 1784478014851,
+      "owner": "الأونرية",
+      "type": "name_change",
+      "staffKey": "admin2",
+      "staffName": "Hajoory",
+      "reason": "إضافة اسم جديد"
+    },
     {
       "ts": 1784477994946,
       "owner": "الأونرية",
