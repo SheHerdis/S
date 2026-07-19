@@ -76,7 +76,7 @@
   .section.active{display:block;}
   @keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
   .section-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:21px; color:var(--gold-light); margin-bottom:3px;}
-  .section-sub{font-size:10.5px; color:var(--shell); margin-bottom:14px; opacity:.75;}
+  .section-sub{font-size:10.5px; color:var(--shell); margin-bottom:16px; padding-bottom:14px; opacity:.75; border-bottom:1px solid rgba(201,160,80,0.22);}
 
   .card{background:linear-gradient(160deg, rgba(232,169,122,0.1), rgba(255,255,255,0.5)); border-radius:14px; padding:14px; margin-bottom:12px; border:1.5px solid rgba(201,160,80,0.3); position:relative; overflow:hidden;}
   .card::before{content:""; position:absolute; top:0; right:0; width:4px; height:100%; background:linear-gradient(180deg,var(--gold-light),var(--rose-deep));}
@@ -414,12 +414,12 @@
 </div>
 
 <div class="section" id="schedule">
-  <div class="section-title">الجدول الأسبوعي</div>
+  <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;"><span>الجدول الأسبوعي</span><span class="staff-role-count" id="scheduleCount">0</span></div>
   <div class="section-sub">قابل للتعديل بالكامل — أضيفي وعدّلي أي نشاط</div>
 
-  <button class="tpl-add-btn owner-only-btn" id="addScheduleBtn" disabled>➕ إضافة نشاط بالجدول</button>
-
   <div id="scheduleContainer"></div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addScheduleBtn" disabled>➕ إضافة نشاط بالجدول</button>
 </div>
 
 <div class="section" id="staff">
@@ -435,10 +435,9 @@
   <div class="progress-label"><span>الإنجاز اليوم</span><span id="progressPct">0%</span></div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
 
-  <button class="tpl-add-btn owner-only-btn" id="addDailyTaskBtn" disabled>➕ إضافة مهمة يومية</button>
-
   <div id="dailyTasksContainer"></div>
 
+  <button class="tpl-add-btn owner-only-btn" id="addDailyTaskBtn" disabled>➕ إضافة مهمة يومية</button>
   <button class="reset-btn owner-only-btn" id="resetTasks" disabled>🔄 تصفير المهام اليومية (يرجع النقاط صح)</button>
 
   <div class="pearl-divider">✦</div>
@@ -446,10 +445,9 @@
   <div class="section-title" style="font-size:18px;">📆 المهام الأسبوعية</div>
   <div class="section-sub">تتصفر أول كل أسبوع (السبت). مربوطة بالفعاليات الكبيرة — مو باليوميات</div>
 
-  <button class="tpl-add-btn owner-only-btn" id="addWeeklyTaskBtn" disabled>➕ إضافة مهمة أسبوعية</button>
-
   <div id="weeklyTasksContainer"></div>
 
+  <button class="tpl-add-btn owner-only-btn" id="addWeeklyTaskBtn" disabled>➕ إضافة مهمة أسبوعية</button>
   <button class="reset-btn owner-only-btn" id="resetWeeklyTasks" disabled>🔄 تصفير المهام الأسبوعية يدوياً</button>
 </div>
 
@@ -487,30 +485,30 @@
 </div>
 
 <div class="section" id="channels">
-  <div class="section-title">📡 قنوات السيرفر</div>
+  <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;"><span>📡 قنوات السيرفر</span><span class="staff-role-count" id="channelsCount">0</span></div>
   <div class="section-sub">اضغطي على أي قسم لفتحه. الأونرية تقدر تضيف قسم جديد أو تعدل قنوات أي قسم</div>
 
-  <button class="tpl-add-btn owner-only-btn" id="addChannelCatBtn" disabled>➕ إضافة قسم قنوات</button>
-
   <div id="channelsContainer"></div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addChannelCatBtn" disabled>➕ إضافة قسم قنوات</button>
 </div>
 
 <div class="section" id="events">
-  <div class="section-title">الفعاليات الشهرية</div>
+  <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;"><span>الفعاليات الشهرية</span><span class="staff-role-count" id="eventsCount">0</span></div>
   <div class="section-sub">قابلة للتعديل بالكامل — أضيفي وعدّلي فعاليات كل شهر</div>
 
-  <button class="tpl-add-btn owner-only-btn" id="addEventBtn" disabled>➕ إضافة فعالية</button>
-
   <div id="eventsContainer"></div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addEventBtn" disabled>➕ إضافة فعالية</button>
 </div>
 
 <div class="section" id="goals">
-  <div class="section-title">مؤشرات النجاح</div>
+  <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;"><span>مؤشرات النجاح</span><span class="staff-role-count" id="goalsCount">0</span></div>
   <div class="section-sub">قابلة للتعديل — غيّري الأرقام والأهداف حسب كل شهر</div>
 
-  <button class="tpl-add-btn owner-only-btn" id="addGoalBtn" disabled>➕ إضافة مؤشر</button>
-
   <div id="goalsContainer"></div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addGoalBtn" disabled>➕ إضافة مؤشر</button>
 </div>
 
 <div class="section" id="templates">
@@ -1523,6 +1521,8 @@ function openWeeklyTaskForm(taskId){
 /* ---- Schedule ---- */
 function renderScheduleUI(){
   const container = document.getElementById('scheduleContainer');
+  const countEl = document.getElementById('scheduleCount');
+  if(countEl) countEl.textContent = scheduleConfig.length;
   if(!scheduleConfig.length){
     container.innerHTML = '<div class="lb-empty">🐚 ما فيه جدول مضاف بعد</div>';
     return;
@@ -1578,6 +1578,8 @@ function parseChannelLines(text){
 
 function renderChannelsUI(){
   const container = document.getElementById('channelsContainer');
+  const countEl = document.getElementById('channelsCount');
+  if(countEl) countEl.textContent = channelsConfig.length;
   if(!channelsConfig.length){
     container.innerHTML = '<div class="lb-empty">🐚 ما فيه أقسام قنوات مضافة بعد</div>';
     return;
@@ -1637,6 +1639,8 @@ document.getElementById('addChannelCatBtn').addEventListener('click', ()=>{ if(i
 /* ---- Events ---- */
 function renderEventsUI(){
   const container = document.getElementById('eventsContainer');
+  const countEl = document.getElementById('eventsCount');
+  if(countEl) countEl.textContent = eventsConfig.length;
   if(!eventsConfig.length){
     container.innerHTML = '<div class="lb-empty">🐚 ما فيه فعاليات مضافة بعد</div>';
     return;
@@ -1688,6 +1692,8 @@ document.getElementById('addEventBtn').addEventListener('click', ()=>{ if(isOwne
 /* ---- Goals ---- */
 function renderGoalsUI(){
   const container = document.getElementById('goalsContainer');
+  const countEl = document.getElementById('goalsCount');
+  if(countEl) countEl.textContent = goalsConfig.length;
   if(!goalsConfig.length){
     container.innerHTML = '<div class="lb-empty">🐚 ما فيه مؤشرات مضافة بعد</div>';
     return;
