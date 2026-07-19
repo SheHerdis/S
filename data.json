@@ -384,6 +384,12 @@
       "role": "admin",
       "label": "Hajoory",
       "placeholder": "اسم"
+    },
+    {
+      "key": "admin1",
+      "role": "admin",
+      "label": "admin 1",
+      "placeholder": "اسم"
     }
   ]
 }
