@@ -861,6 +861,7 @@ async function loadAll(){
   renderActivityFeed();
   renderTrend();
   renderOverviewStats();
+  updateOwnerUI();
 
   document.getElementById('loadingOverlay').classList.add('hide');
 }
@@ -1049,7 +1050,7 @@ function renderStaff(){
     return `<div class="staff-role-block">
       <div class="staff-role-header"><span class="day-name">${meta.ico} ${meta.title}</span><span class="staff-role-count">${members.length}</span></div>
       ${slotsHtml}
-      <button class="tpl-add-btn owner-only-btn" data-addrole="${role}" ${isOwner?'':'disabled'}>➕ إضافة عضوة</button>
+      <button class="tpl-add-btn owner-only-btn" data-addrole="${role}" style="display:${isOwner?'':'none'};" ${isOwner?'':'disabled'}>➕ إضافة عضوة</button>
     </div>`;
   }).join('');
 }
