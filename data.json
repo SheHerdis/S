@@ -311,13 +311,22 @@
   ],
   "staff_data": {
     "names": {
-      "ceo1": "Farah"
+      "ceo1": "Farah",
+      "ceo2": "De"
     },
     "points": {},
     "totalPoints": {},
     "currentMonthKey": "2026-07"
   },
   "activity_log": [
+    {
+      "ts": 1784474264767,
+      "owner": "B",
+      "type": "name_change",
+      "staffKey": "ceo2",
+      "staffName": "De",
+      "reason": "إضافة اسم جديد"
+    },
     {
       "ts": 1784474228517,
       "owner": "B",
