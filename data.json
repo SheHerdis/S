@@ -315,13 +315,22 @@
       "ceo2": "De",
       "admin1": "Smouchi",
       "admin2": "Hajoory",
-      "helper1": "Shosho"
+      "helper1": "Shosho",
+      "helper2": "Raz"
     },
     "points": {},
     "totalPoints": {},
     "currentMonthKey": "2026-07"
   },
   "activity_log": [
+    {
+      "ts": 1784480699742,
+      "owner": "amazona",
+      "type": "name_change",
+      "staffKey": "helper2",
+      "staffName": "Raz",
+      "reason": "إضافة اسم جديد"
+    },
     {
       "ts": 1784480695759,
       "owner": "amazona",
