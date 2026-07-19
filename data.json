@@ -378,6 +378,12 @@
       "role": "event",
       "label": "Event-2",
       "placeholder": "اسم"
+    },
+    {
+      "key": "admin1",
+      "role": "admin",
+      "label": "Smouchi",
+      "placeholder": "اسم"
     }
   ]
 }
