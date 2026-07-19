@@ -728,7 +728,10 @@ const DEFAULT_STAFF_CONFIG = [
   { key:'helper5',role:'helper', label:'Helper-5', placeholder:'اسم' },
   { key:'helper6',role:'helper', label:'Helper-6', placeholder:'اسم' },
   { key:'event1', role:'event',  label:'Event-1',  placeholder:'اسم' },
-  { key:'event2', role:'event',  label:'Event-2',  placeholder:'اسم' }
+  { key:'event2', role:'event',  label:'Event-2',  placeholder:'اسم' },
+  { key:'warning1', role:'warning', label:'Warning-1', placeholder:'اسم' },
+  { key:'warning2', role:'warning', label:'Warning-2', placeholder:'اسم' },
+  { key:'warning3', role:'warning', label:'Warning-3', placeholder:'اسم' }
 ];
 
 let staffConfig = [];
@@ -747,7 +750,8 @@ const ROLE_META = {
   ceo:   { ico:'🔱', title:'CEO' },
   admin: { ico:'💎', title:'Admins' },
   helper:{ ico:'💙', title:'Helper' },
-  event: { ico:'🎀', title:'Event Team' }
+  event: { ico:'🎀', title:'Event Team' },
+  warning:{ ico:'⚠️', title:'Warning System' }
 };
 
 function getRoleMembers(role){
@@ -1101,7 +1105,7 @@ function updateOwnerUI(){
 
 function renderStaff(){
   const container = document.getElementById('staffContainer');
-  const roles = ['ceo','admin','helper','event'];
+  const roles = ['ceo','admin','helper','event','warning'];
   container.innerHTML = roles.map(role=>{
     const meta = ROLE_META[role];
     const members = staffConfig.filter(s=>s.role===role);
