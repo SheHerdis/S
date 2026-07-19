@@ -1015,7 +1015,7 @@ function updateOwnerUI(){
 
   document.querySelectorAll('.slot input').forEach(inp=>{ inp.disabled = !isOwner; });
   document.querySelectorAll('.owner-only').forEach(el=>{ el.style.display = isOwner ? 'flex' : 'none'; });
-  document.querySelectorAll('.owner-only-btn').forEach(b=>{ b.disabled = !isOwner; });
+  document.querySelectorAll('.owner-only-btn').forEach(b=>{ b.disabled = !isOwner; b.style.display = isOwner ? '' : 'none'; });
 
   renderDailyTasksUI();
   renderWeeklyTasksUI();
