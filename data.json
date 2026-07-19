@@ -393,6 +393,12 @@
       "role": "admin",
       "label": "admin 1",
       "placeholder": "اسم"
+    },
+    {
+      "key": "admin2",
+      "role": "admin",
+      "label": "admin 2",
+      "placeholder": "اسم"
     }
   ]
 }
