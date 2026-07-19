@@ -368,12 +368,6 @@
       "placeholder": "اسم"
     },
     {
-      "key": "helper4",
-      "role": "helper",
-      "label": "Helper-4",
-      "placeholder": "اسم"
-    },
-    {
       "key": "event1",
       "role": "event",
       "label": "Event-1",
