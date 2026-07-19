@@ -435,6 +435,24 @@
       "role": "admin",
       "label": "admin 2",
       "placeholder": "اسم"
+    },
+    {
+      "key": "warning1",
+      "role": "warning",
+      "label": "Warning-1",
+      "placeholder": "اسم"
+    },
+    {
+      "key": "warning2",
+      "role": "warning",
+      "label": "Warning-2",
+      "placeholder": "اسم"
+    },
+    {
+      "key": "warning3",
+      "role": "warning",
+      "label": "Warning-3",
+      "placeholder": "اسم"
     }
   ]
 }
