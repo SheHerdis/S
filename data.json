@@ -314,13 +314,22 @@
       "ceo1": "Farah",
       "ceo2": "De",
       "admin1": "Smouchi",
-      "admin2": "Hajoory"
+      "admin2": "Hajoory",
+      "helper1": "Shosho"
     },
     "points": {},
     "totalPoints": {},
     "currentMonthKey": "2026-07"
   },
   "activity_log": [
+    {
+      "ts": 1784480695759,
+      "owner": "amazona",
+      "type": "name_change",
+      "staffKey": "helper1",
+      "staffName": "Shosho",
+      "reason": "إضافة اسم جديد"
+    },
     {
       "ts": 1784478014851,
       "owner": "الأونرية",
