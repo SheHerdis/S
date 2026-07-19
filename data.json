@@ -1,1 +1,330 @@
-{}
+{
+  "tasks_config": {
+    "daily": [
+      {
+        "id": "admin_post_am",
+        "role": "admin",
+        "points": 15,
+        "label": "منشور المحتوى الصباحي"
+      },
+      {
+        "id": "admin_post_pm",
+        "role": "admin",
+        "points": 15,
+        "label": "منشور المحتوى المسائي"
+      },
+      {
+        "id": "admin_attendance",
+        "role": "admin",
+        "points": 15,
+        "label": "تسجيل الحضور والملاحظات"
+      },
+      {
+        "id": "admin_thanks",
+        "role": "admin",
+        "points": 15,
+        "label": "منشور شكر ورصد المشاكل"
+      },
+      {
+        "id": "helper_voice_1",
+        "role": "helper",
+        "points": 30,
+        "label": "مناوبة الرومة الصوتية"
+      },
+      {
+        "id": "helper_voice_2",
+        "role": "helper",
+        "points": 30,
+        "label": "مناوبة الرومة الصوتية"
+      },
+      {
+        "id": "helper_voice_3",
+        "role": "helper",
+        "points": 30,
+        "label": "مناوبة الرومة الصوتية"
+      },
+      {
+        "id": "helper_voice_4",
+        "role": "helper",
+        "points": 30,
+        "label": "مناوبة الرومة الصوتية"
+      },
+      {
+        "id": "helper_onboard_1",
+        "role": "helper",
+        "points": 30,
+        "label": "استقبال الأعضاء الجدد"
+      },
+      {
+        "id": "helper_onboard_2",
+        "role": "helper",
+        "points": 30,
+        "label": "استقبال الأعضاء الجدد"
+      }
+    ],
+    "weekly": [
+      {
+        "id": "ceo_friday_1",
+        "role": "ceo",
+        "points": 35,
+        "label": "فعالية الجمعة الرئيسية"
+      },
+      {
+        "id": "ceo_friday_2",
+        "role": "ceo",
+        "points": 35,
+        "label": "فعالية الجمعة الرئيسية"
+      },
+      {
+        "id": "ceo_friday_3",
+        "role": "ceo",
+        "points": 35,
+        "label": "فعالية الجمعة الرئيسية"
+      },
+      {
+        "id": "event_tuesday_1",
+        "role": "event",
+        "points": 35,
+        "label": "فعالية الثلاثاء الصغيرة"
+      },
+      {
+        "id": "event_tuesday_2",
+        "role": "event",
+        "points": 35,
+        "label": "فعالية الثلاثاء الصغيرة"
+      }
+    ]
+  },
+  "events_config": [
+    {
+      "id": "ev1",
+      "date": "20 أغسطس",
+      "day": "الثلاثاء",
+      "title": "🎮 تخمين (3 كلمات)",
+      "time": "7:00 م — 7:30 م",
+      "team": "Event Team",
+      "reward": "💝 Nitro Boost",
+      "highlight": false
+    },
+    {
+      "id": "ev2",
+      "date": "22 أغسطس",
+      "day": "الجمعة",
+      "title": "⭐ سؤال اليوم (صوتي)",
+      "time": "8:00 م — 9:00 م",
+      "team": "CEO Lead",
+      "reward": "👑 رول ذهبي خاص",
+      "highlight": true
+    },
+    {
+      "id": "ev3",
+      "date": "27 أغسطس",
+      "day": "الثلاثاء",
+      "title": "✨ أفضل ستايل صيفي",
+      "time": "7:00 م — 7:45 م",
+      "team": "Event Team",
+      "reward": "💝 Nitro Boost",
+      "highlight": false
+    },
+    {
+      "id": "ev4",
+      "date": "29 أغسطس",
+      "day": "الجمعة",
+      "title": "🏆 من هي؟ (تحديات)",
+      "time": "8:00 م — 9:30 م",
+      "team": "CEO Lead + فريق",
+      "reward": "👑 رول + رسالة خاصة",
+      "highlight": true
+    }
+  ],
+  "goals_config": [
+    {
+      "id": "g1",
+      "icon": "🎤",
+      "title": "الدخول للرومات",
+      "weeks": [
+        20,
+        30,
+        40,
+        50
+      ],
+      "goalText": "الهدف: 60+ يومياً"
+    },
+    {
+      "id": "g2",
+      "icon": "👥",
+      "title": "أعضاء جدد نشطين",
+      "weeks": [
+        3,
+        5,
+        8,
+        12
+      ],
+      "goalText": "الهدف: 50+ شهرياً"
+    },
+    {
+      "id": "g3",
+      "icon": "💬",
+      "title": "تفاعل المحتوى",
+      "weeks": [
+        15,
+        25,
+        35,
+        50
+      ],
+      "goalText": "الهدف: 100+ يومياً"
+    },
+    {
+      "id": "g4",
+      "icon": "🎉",
+      "title": "حضور الفعاليات",
+      "weeks": [
+        15,
+        25,
+        35,
+        45
+      ],
+      "goalText": "الهدف: 60%+ نسبة"
+    }
+  ],
+  "schedule_config": [
+    {
+      "id": "sch1",
+      "icon": "🌅",
+      "day": "الأحد",
+      "time": "7:00 م",
+      "activity": "رومة صوتية عامة",
+      "team": "Voice Moderators",
+      "highlight": false
+    },
+    {
+      "id": "sch2",
+      "icon": "",
+      "day": "الاثنين",
+      "time": "7:00 م",
+      "activity": "نقاش + ألعاب",
+      "team": "Voice Moderators",
+      "highlight": false
+    },
+    {
+      "id": "sch3",
+      "icon": "🎉",
+      "day": "الثلاثاء",
+      "time": "7:00 م",
+      "activity": "فعالية صغيرة — مسابقة",
+      "team": "Event Team",
+      "highlight": true
+    },
+    {
+      "id": "sch4",
+      "icon": "",
+      "day": "الأربعاء",
+      "time": "7:00 م",
+      "activity": "رومة صوتية عامة",
+      "team": "Voice Moderators",
+      "highlight": false
+    },
+    {
+      "id": "sch5",
+      "icon": "",
+      "day": "الخميس",
+      "time": "7:00 م",
+      "activity": "نقاش موضوعي",
+      "team": "Admin + Moderators",
+      "highlight": false
+    },
+    {
+      "id": "sch6",
+      "icon": "⭐",
+      "day": "الجمعة",
+      "time": "8:00 م",
+      "activity": "الفعالية الرئيسية",
+      "team": "CEO Lead + فريق",
+      "highlight": true
+    },
+    {
+      "id": "sch7",
+      "icon": "🌙",
+      "day": "السبت",
+      "time": "6:00 م",
+      "activity": "رومة فضفاضة",
+      "team": "Voice Moderators",
+      "highlight": false
+    }
+  ],
+  "channels_config": [
+    {
+      "id": "ccat1",
+      "icon": "🌊",
+      "name": "معلومات عامة",
+      "channelsText": "tiktok\nunder-maintenance ⚠️\nv:discord.gg/sh6\nv:All members: 1255",
+      "_open": true
+    },
+    {
+      "id": "ccat2",
+      "icon": "✅",
+      "name": "الترحيب والتحقق",
+      "channelsText": "info\nverify · help\nv:verifying\nv:waiting room\nwelcome"
+    },
+    {
+      "id": "ccat3",
+      "icon": "🔱",
+      "name": "قنوات الستاف الخاصة",
+      "channelsText": "جات-الستافة\nتوثيق\nاشعارات-للستاف\nstaff · warnings\nv:Her Mic Only ♡\nv:staff meeting\nv:office\nv:owners"
+    },
+    {
+      "id": "ccat4",
+      "icon": "📢",
+      "name": "الإعلانات والقواعد",
+      "channelsText": "v:Announcement\nwarnings\nroles\nvote\nrules"
+    },
+    {
+      "id": "ccat5",
+      "icon": "🎫",
+      "name": "الدعم والفعاليات",
+      "channelsText": "ticket\nboost\nevent\nSuggestions"
+    },
+    {
+      "id": "ccat6",
+      "icon": "💬",
+      "name": "الدردشة العامة",
+      "channelsText": "chat\nathkar\nBdlyat\nFind · players\nStreamer"
+    },
+    {
+      "id": "ccat7",
+      "icon": "🎨",
+      "name": "المحتوى والترفيه",
+      "channelsText": "Streak\nartworks\nPopcorn\nMemes\nClips\nSongOfTheDay"
+    },
+    {
+      "id": "ccat8",
+      "icon": "🎧",
+      "name": "الرومات الصوتية العامة",
+      "channelsText": "v:Lobby\nv:Siren's Lounge\nv:Movie Time\nv:Napflix\nv:Valo Ocean"
+    },
+    {
+      "id": "ccat9",
+      "icon": "🔴",
+      "name": "رومات لايف",
+      "channelsText": "v:Live\nv:Pull Me\nv:Ocean Stars\nv:Caval Cute\nv:Tidal Waves\nv:Seashell\nv:Afk"
+    }
+  ],
+  "staff_data": {
+    "names": {
+      "ceo1": "Farah"
+    },
+    "points": {},
+    "totalPoints": {},
+    "currentMonthKey": "2026-07"
+  },
+  "activity_log": [
+    {
+      "ts": 1784474228517,
+      "owner": "B",
+      "type": "name_change",
+      "staffKey": "ceo1",
+      "staffName": "Farah",
+      "reason": "إضافة اسم جديد"
+    }
+  ]
+}
