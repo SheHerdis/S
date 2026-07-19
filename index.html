@@ -610,10 +610,10 @@ async function ghLoad(){
 }
 
 function getGhToken(){
-  let token = sessionStorage.getItem('gh_token');
+  let token = localStorage.getItem('gh_token');
   if(!token){
-    token = prompt('🔑 حطي GitHub Token الخاص فيك (يُحفظ بمتصفحك بس مؤقتًا، ما ينحفظ بالموقع ولا يشوفه غيرك):');
-    if(token) sessionStorage.setItem('gh_token', token.trim());
+    token = prompt('🔑 حطي GitHub Token الخاص فيك (يُحفظ بمتصفحك بس مرة وحدة، ما ينحفظ بالموقع ولا يشوفه غيرك):');
+    if(token) localStorage.setItem('gh_token', token.trim());
   }
   return token ? token.trim() : null;
 }
@@ -635,7 +635,7 @@ async function ghSaveRaw(){
     let sha;
     if(shaRes.ok){ sha = (await shaRes.json()).sha; }
     else if(shaRes.status === 401){
-      sessionStorage.removeItem('gh_token');
+      localStorage.removeItem('gh_token');
       showToast('⚠ التوكن غلط أو منتهي', true);
       return;
     }
