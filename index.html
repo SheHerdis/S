@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>She/Her Server — Live Owner Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Cormorant+Garamond:wght@500;600;700&family=Cairo:wght@400;600;700;800&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dusk:#2A1810; --dusk-2:#3D2418;
+    --sunset-1:#E8935F; --sunset-2:#E8A97A;
+    --rose:#E8AEA0; --rose-deep:#D98B7A;
+    --gold:#C9A050; --gold-light:#E8C878;
+    --cream:#FFF6EA; --shell:#FBE8D6;
+    --green-done:#8A9B6E;
+    --gold1:#FFD700; --silver1:#C0C0C0; --bronze1:#CD7F32;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  input, select, textarea, button{font-family:inherit;}
+  html,body{background:var(--dusk); font-family:'Tajawal',sans-serif; color:var(--cream); overflow-x:hidden; width:100%;}
+  body{
+    background:
+      radial-gradient(circle at 50% 0%, rgba(232,169,122,0.35), transparent 55%),
+      radial-gradient(circle at 85% 15%, rgba(201,160,80,0.22), transparent 45%),
+      radial-gradient(circle at 10% 40%, rgba(217,139,122,0.18), transparent 45%),
+      linear-gradient(180deg, #3D2418 0%, #2A1810 45%, #1E1109 100%);
+    min-height:100vh; padding-bottom:70px; position:relative;
+  }
+
+  .loading-overlay{position:fixed; inset:0; background:var(--dusk); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; transition:opacity .4s ease;}
+  .loading-overlay.hide{opacity:0; pointer-events:none;}
+  .loading-shell{font-size:36px; animation:spin 1.4s linear infinite;}
+  @keyframes spin{from{transform:rotate(0);} to{transform:rotate(360deg);}}
+  .loading-text{color:var(--gold-light); font-family:'Cairo',sans-serif; font-size:13px;}
+
+  .confetti-layer{position:fixed; inset:0; pointer-events:none; z-index:998; overflow:hidden;}
+  .confetti-piece{position:absolute; top:-30px; font-size:20px; animation:confettiFall linear forwards;}
+  @keyframes confettiFall{
+    0%{transform:translateY(0) rotate(0deg); opacity:1;}
+    100%{transform:translateY(110vh) rotate(360deg); opacity:0.3;}
+  }
+  .celebrate-banner{
+    position:fixed; top:14px; left:50%; transform:translateX(-50%) translateY(-100px); z-index:997;
+    background:linear-gradient(135deg, var(--gold), var(--sunset-1)); color:var(--dusk); font-family:'Cairo',sans-serif;
+    font-weight:800; font-size:13px; padding:12px 22px; border-radius:14px; box-shadow:0 8px 24px rgba(201,160,80,.5);
+    transition:transform .5s cubic-bezier(.34,1.56,.64,1); text-align:center; max-width:90%;
+  }
+  .celebrate-banner.show{transform:translateX(-50%) translateY(0);}
+
+  .hero{padding:34px 20px 18px; text-align:center; position:relative;}
+  .hero-shell{font-size:34px; display:block; margin-bottom:6px; animation:float 3s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);}}
+  .hero-eyebrow{font-family:'Cairo',sans-serif; font-size:10px; letter-spacing:4px; color:var(--gold-light); text-transform:uppercase; margin-bottom:6px; opacity:.9;}
+  .hero h1{font-family:'Tangerine', cursive; font-weight:700; font-size:52px; line-height:1; background:linear-gradient(180deg, var(--gold-light), var(--gold)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:2px;}
+  .hero .panel-label{font-family:'Cormorant Garamond',serif; font-weight:600; font-size:12px; letter-spacing:5px; color:var(--shell); text-transform:uppercase; margin-bottom:6px;}
+  .hero .subtext{color:var(--shell); font-size:11px; opacity:.85;}
+
+  .owner-controls{display:flex; justify-content:center; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center;}
+  .owner-btn{background:rgba(232,169,122,0.15); border:1px solid rgba(201,160,80,0.5); color:var(--gold-light); font-size:10.5px; font-weight:700; padding:6px 14px; border-radius:999px; font-family:'Cairo',sans-serif; cursor:pointer;}
+  .owner-btn.active{background:linear-gradient(135deg,var(--gold),var(--sunset-1)); color:var(--dusk); border-color:transparent;}
+  .owner-name-tag{font-size:10px; color:var(--shell); font-family:'Cairo',sans-serif; background:rgba(255,246,234,0.06); padding:5px 10px; border-radius:999px; border:1px solid rgba(201,160,80,0.3);}
+  .live-dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:#8A9B6E; margin-left:5px; box-shadow:0 0 6px #8A9B6E; animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.4;}}
+
+  .ornate-divider{width:100%; text-align:center; color:var(--gold); font-size:12px; letter-spacing:8px; opacity:.5; padding-bottom:6px;}
+
+  .tabs-wrap{position:sticky; top:0; z-index:50; background:rgba(30,17,9,0.94); backdrop-filter:blur(12px); border-bottom:2px solid rgba(201,160,80,0.2); padding:10px 0;}
+  .tabs{display:flex; gap:6px; overflow-x:auto; padding:0 10px; scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex:0 0 auto; padding:9px 12px; border-radius:999px; font-family:'Cairo',sans-serif; font-size:10.5px; font-weight:700; color:var(--shell); background:rgba(201,160,80,0.1); border:1.5px solid rgba(201,160,80,0.3); white-space:nowrap; cursor:pointer; transition:all .25s;}
+  .tab.active{background:linear-gradient(135deg,var(--gold),var(--sunset-1)); color:var(--dusk); border-color:var(--gold); box-shadow:0 4px 14px rgba(201,160,80,.4);}
+
+  .section{display:none; padding:20px 14px 10px; animation:fadeIn .3s ease;}
+  .section.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+  .section-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:21px; color:var(--gold-light); margin-bottom:3px;}
+  .section-sub{font-size:10.5px; color:var(--shell); margin-bottom:14px; opacity:.75;}
+
+  .card{background:linear-gradient(160deg, rgba(232,169,122,0.1), rgba(61,36,24,0.5)); border-radius:14px; padding:14px; margin-bottom:12px; border:1.5px solid rgba(201,160,80,0.3); position:relative; overflow:hidden;}
+  .card::before{content:""; position:absolute; top:0; right:0; width:4px; height:100%; background:linear-gradient(180deg,var(--gold-light),var(--rose-deep));}
+  .card.highlight{border-color:rgba(217,139,122,0.5); background:linear-gradient(160deg, rgba(232,169,122,0.16), rgba(61,36,24,0.5));}
+  .card-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; gap:8px;}
+  .day-name{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:15px; color:var(--gold-light);}
+  .day-badge{font-size:9px; font-weight:700; padding:3px 9px; border-radius:999px; background:rgba(201,160,80,0.22); color:var(--gold-light); border:1px solid rgba(201,160,80,0.45); white-space:nowrap;}
+  .row{display:flex; align-items:flex-start; gap:7px; font-size:11.5px; color:var(--shell); margin-top:5px; line-height:1.5;}
+  .row .ico{flex:0 0 auto; font-size:12px;}
+  .row b{color:var(--gold-light); font-weight:700;}
+  .note{margin-top:8px; padding-top:8px; border-top:1px solid rgba(201,160,80,0.2); font-size:10.5px; color:var(--shell); opacity:.7;}
+
+  .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;}
+  .stat-box{background:linear-gradient(160deg, rgba(232,169,122,0.12), rgba(61,36,24,0.5)); border-radius:12px; padding:12px; text-align:center; border:1.5px solid rgba(201,160,80,0.3);}
+  .stat-num{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:22px; color:var(--gold-light); display:block;}
+  .stat-label{font-size:9.5px; color:var(--shell); font-weight:600; margin-top:3px; opacity:.75;}
+  .pearl-divider{text-align:center; color:var(--gold); font-size:15px; margin:10px 0; opacity:.4;}
+
+  .trend-box{display:flex; align-items:center; justify-content:space-between; background:linear-gradient(160deg, rgba(138,155,110,0.15), rgba(61,36,24,0.5)); border:1.5px solid rgba(138,155,110,0.4); border-radius:12px; padding:12px 14px; margin-bottom:12px;}
+  .trend-box.down{background:linear-gradient(160deg, rgba(217,139,122,0.15), rgba(61,36,24,0.5)); border-color:rgba(217,139,122,0.4);}
+  .trend-label{font-size:11px; color:var(--shell);}
+  .trend-val{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:20px; color:#a8bd8a;}
+  .trend-box.down .trend-val{color:var(--rose-deep);}
+
+  .staff-role-block{margin-bottom:16px;}
+  .staff-role-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .staff-role-header .day-name{font-size:16px;}
+  .staff-role-count{font-family:'Cormorant Garamond',serif; font-weight:700; color:var(--rose-deep); font-size:14px;}
+  .slot{display:flex; align-items:center; gap:6px; background:rgba(255,246,234,0.04); border:1px solid rgba(201,160,80,0.25); border-radius:10px; padding:9px 10px; margin-bottom:7px; flex-wrap:wrap;}
+  .slot-tag{flex:0 0 auto; font-size:9.5px; font-weight:700; color:var(--gold-light); background:rgba(201,160,80,0.15); padding:4px 7px; border-radius:7px; font-family:'Cairo',sans-serif; white-space:nowrap;}
+  .slot input{flex:1; min-width:80px; background:transparent; border:none; border-bottom:1px dashed rgba(201,160,80,0.4); color:var(--cream); font-family:'Tajawal',sans-serif; font-size:12px; padding:4px 2px; outline:none;}
+  .slot input::placeholder{color:rgba(255,246,234,0.35);}
+  .slot input:focus{border-bottom:1px solid var(--gold-light);}
+  .slot-points{flex:0 0 auto; font-size:11px; font-weight:800; color:var(--gold1); font-family:'Cormorant Garamond',serif; background:rgba(255,215,0,0.1); padding:3px 8px; border-radius:7px; border:1px solid rgba(255,215,0,0.3);}
+  .slot-actions{display:flex; gap:4px; width:100%; margin-top:4px;}
+  .pt-btn{flex:1; font-size:10px; font-weight:700; padding:5px; border-radius:7px; border:1px solid rgba(201,160,80,0.4); cursor:pointer; font-family:'Cairo',sans-serif;}
+  .pt-plus{background:rgba(138,155,110,0.2); color:#a8bd8a;}
+  .pt-minus{background:rgba(217,139,122,0.2); color:var(--rose-deep);}
+
+  .task-item{display:flex; align-items:flex-start; gap:10px; padding:9px 4px; border-bottom:1px solid rgba(201,160,80,0.15); cursor:pointer; transition:opacity .2s;}
+  .task-item:last-child{border-bottom:none;}
+  .task-item.locked{cursor:not-allowed; opacity:.75;}
+  .checkbox{flex:0 0 auto; width:20px; height:20px; border-radius:6px; border:2px solid rgba(201,160,80,0.55); display:flex; align-items:center; justify-content:center; margin-top:1px; transition:all .2s; background:rgba(255,246,234,0.03);}
+  .checkbox.checked{background:var(--green-done); border-color:var(--green-done);}
+  .checkbox svg{width:12px; height:12px; opacity:0; transition:opacity .15s;}
+  .checkbox.checked svg{opacity:1;}
+  .task-text{flex:1; font-size:12px; color:var(--shell); line-height:1.5;}
+  .task-item.done .task-text{opacity:.4; text-decoration:line-through;}
+  .lock-ico{font-size:10px; opacity:.5;}
+
+  .reset-btn{display:block; width:100%; text-align:center; background:rgba(217,139,122,0.18); border:1.5px solid rgba(217,139,122,0.5); color:var(--rose-deep); font-family:'Cairo',sans-serif; font-weight:700; font-size:11.5px; padding:10px; border-radius:10px; cursor:pointer; margin-top:6px;}
+  .reset-btn:disabled{opacity:.4; cursor:not-allowed;}
+
+  .progress-bar-wrap{background:rgba(255,246,234,0.08); border-radius:999px; height:8px; margin-bottom:14px; overflow:hidden;}
+  .progress-bar-fill{background:linear-gradient(90deg,var(--gold),var(--green-done)); height:100%; width:0%; transition:width .4s ease;}
+  .progress-label{font-size:10.5px; color:var(--shell); margin-bottom:6px; display:flex; justify-content:space-between;}
+
+  .event-date-pill{display:inline-block; background:rgba(201,160,80,0.2); color:var(--gold-light); font-size:9px; font-weight:700; padding:4px 9px; border-radius:7px; margin-bottom:7px; font-family:'Cairo',sans-serif; border:1px solid rgba(201,160,80,0.4);}
+  .event-name{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:15px; color:var(--gold-light); margin-bottom:5px;}
+  .reward-tag{display:inline-flex; align-items:center; gap:5px; margin-top:7px; background:rgba(217,139,122,0.18); color:var(--rose-deep); padding:5px 10px; border-radius:999px; font-size:10px; font-weight:700; border:1px solid rgba(217,139,122,0.4);}
+  .kpi-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:14px; color:var(--gold-light); margin-bottom:9px;}
+  .kpi-weeks{display:flex; justify-content:space-between; gap:5px; margin-bottom:8px;}
+  .kpi-week{flex:1; text-align:center; background:rgba(201,160,80,0.08); border-radius:9px; padding:6px 3px; border:1px solid rgba(201,160,80,0.2);}
+  .kpi-week .wk-label{font-size:8px; color:var(--shell); font-weight:700; display:block; margin-bottom:2px; opacity:.65;}
+  .kpi-week .wk-val{font-size:12px; color:var(--gold-light); font-weight:800; font-family:'Cormorant Garamond',serif;}
+  .kpi-goal{text-align:center; background:linear-gradient(135deg, rgba(201,160,80,0.25), rgba(217,139,122,0.18)); border:1.5px solid rgba(201,160,80,0.4); border-radius:9px; padding:7px; color:var(--gold-light); font-weight:700; font-size:10.5px; font-family:'Cairo',sans-serif;}
+
+  .template-box{background:rgba(255,246,234,0.04); border:1px dashed rgba(201,160,80,0.4); border-radius:10px; padding:12px; font-size:11px; color:var(--shell); line-height:1.7; white-space:pre-wrap; margin-bottom:8px;}
+  .copy-btn{background:rgba(201,160,80,0.18); border:1px solid rgba(201,160,80,0.5); color:var(--gold-light); font-family:'Cairo',sans-serif; font-weight:700; font-size:10.5px; padding:7px 14px; border-radius:8px; cursor:pointer; margin-bottom:14px;}
+
+  .lb-item{display:flex; align-items:center; gap:12px; background:linear-gradient(160deg, rgba(232,169,122,0.1), rgba(61,36,24,0.5)); border:1.5px solid rgba(201,160,80,0.3); border-radius:14px; padding:12px 14px; margin-bottom:10px;}
+  .lb-item.rank1{border-color:rgba(255,215,0,0.6); background:linear-gradient(160deg, rgba(255,215,0,0.12), rgba(61,36,24,0.5));}
+  .lb-item.rank2{border-color:rgba(192,192,192,0.5);}
+  .lb-item.rank3{border-color:rgba(205,127,50,0.5);}
+  .lb-rank{flex:0 0 auto; font-family:'Cormorant Garamond',serif; font-weight:800; font-size:20px; color:var(--gold-light); width:30px; text-align:center;}
+  .lb-info{flex:1;}
+  .lb-name{font-family:'Cairo',sans-serif; font-weight:700; font-size:13px; color:var(--cream);}
+  .lb-role{font-size:9.5px; color:var(--shell); opacity:.7;}
+  .lb-points{flex:0 0 auto; text-align:center;}
+  .lb-points-num{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:17px; color:var(--gold1);}
+  .lb-points-label{font-size:8px; color:var(--shell); opacity:.6;}
+  .lb-empty{text-align:center; padding:30px 10px; color:var(--shell); opacity:.6; font-size:12px;}
+
+  .badges-legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; margin-bottom:16px;}
+  .badge-chip{background:rgba(201,160,80,0.1); border:1px solid rgba(201,160,80,0.3); border-radius:999px; padding:6px 12px; font-size:10px; color:var(--shell);}
+
+  .fame-item{display:flex; align-items:center; gap:10px; background:linear-gradient(160deg, rgba(255,215,0,0.08), rgba(61,36,24,0.5)); border:1.5px solid rgba(255,215,0,0.3); border-radius:12px; padding:10px 12px; margin-bottom:8px;}
+  .fame-crown{font-size:20px;}
+  .fame-month{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:13px; color:var(--gold-light);}
+  .fame-winner{font-size:11px; color:var(--shell);}
+
+  .history-day{display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid rgba(201,160,80,0.12);}
+  .history-day:last-child{border-bottom:none;}
+  .history-date{flex:0 0 auto; width:60px; font-size:10.5px; color:var(--shell); font-family:'Cairo',sans-serif; font-weight:700;}
+  .history-bar-wrap{flex:1; background:rgba(255,246,234,0.06); border-radius:999px; height:7px; overflow:hidden;}
+  .history-bar-fill{background:linear-gradient(90deg,var(--gold),var(--green-done)); height:100%;}
+  .history-pct{flex:0 0 auto; width:36px; text-align:left; font-size:10px; color:var(--gold-light); font-weight:700;}
+
+  .activity-item{display:flex; gap:10px; padding:9px 4px; border-bottom:1px solid rgba(201,160,80,0.12); font-size:11px;}
+  .activity-item:last-child{border-bottom:none;}
+  .activity-ico{flex:0 0 auto; font-size:14px;}
+  .activity-body{flex:1; color:var(--shell); line-height:1.5;}
+  .activity-body b{color:var(--gold-light);}
+  .activity-meta{font-size:9.5px; opacity:.55; margin-top:2px;}
+  .activity-empty{text-align:center; padding:24px 10px; color:var(--shell); opacity:.6; font-size:11.5px;}
+
+  .save-toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0; background:var(--green-done); color:#fff; padding:9px 20px; border-radius:999px; font-size:11.5px; font-weight:700; font-family:'Cairo',sans-serif; z-index:100; transition:all .3s ease; pointer-events:none;}
+  .save-toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .save-toast.error{background:var(--rose-deep);}
+
+  footer{text-align:center; padding:18px 14px 10px; color:var(--shell); font-size:9px; opacity:.5;}
+  footer .foot-script{font-family:'Tangerine',cursive; font-size:20px; color:var(--gold); display:block; margin-bottom:2px;}
+
+  /* Channels accordion */
+  .cat-card{background:linear-gradient(160deg, rgba(232,169,122,0.1), rgba(61,36,24,0.5)); border-radius:14px; border:1.5px solid rgba(201,160,80,0.3); margin-bottom:10px; overflow:hidden;}
+  .cat-header{display:flex; align-items:center; justify-content:space-between; padding:13px 14px; cursor:pointer;}
+  .cat-header-left{display:flex; align-items:center; gap:8px;}
+  .cat-name{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:15px; color:var(--gold-light);}
+  .cat-count{font-size:9.5px; color:var(--shell); background:rgba(201,160,80,0.15); padding:2px 8px; border-radius:999px; border:1px solid rgba(201,160,80,0.3);}
+  .cat-chevron{font-size:12px; color:var(--gold); transition:transform .3s ease;}
+  .cat-card.open .cat-chevron{transform:rotate(180deg);}
+  .cat-body{max-height:0; overflow:hidden; transition:max-height .35s ease;}
+  .cat-card.open .cat-body{max-height:600px;}
+  .cat-body-inner{padding:0 14px 12px;}
+  .chan-item{display:flex; align-items:center; gap:8px; padding:6px 0; font-size:12px; color:var(--shell); border-top:1px solid rgba(201,160,80,0.1);}
+  .chan-item:first-child{border-top:none;}
+  .chan-ico{flex:0 0 auto; font-size:11px; opacity:.8;}
+  .chan-live{margin-right:auto; font-size:9px; color:var(--rose-deep); background:rgba(217,139,122,0.15); padding:2px 6px; border-radius:6px;}
+
+  /* Role responsibility cards */
+  .role-resp{display:flex; gap:10px; margin-bottom:10px; align-items:flex-start;}
+  .role-resp-ico{flex:0 0 auto; font-size:20px; width:34px; text-align:center;}
+  .role-resp-body{flex:1;}
+  .role-resp-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:14px; color:var(--gold-light); margin-bottom:2px;}
+  .role-resp-desc{font-size:11px; color:var(--shell); line-height:1.6; opacity:.9;}
+
+  /* Task role section headers */
+  .task-role-header{display:flex; align-items:center; gap:8px; margin:18px 0 10px; padding-bottom:6px; border-bottom:2px solid rgba(201,160,80,0.25);}
+  .task-role-header:first-child{margin-top:0;}
+  .task-role-ico{font-size:18px;}
+  .task-role-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:16px; color:var(--gold-light);}
+  .task-role-note{background:linear-gradient(160deg, rgba(232,169,122,0.08), rgba(61,36,24,0.4)); border:1px dashed rgba(201,160,80,0.3); border-radius:12px; padding:12px 14px; font-size:11.5px; color:var(--shell); margin-bottom:12px; line-height:1.6;}
+  .wtask-pts{font-size:9.5px; color:var(--gold-light); background:rgba(201,160,80,0.15); padding:2px 7px; border-radius:6px; margin-right:6px; border:1px solid rgba(201,160,80,0.3);}
+
+  .tpl-add-btn{display:block; width:100%; text-align:center; background:rgba(138,155,110,0.15); border:1.5px dashed rgba(138,155,110,0.45); color:#a8bd8a; font-family:'Cairo',sans-serif; font-weight:700; font-size:11.5px; padding:10px; border-radius:10px; cursor:pointer; margin-bottom:14px;}
+  .tpl-add-btn:disabled{opacity:.35; cursor:not-allowed;}
+
+  .task-item-row{display:flex; align-items:center; gap:6px;}
+  .task-item-row .task-item{flex:1;}
+  .edit-controls{display:flex; gap:4px; flex:0 0 auto;}
+  .edit-ico-btn{background:rgba(201,160,80,0.15); border:1px solid rgba(201,160,80,0.35); color:var(--gold-light); font-size:11px; padding:5px 7px; border-radius:7px; cursor:pointer;}
+  .edit-ico-btn.danger{background:rgba(217,139,122,0.15); border-color:rgba(217,139,122,0.4); color:var(--rose-deep);}
+
+  .event-card-editable, .goal-card-editable{position:relative;}
+  .card-edit-row{display:flex; gap:6px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(201,160,80,0.15);}
+
+  .modal-overlay{position:fixed; inset:0; background:rgba(10,6,3,0.75); backdrop-filter:blur(4px); z-index:995; display:none; align-items:flex-end; justify-content:center;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:linear-gradient(160deg,#3D2418,#241309); border:1.5px solid rgba(201,160,80,0.4); border-radius:20px 20px 0 0; width:100%; max-width:640px; max-height:85vh; overflow-y:auto; padding:20px; animation:modalUp .3s ease;}
+  @keyframes modalUp{from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  .modal-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:19px; color:var(--gold-light); margin-bottom:14px;}
+  .modal-field{margin-bottom:12px;}
+  .modal-field label{display:block; font-size:11px; color:var(--shell); margin-bottom:5px; font-family:'Cairo',sans-serif;}
+  .modal-field input, .modal-field select{width:100%; background:rgba(255,246,234,0.05); border:1px solid rgba(201,160,80,0.35); border-radius:9px; padding:10px; color:var(--cream); font-family:'Tajawal',sans-serif; font-size:13px;}
+  .modal-field select{color-scheme:dark;}
+  .modal-weeks-row{display:flex; gap:6px;}
+  .modal-weeks-row input{width:100%;}
+  .modal-actions{display:flex; gap:8px; margin-top:16px;}
+  .modal-btn{flex:1; padding:11px; border-radius:10px; font-family:'Cairo',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; border:none;}
+  .modal-btn.save{background:linear-gradient(135deg,var(--gold),var(--sunset-1)); color:var(--dusk);}
+  .modal-btn.cancel{background:rgba(255,246,234,0.08); color:var(--shell); border:1px solid rgba(201,160,80,0.3);}
+  .modal-field textarea{width:100%; min-height:110px; background:rgba(255,246,234,0.05); border:1px solid rgba(201,160,80,0.35); border-radius:9px; padding:10px; color:var(--cream); font-family:'Tajawal',sans-serif; font-size:12.5px; resize:vertical; line-height:1.6;}
+  .cat-edit-btns{display:flex; gap:4px; margin-left:8px;}
+  .schedule-card-actions{display:flex; gap:6px; margin-top:8px; padding-top:8px; border-top:1px solid rgba(201,160,80,0.15);}
+
+  .app-shell{max-width:640px; margin:0 auto; position:relative; min-height:100vh;}
+
+  @media (min-width:760px){
+    body{
+      background:
+        radial-gradient(circle at 50% 0%, rgba(232,169,122,0.35), transparent 55%),
+        radial-gradient(circle at 85% 15%, rgba(201,160,80,0.22), transparent 45%),
+        radial-gradient(circle at 10% 40%, rgba(217,139,122,0.18), transparent 45%),
+        linear-gradient(180deg, #241309 0%, #1a0e07 100%);
+    }
+    .app-shell{
+      background:
+        radial-gradient(circle at 50% 0%, rgba(232,169,122,0.25), transparent 55%),
+        linear-gradient(180deg, #3D2418 0%, #2A1810 45%, #1E1109 100%);
+      box-shadow:0 0 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,160,80,0.15);
+    }
+    html{font-size:17px;}
+    .hero{padding:48px 20px 24px;}
+    .hero-shell{font-size:44px;}
+    .hero h1{font-size:64px;}
+    .hero .panel-label{font-size:14px;}
+    .hero .subtext{font-size:13px;}
+    .section-title{font-size:25px;}
+    .section-sub{font-size:12.5px;}
+    .card{padding:17px;}
+    .day-name{font-size:16.5px;}
+    .row{font-size:13px;}
+    .tab{font-size:12px; padding:10px 15px;}
+    .stat-num{font-size:26px;}
+    .stat-label{font-size:10.5px;}
+    .task-text{font-size:13px;}
+    .lb-name{font-size:14.5px;}
+    .lb-points-num{font-size:19px;}
+    .cat-name{font-size:16px;}
+    .chan-item{font-size:13px;}
+    .activity-item{font-size:12px;}
+    .template-box{font-size:12px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <span class="loading-shell">🐚</span>
+  <span class="loading-text">جاري تحميل بيانات السيرفر...</span>
+</div>
+
+<div class="confetti-layer" id="confettiLayer"></div>
+<div class="celebrate-banner" id="celebrateBanner"></div>
+
+<div class="modal-overlay" id="formModal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">إضافة</div>
+    <div id="modalFields"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" id="modalCancel">إلغاء</button>
+      <button class="modal-btn delete" id="modalDelete" style="display:none;">حذف</button>
+      <button class="modal-btn save" id="modalSave">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-shell">
+<div class="hero">
+  <span class="hero-shell">🐚</span>
+  <div class="hero-eyebrow">Tropical • Gold • Pearl</div>
+  <h1>She/Her</h1>
+  <div class="panel-label">S E R V E R</div>
+  <p class="subtext">لوحة حية مشتركة <span class="live-dot"></span></p>
+
+  <div class="owner-controls">
+    <button class="owner-btn" id="ownerToggle">🔑 دخول الأونرية</button>
+    <span class="owner-name-tag" id="ownerNameTag" style="display:none;"></span>
+  </div>
+</div>
+<div class="ornate-divider">⋆　✦　⋆</div>
+
+<div class="tabs-wrap">
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-target="overview">🏠 نظرة عامة</div>
+    <div class="tab" data-target="schedule">📅 الجدول</div>
+    <div class="tab" data-target="staff">👥 الستاف</div>
+    <div class="tab" data-target="daily">✅ المهام اليومية</div>
+    <div class="tab" data-target="leaderboard">🏆 الصدارة</div>
+    <div class="tab" data-target="history">📜 السجل</div>
+    <div class="tab" data-target="channels">📡 القنوات</div>
+    <div class="tab" data-target="events">🎉 الفعاليات</div>
+    <div class="tab" data-target="goals">🎯 الأهداف</div>
+    <div class="tab" data-target="templates">📢 قوالب النشر</div>
+  </div>
+</div>
+
+<div class="section active" id="overview">
+  <div class="section-title">نظرة سريعة</div>
+  <div class="section-sub">أهم المعلومات دفعة وحدة — محدثة لحظياً للكل</div>
+
+  <div class="trend-box" id="trendBox">
+    <span class="trend-label">📈 نقاط الفريق هذا الأسبوع مقارنة بالي فات</span>
+    <span class="trend-val" id="trendVal">—</span>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-box"><span class="stat-num" id="activeStaffToday">0</span><span class="stat-label">نشيطات اليوم 🟢</span></div>
+    <div class="stat-box"><span class="stat-num" id="totalStaffFilled">0</span><span class="stat-label">إجمالي الستاف المسجل</span></div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-box"><span class="stat-num">30+</span><span class="stat-label">قناة نشطة</span></div>
+    <div class="stat-box"><span class="stat-num">1255</span><span class="stat-label">أعضاء السيرفر</span></div>
+  </div>
+
+  <div class="pearl-divider">✦</div>
+
+  <div class="card highlight"><div class="card-top"><span class="day-name">⭐ الحدث الأساسي</span></div>
+    <div class="row"><span class="ico">👑</span><span>الجمعة 8:00 م — فعالية رئيسية بقيادة <b>CEO Lead</b></span></div></div>
+
+  <div class="card"><div class="card-top"><span class="day-name">🏆 كيف تكسبين نقاط؟</span></div>
+    <div class="row"><span class="ico">✅</span><span>كل مهمة يومية تخلصينها = نقاط تلقائية</span></div>
+    <div class="row"><span class="ico">🎁</span><span>الأونرية تقدر تضيف نقاط تقدير يدوياً مع سبب</span></div>
+    <div class="row"><span class="ico">🔄</span><span>النقاط تتصفر أول كل شهر — منافسة جديدة كل مرة!</span></div>
+    <div class="row"><span class="ico">👑</span><span>صاحبة أعلى نقاط بنهاية الشهر تدخل "قاعة الشهرة"</span></div></div>
+
+  <div class="pearl-divider">✦</div>
+
+  <div class="card">
+    <div class="card-top"><span class="day-name">🧭 الأدوار والمسؤوليات</span></div>
+
+    <div class="role-resp">
+      <span class="role-resp-ico">🔱</span>
+      <div class="role-resp-body">
+        <div class="role-resp-title">CEO</div>
+        <div class="role-resp-desc">القيادة العليا للسيرفر — قيادة الفعالية الأسبوعية الرئيسية (الجمعة)، اتخاذ القرارات الاستراتيجية، الإشراف العام على باقي الستاف، وحل النزاعات الكبيرة.</div>
+      </div>
+    </div>
+
+    <div class="role-resp">
+      <span class="role-resp-ico">💎</span>
+      <div class="role-resp-body">
+        <div class="role-resp-title">Admins</div>
+        <div class="role-resp-desc">إدارة المحتوى اليومي (منشور صباحي ومسائي)، مراقبة القنوات الكتابية وتطبيق القوانين، متابعة التقارير والتحذيرات، وتقييم نشاط اليوم.</div>
+      </div>
+    </div>
+
+    <div class="role-resp">
+      <span class="role-resp-ico">💙</span>
+      <div class="role-resp-body">
+        <div class="role-resp-title">Helper</div>
+        <div class="role-resp-desc">تفعيل وإدارة الرومات الصوتية، الترحيب بالأعضاء الجدد وتوجيههم، الإشراف على قنوات الدردشة العامة والترفيهية أثناء الأوقات النشطة.</div>
+      </div>
+    </div>
+
+    <div class="role-resp">
+      <span class="role-resp-ico">🎀</span>
+      <div class="role-resp-body">
+        <div class="role-resp-title">Event Team</div>
+        <div class="role-resp-desc">تنظيم وتنفيذ الفعالية الأسبوعية الصغيرة (الثلاثاء)، تحضير الجوائز والأسئلة، ودعم فريق CEO بالفعالية الرئيسية عند الحاجة.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="schedule">
+  <div class="section-title">الجدول الأسبوعي</div>
+  <div class="section-sub">قابل للتعديل بالكامل — أضيفي وعدّلي أي نشاط</div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addScheduleBtn" disabled>➕ إضافة نشاط بالجدول</button>
+
+  <div id="scheduleContainer"></div>
+</div>
+
+<div class="section" id="staff">
+  <div class="section-title">توزيع الستاف</div>
+  <div class="section-sub">الأسماء والنقاط محدثة للكل لحظياً. التعديل للأونرية فقط.</div>
+
+  <div class="staff-role-block">
+    <div class="staff-role-header"><span class="day-name">🔱 CEO</span><span class="staff-role-count">3</span></div>
+    <div class="slot" data-slot="ceo1"><span class="slot-tag">CEO-1</span><input type="text" data-key="ceo1" placeholder="اسم المسؤولة الأساسية" disabled><span class="slot-points" data-points="ceo1">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="ceo1:10">+10</button><button class="pt-btn pt-minus" data-award="ceo1:-5">-5</button></div></div>
+    <div class="slot" data-slot="ceo2"><span class="slot-tag">CEO-2</span><input type="text" data-key="ceo2" placeholder="اسم الدعم" disabled><span class="slot-points" data-points="ceo2">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="ceo2:10">+10</button><button class="pt-btn pt-minus" data-award="ceo2:-5">-5</button></div></div>
+    <div class="slot" data-slot="ceo3"><span class="slot-tag">CEO-3</span><input type="text" data-key="ceo3" placeholder="اسم الاستراتيجية" disabled><span class="slot-points" data-points="ceo3">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="ceo3:10">+10</button><button class="pt-btn pt-minus" data-award="ceo3:-5">-5</button></div></div>
+  </div>
+
+  <div class="staff-role-block">
+    <div class="staff-role-header"><span class="day-name">💎 Admins</span><span class="staff-role-count">4</span></div>
+    <div class="slot" data-slot="admin1"><span class="slot-tag">Admin-1</span><input type="text" data-key="admin1" placeholder="منشور الصباح" disabled><span class="slot-points" data-points="admin1">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="admin1:10">+10</button><button class="pt-btn pt-minus" data-award="admin1:-5">-5</button></div></div>
+    <div class="slot" data-slot="admin2"><span class="slot-tag">Admin-2</span><input type="text" data-key="admin2" placeholder="منشور المساء" disabled><span class="slot-points" data-points="admin2">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="admin2:10">+10</button><button class="pt-btn pt-minus" data-award="admin2:-5">-5</button></div></div>
+    <div class="slot" data-slot="admin3"><span class="slot-tag">Admin-3</span><input type="text" data-key="admin3" placeholder="مراقبة الرومات" disabled><span class="slot-points" data-points="admin3">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="admin3:10">+10</button><button class="pt-btn pt-minus" data-award="admin3:-5">-5</button></div></div>
+    <div class="slot" data-slot="admin4"><span class="slot-tag">Admin-4</span><input type="text" data-key="admin4" placeholder="تنسيق ومتابعة" disabled><span class="slot-points" data-points="admin4">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="admin4:10">+10</button><button class="pt-btn pt-minus" data-award="admin4:-5">-5</button></div></div>
+  </div>
+
+  <div class="staff-role-block">
+    <div class="staff-role-header"><span class="day-name">💙 Helper</span><span class="staff-role-count">6</span></div>
+    <div class="slot" data-slot="helper1"><span class="slot-tag">Helper-1</span><input type="text" data-key="helper1" placeholder="اسم" disabled><span class="slot-points" data-points="helper1">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="helper1:10">+10</button><button class="pt-btn pt-minus" data-award="helper1:-5">-5</button></div></div>
+    <div class="slot" data-slot="helper2"><span class="slot-tag">Helper-2</span><input type="text" data-key="helper2" placeholder="اسم" disabled><span class="slot-points" data-points="helper2">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="helper2:10">+10</button><button class="pt-btn pt-minus" data-award="helper2:-5">-5</button></div></div>
+    <div class="slot" data-slot="helper3"><span class="slot-tag">Helper-3</span><input type="text" data-key="helper3" placeholder="اسم" disabled><span class="slot-points" data-points="helper3">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="helper3:10">+10</button><button class="pt-btn pt-minus" data-award="helper3:-5">-5</button></div></div>
+    <div class="slot" data-slot="helper4"><span class="slot-tag">Helper-4</span><input type="text" data-key="helper4" placeholder="اسم" disabled><span class="slot-points" data-points="helper4">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="helper4:10">+10</button><button class="pt-btn pt-minus" data-award="helper4:-5">-5</button></div></div>
+    <div class="slot" data-slot="helper5"><span class="slot-tag">Helper-5</span><input type="text" data-key="helper5" placeholder="اسم" disabled><span class="slot-points" data-points="helper5">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="helper5:10">+10</button><button class="pt-btn pt-minus" data-award="helper5:-5">-5</button></div></div>
+    <div class="slot" data-slot="helper6"><span class="slot-tag">Helper-6</span><input type="text" data-key="helper6" placeholder="اسم" disabled><span class="slot-points" data-points="helper6">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="helper6:10">+10</button><button class="pt-btn pt-minus" data-award="helper6:-5">-5</button></div></div>
+  </div>
+
+  <div class="staff-role-block">
+    <div class="staff-role-header"><span class="day-name">🎀 Event Team</span><span class="staff-role-count">2</span></div>
+    <div class="slot" data-slot="event1"><span class="slot-tag">Event-1</span><input type="text" data-key="event1" placeholder="اسم" disabled><span class="slot-points" data-points="event1">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="event1:10">+10</button><button class="pt-btn pt-minus" data-award="event1:-5">-5</button></div></div>
+    <div class="slot" data-slot="event2"><span class="slot-tag">Event-2</span><input type="text" data-key="event2" placeholder="اسم" disabled><span class="slot-points" data-points="event2">0 ⭐</span>
+      <div class="slot-actions owner-only" style="display:none;"><button class="pt-btn pt-plus" data-award="event2:10">+10</button><button class="pt-btn pt-minus" data-award="event2:-5">-5</button></div></div>
+  </div>
+</div>
+
+<div class="section" id="daily">
+  <div class="section-title">المهام اليومية</div>
+  <div class="section-sub">كل مهمة مربوطة بشخص وحدة بالتحديد — ما فيه نقاط جماعية. تتصفر تلقائياً كل يوم</div>
+
+  <div class="progress-label"><span>الإنجاز اليوم</span><span id="progressPct">0%</span></div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addDailyTaskBtn" disabled>➕ إضافة مهمة يومية</button>
+
+  <div id="dailyTasksContainer"></div>
+
+  <button class="reset-btn owner-only-btn" id="resetTasks" disabled>🔄 تصفير المهام اليومية (يرجع النقاط صح)</button>
+
+  <div class="pearl-divider">✦</div>
+
+  <div class="section-title" style="font-size:18px;">📆 المهام الأسبوعية</div>
+  <div class="section-sub">تتصفر أول كل أسبوع (السبت). مربوطة بالفعاليات الكبيرة — مو باليوميات</div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addWeeklyTaskBtn" disabled>➕ إضافة مهمة أسبوعية</button>
+
+  <div id="weeklyTasksContainer"></div>
+
+  <button class="reset-btn owner-only-btn" id="resetWeeklyTasks" disabled>🔄 تصفير المهام الأسبوعية يدوياً</button>
+</div>
+
+<div class="section" id="leaderboard">
+  <div class="section-title">🏆 لوحة الصدارة</div>
+  <div class="section-sub">ترتيب الشهر الحالي — يتصفر تلقائياً أول كل شهر</div>
+  <div id="leaderboardList"></div>
+
+  <div class="badges-legend">
+    <span class="badge-chip">🌱 0-19: مبتدئة</span>
+    <span class="badge-chip">🐚 20-49: نشيطة</span>
+    <span class="badge-chip">🌟 50-99: متميزة</span>
+    <span class="badge-chip">👑 100+: نجمة السيرفر</span>
+  </div>
+
+  <div class="pearl-divider">✦</div>
+  <div class="day-name" style="margin-bottom:10px; font-size:15px;">👑 قاعة الشهرة</div>
+  <div id="hallOfFame"></div>
+</div>
+
+<div class="section" id="history">
+  <div class="section-title">📜 السجل</div>
+  <div class="section-sub">إنجاز آخر 7 أيام + سجل كل التعديلات</div>
+
+  <div class="card">
+    <div class="card-top"><span class="day-name">📊 آخر 7 أيام</span></div>
+    <div id="historyDays"></div>
+  </div>
+
+  <div class="pearl-divider">✦</div>
+  <div class="day-name" style="margin-bottom:10px; font-size:15px;">🕐 سجل النشاط</div>
+  <div class="card" style="padding:6px 14px;">
+    <div id="activityFeed"></div>
+  </div>
+</div>
+
+<div class="section" id="channels">
+  <div class="section-title">📡 قنوات السيرفر</div>
+  <div class="section-sub">اضغطي على أي قسم لفتحه. الأونرية تقدر تضيف قسم جديد أو تعدل قنوات أي قسم</div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addChannelCatBtn" disabled>➕ إضافة قسم قنوات</button>
+
+  <div id="channelsContainer"></div>
+</div>
+
+<div class="section" id="events">
+  <div class="section-title">الفعاليات الشهرية</div>
+  <div class="section-sub">قابلة للتعديل بالكامل — أضيفي وعدّلي فعاليات كل شهر</div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addEventBtn" disabled>➕ إضافة فعالية</button>
+
+  <div id="eventsContainer"></div>
+</div>
+
+<div class="section" id="goals">
+  <div class="section-title">مؤشرات النجاح</div>
+  <div class="section-sub">قابلة للتعديل — غيّري الأرقام والأهداف حسب كل شهر</div>
+
+  <button class="tpl-add-btn owner-only-btn" id="addGoalBtn" disabled>➕ إضافة مؤشر</button>
+
+  <div id="goalsContainer"></div>
+</div>
+
+<div class="section" id="templates">
+  <div class="section-title">قوالب النشر الجاهزة</div>
+  <div class="section-sub">انسخي ولصقي مباشرة</div>
+
+  <div class="day-name" style="margin-bottom:8px; font-size:13px;">إعلان رسمي في السيرفر</div>
+  <div class="template-box" id="tpl1">🐚 She/Her Server — تحديث جديد
+
+فيه لوحة تحكم حية جديدة للسيرفر فيها الجدول والمهام ونظام نقاط شهري!
+
+🔗 الرابط: [ضيفي الرابط هنا]
+
+💛 نتشرف فيكم!</div>
+  <button class="copy-btn" onclick="copyTpl('tpl1')">📋 نسخ</button>
+
+  <div class="day-name" style="margin-bottom:8px; font-size:13px;">رسالة خاصة للستاف</div>
+  <div class="template-box" id="tpl2">يا بنات! 👋
+
+فيه لوحة تحكم حية جديدة فيها نقاطك ومهامك.
+كل مهمة تخلصينها = نقاط! أفضل وحدة كل شهر تدخل قاعة الشهرة 👑
+
+الرابط: [ضيفي الرابط هنا]
+
+دعواتكم يا حلوات 🐚💛</div>
+  <button class="copy-btn" onclick="copyTpl('tpl2')">📋 نسخ</button>
+</div>
+
+<footer><span class="foot-script">She/Her Server</span>Server Panel 🐚</footer>
+</div>
+
+<div class="save-toast" id="saveToast">✓ تم الحفظ</div>
+
+<script>
+const OWNER_PIN = "SHEHER2026";
+let isOwner = false;
+let ownerName = '';
+
+const DEFAULT_DAILY_TASKS = [
+  { id:'admin_post_am',   role:'admin',  points:15, label:'منشور المحتوى الصباحي' },
+  { id:'admin_post_pm',   role:'admin',  points:15, label:'منشور المحتوى المسائي' },
+  { id:'admin_attendance',role:'admin',  points:15, label:'تسجيل الحضور والملاحظات' },
+  { id:'admin_thanks',    role:'admin',  points:15, label:'منشور شكر ورصد المشاكل' },
+  { id:'helper_voice_1',  role:'helper', points:30, label:'مناوبة الرومة الصوتية' },
+  { id:'helper_voice_2',  role:'helper', points:30, label:'مناوبة الرومة الصوتية' },
+  { id:'helper_voice_3',  role:'helper', points:30, label:'مناوبة الرومة الصوتية' },
+  { id:'helper_voice_4',  role:'helper', points:30, label:'مناوبة الرومة الصوتية' },
+  { id:'helper_onboard_1',role:'helper', points:30, label:'استقبال الأعضاء الجدد' },
+  { id:'helper_onboard_2',role:'helper', points:30, label:'استقبال الأعضاء الجدد' }
+];
+
+const DEFAULT_WEEKLY_TASKS = [
+  { id:'ceo_friday_1',   role:'ceo',   points:35, label:'فعالية الجمعة الرئيسية' },
+  { id:'ceo_friday_2',   role:'ceo',   points:35, label:'فعالية الجمعة الرئيسية' },
+  { id:'ceo_friday_3',   role:'ceo',   points:35, label:'فعالية الجمعة الرئيسية' },
+  { id:'event_tuesday_1',role:'event', points:35, label:'فعالية الثلاثاء الصغيرة' },
+  { id:'event_tuesday_2',role:'event', points:35, label:'فعالية الثلاثاء الصغيرة' }
+];
+
+const DEFAULT_EVENTS = [
+  { id:'ev1', date:'20 أغسطس', day:'الثلاثاء', title:'🎮 تخمين (3 كلمات)', time:'7:00 م — 7:30 م', team:'Event Team', reward:'💝 Nitro Boost', highlight:false },
+  { id:'ev2', date:'22 أغسطس', day:'الجمعة', title:'⭐ سؤال اليوم (صوتي)', time:'8:00 م — 9:00 م', team:'CEO Lead', reward:'👑 رول ذهبي خاص', highlight:true },
+  { id:'ev3', date:'27 أغسطس', day:'الثلاثاء', title:'✨ أفضل ستايل صيفي', time:'7:00 م — 7:45 م', team:'Event Team', reward:'💝 Nitro Boost', highlight:false },
+  { id:'ev4', date:'29 أغسطس', day:'الجمعة', title:'🏆 من هي؟ (تحديات)', time:'8:00 م — 9:30 م', team:'CEO Lead + فريق', reward:'👑 رول + رسالة خاصة', highlight:true }
+];
+
+const DEFAULT_GOALS = [
+  { id:'g1', icon:'🎤', title:'الدخول للرومات', weeks:[20,30,40,50], goalText:'الهدف: 60+ يومياً' },
+  { id:'g2', icon:'👥', title:'أعضاء جدد نشطين', weeks:[3,5,8,12], goalText:'الهدف: 50+ شهرياً' },
+  { id:'g3', icon:'💬', title:'تفاعل المحتوى', weeks:[15,25,35,50], goalText:'الهدف: 100+ يومياً' },
+  { id:'g4', icon:'🎉', title:'حضور الفعاليات', weeks:[15,25,35,45], goalText:'الهدف: 60%+ نسبة' }
+];
+
+let tasksConfig = { daily: [], weekly: [] };
+let eventsConfig = [];
+let goalsConfig = [];
+
+const STAFF_LABELS = {
+  ceo1:'CEO-1', ceo2:'CEO-2', ceo3:'CEO-3',
+  admin1:'Admin-1', admin2:'Admin-2', admin3:'Admin-3', admin4:'Admin-4',
+  helper1:'Helper-1', helper2:'Helper-2', helper3:'Helper-3',
+  helper4:'Helper-4', helper5:'Helper-5', helper6:'Helper-6',
+  event1:'Event-1', event2:'Event-2'
+};
+
+const ROLE_META = {
+  ceo:   { ico:'🔱', title:'CEO' },
+  admin: { ico:'💎', title:'Admins' },
+  helper:{ ico:'💙', title:'Helper' },
+  event: { ico:'🎀', title:'Event Team' }
+};
+
+function getRoleMembers(role){
+  return Object.keys(STAFF_LABELS)
+    .filter(k=>k.startsWith(role))
+    .map(k=>({ key:k, name: staffData.names[k] || STAFF_LABELS[k] }));
+}
+
+function genId(prefix){ return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
+
+function getISOWeekKey(d){
+  const date = new Date(d);
+  date.setHours(0,0,0,0);
+  date.setDate(date.getDate() + 3 - ((date.getDay()+6)%7));
+  const week1 = new Date(date.getFullYear(),0,4);
+  const weekNum = 1 + Math.round(((date - week1) / 86400000 - 3 + ((week1.getDay()+6)%7)) / 7);
+  return date.getFullYear() + '-W' + weekNum;
+}
+
+const ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+let staffData = { names:{}, points:{}, totalPoints:{}, currentMonthKey:'' };
+let dailyTasks = { date:'', tasks:{} };
+let weeklyTasks = { weekKey:'', tasks:{} };
+let dailyHistory = {};
+let activityLog = [];
+let monthArchive = [];
+
+const todayKey = new Date().toISOString().slice(0,10);
+const currentMonthKey = todayKey.slice(0,7);
+const currentWeekKey = getISOWeekKey(new Date());
+
+let toastTimer;
+function showToast(msg, isError){
+  const t = document.getElementById('saveToast');
+  t.textContent = msg || '✓ تم الحفظ';
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+function fireConfetti(){
+  const layer = document.getElementById('confettiLayer');
+  const emojis = ['🐚','✨','🌟','💛','🪸','⭐'];
+  for(let i=0;i<28;i++){
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    piece.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    piece.style.left = Math.random()*100 + 'vw';
+    piece.style.animationDuration = (2 + Math.random()*1.5) + 's';
+    piece.style.fontSize = (14 + Math.random()*14) + 'px';
+    layer.appendChild(piece);
+    setTimeout(()=>piece.remove(), 3800);
+  }
+}
+let bannerTimer;
+function showCelebrateBanner(text){
+  fireConfetti();
+  const b = document.getElementById('celebrateBanner');
+  b.textContent = text;
+  b.classList.add('show');
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(()=>b.classList.remove('show'), 3200);
+}
+function checkBadgeCrossing(oldPts, newPts, name){
+  const thresholds = [20,50,100];
+  thresholds.forEach(th=>{
+    if(oldPts < th && newPts >= th){
+      const label = th===100?'👑 نجمة السيرفر':th===50?'🌟 متميزة':'🐚 نشيطة';
+      showCelebrateBanner(`🎉 ${name} وصلت لمستوى ${label}!`);
+    }
+  });
+}
+
+const DEFAULT_SCHEDULE = [
+  { id:'sch1', icon:'🌅', day:'الأحد', time:'7:00 م', activity:'رومة صوتية عامة', team:'Voice Moderators', highlight:false },
+  { id:'sch2', icon:'', day:'الاثنين', time:'7:00 م', activity:'نقاش + ألعاب', team:'Voice Moderators', highlight:false },
+  { id:'sch3', icon:'🎉', day:'الثلاثاء', time:'7:00 م', activity:'فعالية صغيرة — مسابقة', team:'Event Team', highlight:true },
+  { id:'sch4', icon:'', day:'الأربعاء', time:'7:00 م', activity:'رومة صوتية عامة', team:'Voice Moderators', highlight:false },
+  { id:'sch5', icon:'', day:'الخميس', time:'7:00 م', activity:'نقاش موضوعي', team:'Admin + Moderators', highlight:false },
+  { id:'sch6', icon:'⭐', day:'الجمعة', time:'8:00 م', activity:'الفعالية الرئيسية', team:'CEO Lead + فريق', highlight:true },
+  { id:'sch7', icon:'🌙', day:'السبت', time:'6:00 م', activity:'رومة فضفاضة', team:'Voice Moderators', highlight:false }
+];
+
+const DEFAULT_CHANNELS = [
+  { id:'ccat1', icon:'🌊', name:'معلومات عامة', channelsText:'tiktok\nunder-maintenance ⚠️\nv:discord.gg/sh6\nv:All members: 1255' },
+  { id:'ccat2', icon:'✅', name:'الترحيب والتحقق', channelsText:'info\nverify · help\nv:verifying\nv:waiting room\nwelcome' },
+  { id:'ccat3', icon:'🔱', name:'قنوات الستاف الخاصة', channelsText:'جات-الستافة\nتوثيق\nاشعارات-للستاف\nstaff · warnings\nv:Her Mic Only ♡\nv:staff meeting\nv:office\nv:owners' },
+  { id:'ccat4', icon:'📢', name:'الإعلانات والقواعد', channelsText:'v:Announcement\nwarnings\nroles\nvote\nrules' },
+  { id:'ccat5', icon:'🎫', name:'الدعم والفعاليات', channelsText:'ticket\nboost\nevent\nSuggestions' },
+  { id:'ccat6', icon:'💬', name:'الدردشة العامة', channelsText:'chat\nathkar\nBdlyat\nFind · players\nStreamer' },
+  { id:'ccat7', icon:'🎨', name:'المحتوى والترفيه', channelsText:'Streak\nartworks\nPopcorn\nMemes\nClips\nSongOfTheDay' },
+  { id:'ccat8', icon:'🎧', name:'الرومات الصوتية العامة', channelsText:'v:Lobby\nv:Siren\'s Lounge\nv:Movie Time\nv:Napflix\nv:Valo Ocean' },
+  { id:'ccat9', icon:'🔴', name:'رومات لايف', channelsText:'v:Live\nv:Pull Me\nv:Ocean Stars\nv:Caval Cute\nv:Tidal Waves\nv:Seashell\nv:Afk' }
+];
+
+let scheduleConfig = [];
+let channelsConfig = [];
+
+async function loadAll(){
+  try{
+    const r = await window.storage.get('staff_data', true).catch(()=>null);
+    if(r && r.value) staffData = JSON.parse(r.value);
+  }catch(e){ console.error(e); }
+  if(!staffData.totalPoints) staffData.totalPoints = {};
+  if(!staffData.points) staffData.points = {};
+  if(!staffData.names) staffData.names = {};
+
+  try{
+    const r = await window.storage.get('daily_tasks', true).catch(()=>null);
+    if(r && r.value){
+      const parsed = JSON.parse(r.value);
+      dailyTasks = (parsed.date === todayKey) ? parsed : { date: todayKey, tasks:{} };
+    } else dailyTasks = { date: todayKey, tasks:{} };
+  }catch(e){ dailyTasks = { date: todayKey, tasks:{} }; }
+
+  try{
+    const r = await window.storage.get('daily_history', true).catch(()=>null);
+    if(r && r.value) dailyHistory = JSON.parse(r.value);
+  }catch(e){ dailyHistory = {}; }
+
+  try{
+    const r = await window.storage.get('weekly_tasks', true).catch(()=>null);
+    if(r && r.value){
+      const parsed = JSON.parse(r.value);
+      weeklyTasks = (parsed.weekKey === currentWeekKey) ? parsed : { weekKey: currentWeekKey, tasks:{} };
+    } else weeklyTasks = { weekKey: currentWeekKey, tasks:{} };
+  }catch(e){ weeklyTasks = { weekKey: currentWeekKey, tasks:{} }; }
+
+  try{
+    const r = await window.storage.get('activity_log', true).catch(()=>null);
+    if(r && r.value) activityLog = JSON.parse(r.value);
+  }catch(e){ activityLog = []; }
+
+  try{
+    const r = await window.storage.get('month_archive', true).catch(()=>null);
+    if(r && r.value) monthArchive = JSON.parse(r.value);
+  }catch(e){ monthArchive = []; }
+
+  try{
+    const r = await window.storage.get('tasks_config', true).catch(()=>null);
+    if(r && r.value){ tasksConfig = JSON.parse(r.value); }
+    else{
+      tasksConfig = { daily: JSON.parse(JSON.stringify(DEFAULT_DAILY_TASKS)), weekly: JSON.parse(JSON.stringify(DEFAULT_WEEKLY_TASKS)) };
+      await saveTasksConfig();
+    }
+  }catch(e){ tasksConfig = { daily: JSON.parse(JSON.stringify(DEFAULT_DAILY_TASKS)), weekly: JSON.parse(JSON.stringify(DEFAULT_WEEKLY_TASKS)) }; }
+  if(!tasksConfig.daily) tasksConfig.daily = [];
+  if(!tasksConfig.weekly) tasksConfig.weekly = [];
+
+  try{
+    const r = await window.storage.get('events_config', true).catch(()=>null);
+    if(r && r.value){ eventsConfig = JSON.parse(r.value); }
+    else{ eventsConfig = JSON.parse(JSON.stringify(DEFAULT_EVENTS)); await saveEventsConfig(); }
+  }catch(e){ eventsConfig = JSON.parse(JSON.stringify(DEFAULT_EVENTS)); }
+
+  try{
+    const r = await window.storage.get('goals_config', true).catch(()=>null);
+    if(r && r.value){ goalsConfig = JSON.parse(r.value); }
+    else{ goalsConfig = JSON.parse(JSON.stringify(DEFAULT_GOALS)); await saveGoalsConfig(); }
+  }catch(e){ goalsConfig = JSON.parse(JSON.stringify(DEFAULT_GOALS)); }
+
+  try{
+    const r = await window.storage.get('schedule_config', true).catch(()=>null);
+    if(r && r.value){ scheduleConfig = JSON.parse(r.value); }
+    else{ scheduleConfig = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)); await saveScheduleConfig(); }
+  }catch(e){ scheduleConfig = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)); }
+
+  try{
+    const r = await window.storage.get('channels_config', true).catch(()=>null);
+    if(r && r.value){ channelsConfig = JSON.parse(r.value); }
+    else{ channelsConfig = JSON.parse(JSON.stringify(DEFAULT_CHANNELS)); await saveChannelsConfig(); }
+  }catch(e){ channelsConfig = JSON.parse(JSON.stringify(DEFAULT_CHANNELS)); }
+  if(channelsConfig[0]) channelsConfig[0]._open = true;
+
+  await checkMonthlyReset();
+
+  renderStaff();
+  renderDailyTasksUI();
+  renderWeeklyTasksUI();
+  renderScheduleUI();
+  renderChannelsUI();
+  renderEventsUI();
+  renderGoalsUI();
+  renderLeaderboard();
+  renderHallOfFame();
+  renderHistory();
+  renderActivityFeed();
+  renderTrend();
+  renderOverviewStats();
+
+  document.getElementById('loadingOverlay').classList.add('hide');
+}
+
+async function saveStaffData(){
+  try{ await window.storage.set('staff_data', JSON.stringify(staffData), true); }
+  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+}
+async function saveTasksConfig(){
+  try{ await window.storage.set('tasks_config', JSON.stringify(tasksConfig), true); }
+  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+}
+async function saveEventsConfig(){
+  try{ await window.storage.set('events_config', JSON.stringify(eventsConfig), true); }
+  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+}
+async function saveGoalsConfig(){
+  try{ await window.storage.set('goals_config', JSON.stringify(goalsConfig), true); }
+  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+}
+async function saveScheduleConfig(){
+  try{ await window.storage.set('schedule_config', JSON.stringify(scheduleConfig), true); }
+  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+}
+async function saveChannelsConfig(){
+  try{ await window.storage.set('channels_config', JSON.stringify(channelsConfig), true); }
+  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+}
+async function saveWeeklyTasks(){
+  try{ await window.storage.set('weekly_tasks', JSON.stringify(weeklyTasks), true); }
+  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+}
+async function saveDailyTasks(){
+  try{ await window.storage.set('daily_tasks', JSON.stringify(dailyTasks), true); }
+  catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+}
+async function saveDailyHistory(){
+  try{ await window.storage.set('daily_history', JSON.stringify(dailyHistory), true); }
+  catch(e){ console.error(e); }
+}
+async function saveActivityLog(){
+  try{ await window.storage.set('activity_log', JSON.stringify(activityLog), true); }
+  catch(e){ console.error(e); }
+}
+async function saveMonthArchive(){
+  try{ await window.storage.set('month_archive', JSON.stringify(monthArchive), true); }
+  catch(e){ console.error(e); }
+}
+
+async function checkMonthlyReset(){
+  if(staffData.currentMonthKey && staffData.currentMonthKey !== currentMonthKey){
+    const entries = Object.keys(STAFF_LABELS).map(key=>({
+      key, name: staffData.names[key] || '', points: staffData.points[key] || 0
+    })).filter(e=>e.name.trim()!=='').sort((a,b)=>b.points-a.points);
+
+    if(entries.length){
+      const [y,m] = staffData.currentMonthKey.split('-');
+      const monthLabel = ARABIC_MONTHS[parseInt(m,10)-1] + ' ' + y;
+      monthArchive.unshift({
+        monthKey: staffData.currentMonthKey,
+        monthLabel,
+        top3: entries.slice(0,3).map(e=>({name:e.name, points:e.points}))
+      });
+      if(monthArchive.length > 12) monthArchive = monthArchive.slice(0,12);
+      await saveMonthArchive();
+    }
+
+    staffData.points = {};
+    staffData.currentMonthKey = currentMonthKey;
+    await saveStaffData();
+    showToast('🔄 بدأ شهر جديد — النقاط اتصفرت للمنافسة الجديدة!');
+  } else if(!staffData.currentMonthKey){
+    staffData.currentMonthKey = currentMonthKey;
+    await saveStaffData();
+  }
+}
+
+function logActivity(entry){
+  activityLog.unshift({ ts: Date.now(), owner: ownerName || 'الأونرية', ...entry });
+  if(activityLog.length > 60) activityLog = activityLog.slice(0,60);
+  saveActivityLog();
+  renderOverviewStats();
+}
+
+function timeAgo(ts){
+  const diff = Math.floor((Date.now()-ts)/1000);
+  if(diff < 60) return 'الآن';
+  if(diff < 3600) return Math.floor(diff/60) + ' د';
+  if(diff < 86400) return Math.floor(diff/3600) + ' س';
+  return Math.floor(diff/86400) + ' ي';
+}
+
+function ensureHistoryDay(){
+  if(!dailyHistory[todayKey]) dailyHistory[todayKey] = { tasksDone:0, totalTasks:12, pointsAwarded:0 };
+}
+function addPointsToHistory(delta){
+  ensureHistoryDay();
+  dailyHistory[todayKey].pointsAwarded += delta;
+  saveDailyHistory();
+}
+function updateHistoryTasksDone(){
+  ensureHistoryDay();
+  const done = Object.values(dailyTasks.tasks).filter(Boolean).length;
+  dailyHistory[todayKey].tasksDone = done;
+  saveDailyHistory();
+}
+
+const tabs = document.querySelectorAll('.tab');
+const sections = document.querySelectorAll('.section');
+tabs.forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    tabs.forEach(t=>t.classList.remove('active'));
+    sections.forEach(s=>s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.target).classList.add('active');
+    tab.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+    window.scrollTo({top:0, behavior:'smooth'});
+    if(tab.dataset.target === 'leaderboard'){ renderLeaderboard(); renderHallOfFame(); }
+    if(tab.dataset.target === 'history'){ renderHistory(); renderActivityFeed(); }
+    if(tab.dataset.target === 'overview'){ renderTrend(); renderOverviewStats(); }
+  });
+});
+
+document.getElementById('ownerToggle').addEventListener('click', ()=>{
+  if(isOwner){
+    isOwner = false; ownerName = '';
+    updateOwnerUI();
+    showToast('تم تسجيل الخروج');
+    return;
+  }
+  const pin = prompt('🔑 أدخلي كود الأونرية:');
+  if(pin === null) return;
+  if(pin === OWNER_PIN){
+    let name = prompt('✏️ اكتبي اسمك (يظهر بسجل النشاط):');
+    ownerName = (name && name.trim()) ? name.trim() : 'الأونرية';
+    isOwner = true;
+    updateOwnerUI();
+    showToast('✓ أهلاً ' + ownerName);
+  } else {
+    showToast('❌ الكود غير صحيح', true);
+  }
+});
+
+function updateOwnerUI(){
+  const btn = document.getElementById('ownerToggle');
+  btn.textContent = isOwner ? '🔓 خروج' : '🔑 دخول الأونرية';
+  btn.classList.toggle('active', isOwner);
+
+  const tag = document.getElementById('ownerNameTag');
+  tag.style.display = isOwner ? 'inline-block' : 'none';
+  tag.textContent = isOwner ? ('👤 ' + ownerName) : '';
+
+  document.querySelectorAll('.slot input').forEach(inp=>{ inp.disabled = !isOwner; });
+  document.querySelectorAll('.owner-only').forEach(el=>{ el.style.display = isOwner ? 'flex' : 'none'; });
+  document.querySelectorAll('.owner-only-btn').forEach(b=>{ b.disabled = !isOwner; });
+
+  renderDailyTasksUI();
+  renderWeeklyTasksUI();
+  renderScheduleUI();
+  renderChannelsUI();
+  renderEventsUI();
+  renderGoalsUI();
+}
+
+function renderStaff(){
+  document.querySelectorAll('.slot input').forEach(inp=>{
+    inp.value = staffData.names[inp.dataset.key] || '';
+  });
+  document.querySelectorAll('.slot-points').forEach(el=>{
+    const key = el.dataset.points;
+    el.textContent = (staffData.points[key] || 0) + ' ⭐';
+  });
+}
+
+document.querySelectorAll('.slot input').forEach(inp=>{
+  inp.addEventListener('blur', ()=>{
+    if(!isOwner) return;
+    const oldName = staffData.names[inp.dataset.key] || '';
+    if(oldName === inp.value) return;
+    staffData.names[inp.dataset.key] = inp.value;
+    saveStaffData();
+    logActivity({ type:'name_change', staffKey: inp.dataset.key, staffName: inp.value, reason: oldName ? `تغيير من "${oldName}"` : 'إضافة اسم جديد' });
+    renderActivityFeed();
+    renderLeaderboard();
+    showToast();
+  });
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); });
+});
+
+document.querySelectorAll('.pt-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(!isOwner) return;
+    const [key, delta] = btn.dataset.award.split(':');
+    const d = parseInt(delta,10);
+    const name = staffData.names[key] || STAFF_LABELS[key];
+    const reason = prompt(`سبب ${d>0?'الإضافة':'الخصم'} (اختياري):`) || '';
+
+    const oldPts = staffData.points[key]||0;
+    const newPts = Math.max(0, oldPts + d);
+    staffData.points[key] = newPts;
+    staffData.totalPoints[key] = Math.max(0, (staffData.totalPoints[key]||0) + d);
+
+    saveStaffData();
+    addPointsToHistory(d);
+    logActivity({ type:'manual_points', staffKey:key, staffName:name, delta:d, reason });
+    if(d > 0) checkBadgeCrossing(oldPts, newPts, name);
+
+    renderStaff();
+    renderLeaderboard();
+    renderActivityFeed();
+    renderTrend();
+    showToast();
+  });
+});
+
+function applyTaskPoints(staffKey, delta, name){
+  const oldPts = staffData.points[staffKey]||0;
+  const newPts = Math.max(0, oldPts + delta);
+  staffData.points[staffKey] = newPts;
+  staffData.totalPoints[staffKey] = Math.max(0, (staffData.totalPoints[staffKey]||0) + delta);
+  if(delta > 0) checkBadgeCrossing(oldPts, newPts, name || STAFF_LABELS[staffKey]);
+  return delta;
+}
+
+function updateProgress(){
+  const total = tasksConfig.daily.length;
+  let done = 0;
+  tasksConfig.daily.forEach(t=>{ if(dailyTasks.tasks[t.id]) done++; });
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  return pct;
+}
+
+function taskRowHtml(t, assignee, isWeekly){
+  const editAttr = isWeekly ? `data-editweekly="${t.id}"` : `data-editdaily="${t.id}"`;
+  const clickAttr = isWeekly ? `data-wtask="${t.id}"` : `data-task="${t.id}"`;
+  const checked = !!assignee;
+  const assigneeName = assignee ? (staffData.names[assignee] || STAFF_LABELS[assignee] || assignee) : '';
+  return `<div class="card">
+    <div class="task-item-row">
+      <div class="task-item${checked?' done':''}${!isOwner?' locked':''}" ${clickAttr}>
+        <div class="checkbox${checked?' checked':''}"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round"/></svg></div>
+        <div class="task-text">${escapeHtml(t.label)} <span class="wtask-pts">${t.points} نقطة</span>${checked?` — <b>${escapeHtml(assigneeName)}</b>`:''}</div>
+      </div>
+      ${isOwner?`<div class="edit-controls"><button class="edit-ico-btn" ${editAttr}>✏️</button></div>`:''}
+    </div>
+  </div>`;
+}
+
+function groupTasksByRole(list){
+  const groups = {};
+  const order = [];
+  list.forEach(t=>{
+    const meta = ROLE_META[t.role] || { ico:'📌', title:'أخرى' };
+    if(!groups[meta.title]){ groups[meta.title] = { ico: meta.ico, items: [] }; order.push(meta.title); }
+    groups[meta.title].items.push(t);
+  });
+  return { groups, order };
+}
+
+function renderDailyTasksUI(){
+  const container = document.getElementById('dailyTasksContainer');
+  if(!tasksConfig.daily.length){
+    container.innerHTML = '<div class="lb-empty">🐚 ما فيه مهام يومية بعد — ضيفي أول مهمة</div>';
+    updateProgress();
+    return;
+  }
+  const { groups, order } = groupTasksByRole(tasksConfig.daily);
+  let html = '';
+  order.forEach(roleName=>{
+    html += `<div class="task-role-header"><span class="task-role-ico">${groups[roleName].ico}</span><span class="task-role-title">${escapeHtml(roleName)}</span></div>`;
+    html += `<div class="task-role-note">💡 أي وحدة بهذا الرول تقدر تسوي أي مهمة من هذي — كلهم متساويين بالنقاط</div>`;
+    groups[roleName].items.forEach(t=>{
+      html += taskRowHtml(t, dailyTasks.tasks[t.id], false);
+    });
+  });
+  container.innerHTML = html;
+  updateProgress();
+}
+
+function renderWeeklyTasksUI(){
+  const container = document.getElementById('weeklyTasksContainer');
+  if(!tasksConfig.weekly.length){
+    container.innerHTML = '<div class="lb-empty">🐚 ما فيه مهام أسبوعية بعد — ضيفي أول مهمة</div>';
+    return;
+  }
+  const { groups, order } = groupTasksByRole(tasksConfig.weekly);
+  let html = '';
+  order.forEach(roleName=>{
+    html += `<div class="task-role-header"><span class="task-role-ico">${groups[roleName].ico}</span><span class="task-role-title">${escapeHtml(roleName)}</span></div>`;
+    groups[roleName].items.forEach(t=>{
+      html += taskRowHtml(t, weeklyTasks.tasks[t.id], true);
+    });
+  });
+  container.innerHTML = html;
+}
+
+async function completeDailyTask(taskId, newAssignee){
+  const def = tasksConfig.daily.find(t=>t.id===taskId);
+  if(!def) return;
+  const prevAssignee = dailyTasks.tasks[taskId] || null;
+  if(prevAssignee === newAssignee) return;
+
+  if(prevAssignee){
+    const prevName = staffData.names[prevAssignee] || STAFF_LABELS[prevAssignee];
+    applyTaskPoints(prevAssignee, -def.points, prevName);
+    logActivity({ type:'task', staffKey:prevAssignee, staffName:prevName, delta:-def.points, reason:'إلغاء إنجاز: ' + def.label });
+  }
+  if(newAssignee){
+    dailyTasks.tasks[taskId] = newAssignee;
+    const name = staffData.names[newAssignee] || STAFF_LABELS[newAssignee];
+    applyTaskPoints(newAssignee, def.points, name);
+    logActivity({ type:'task', staffKey:newAssignee, staffName:name, delta:def.points, reason:'أنجزت: ' + def.label });
+  } else {
+    delete dailyTasks.tasks[taskId];
+  }
+
+  const netDelta = (newAssignee?def.points:0) - (prevAssignee?def.points:0);
+
+  renderDailyTasksUI();
+  renderStaff();
+  renderLeaderboard();
+  renderActivityFeed();
+
+  await saveDailyTasks();
+  await saveStaffData();
+  if(netDelta !== 0) addPointsToHistory(netDelta);
+  updateHistoryTasksDone();
+  renderHistory();
+  renderTrend();
+
+  const pct = updateProgress();
+  if(pct === 100 && newAssignee){
+    showCelebrateBanner('🎉 ماشاء الله! الفريق خلص كل مهام اليوم!');
+  }
+  if(newAssignee) showToast();
+}
+
+async function completeWeeklyTask(taskId, newAssignee){
+  const def = tasksConfig.weekly.find(t=>t.id===taskId);
+  if(!def) return;
+  const prevAssignee = weeklyTasks.tasks[taskId] || null;
+  if(prevAssignee === newAssignee) return;
+
+  if(prevAssignee){
+    const prevName = staffData.names[prevAssignee] || STAFF_LABELS[prevAssignee];
+    applyTaskPoints(prevAssignee, -def.points, prevName);
+    logActivity({ type:'task', staffKey:prevAssignee, staffName:prevName, delta:-def.points, reason:'إلغاء (أسبوعي): ' + def.label });
+  }
+  if(newAssignee){
+    weeklyTasks.tasks[taskId] = newAssignee;
+    const name = staffData.names[newAssignee] || STAFF_LABELS[newAssignee];
+    applyTaskPoints(newAssignee, def.points, name);
+    logActivity({ type:'task', staffKey:newAssignee, staffName:name, delta:def.points, reason:'أنجزت (أسبوعي): ' + def.label });
+  } else {
+    delete weeklyTasks.tasks[taskId];
+  }
+
+  const netDelta = (newAssignee?def.points:0) - (prevAssignee?def.points:0);
+
+  renderWeeklyTasksUI();
+  renderStaff();
+  renderLeaderboard();
+  renderActivityFeed();
+
+  await saveWeeklyTasks();
+  await saveStaffData();
+  if(netDelta !== 0) addPointsToHistory(netDelta);
+  renderTrend();
+  showToast();
+}
+
+function onDailyTaskClick(taskId){
+  if(!isOwner){ showToast('🔒 بس الأونرية تقدر تعلّم المهام', true); return; }
+  const def = tasksConfig.daily.find(t=>t.id===taskId);
+  if(!def) return;
+  const current = dailyTasks.tasks[taskId] || null;
+
+  if(current){
+    completeDailyTask(taskId, null);
+    return;
+  }
+  const members = getRoleMembers(def.role);
+  if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
+  openModal('مين سوت هذي المهمة؟', [
+    { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
+  ], (values)=>{ completeDailyTask(taskId, values.assignee); }, null);
+}
+
+function onWeeklyTaskClick(taskId){
+  if(!isOwner){ showToast('🔒 بس الأونرية تقدر تعلّم المهام', true); return; }
+  const def = tasksConfig.weekly.find(t=>t.id===taskId);
+  if(!def) return;
+  const current = weeklyTasks.tasks[taskId] || null;
+
+  if(current){
+    completeWeeklyTask(taskId, null);
+    return;
+  }
+  const members = getRoleMembers(def.role);
+  if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
+  openModal('مين سوت هذي المهمة؟', [
+    { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
+  ], (values)=>{ completeWeeklyTask(taskId, values.assignee); }, null);
+}
+
+document.getElementById('dailyTasksContainer').addEventListener('click', (e)=>{
+  const editBtn = e.target.closest('[data-editdaily]');
+  if(editBtn){ if(isOwner) openDailyTaskForm(editBtn.dataset.editdaily); return; }
+  const item = e.target.closest('.task-item');
+  if(item) onDailyTaskClick(item.dataset.task);
+});
+
+document.getElementById('weeklyTasksContainer').addEventListener('click', (e)=>{
+  const editBtn = e.target.closest('[data-editweekly]');
+  if(editBtn){ if(isOwner) openWeeklyTaskForm(editBtn.dataset.editweekly); return; }
+  const item = e.target.closest('.task-item');
+  if(item) onWeeklyTaskClick(item.dataset.wtask);
+});
+
+document.getElementById('addDailyTaskBtn').addEventListener('click', ()=>{ if(isOwner) openDailyTaskForm(null); });
+document.getElementById('addWeeklyTaskBtn').addEventListener('click', ()=>{ if(isOwner) openWeeklyTaskForm(null); });
+
+document.getElementById('resetTasks').addEventListener('click', async ()=>{
+  if(!isOwner) return;
+  if(!confirm('متأكدة تبين تصفرين المهام اليومية؟ النقاط اللي أخذتها كل وحدة اليوم بترجع.')) return;
+
+  tasksConfig.daily.forEach(def=>{
+    const assignee = dailyTasks.tasks[def.id];
+    if(!assignee) return;
+    const name = staffData.names[assignee] || STAFF_LABELS[assignee];
+    applyTaskPoints(assignee, -def.points, name);
+  });
+
+  dailyTasks = { date: todayKey, tasks:{} };
+  await saveDailyTasks();
+  await saveStaffData();
+  logActivity({ type:'reset', staffKey:'', staffName:'', reason:'تصفير المهام اليومية (مع إرجاع النقاط)' });
+  renderDailyTasksUI();
+  renderStaff();
+  renderLeaderboard();
+  renderActivityFeed();
+  showToast('تم التصفير وإرجاع النقاط');
+});
+
+document.getElementById('resetWeeklyTasks').addEventListener('click', async ()=>{
+  if(!isOwner) return;
+  if(!confirm('متأكدة تبين تصفرين المهام الأسبوعية؟ النقاط بترجع.')) return;
+
+  tasksConfig.weekly.forEach(def=>{
+    const assignee = weeklyTasks.tasks[def.id];
+    if(!assignee) return;
+    const name = staffData.names[assignee] || STAFF_LABELS[assignee];
+    applyTaskPoints(assignee, -def.points, name);
+  });
+
+  weeklyTasks = { weekKey: currentWeekKey, tasks:{} };
+  await saveWeeklyTasks();
+  await saveStaffData();
+  logActivity({ type:'reset', staffKey:'', staffName:'', reason:'تصفير المهام الأسبوعية (مع إرجاع النقاط)' });
+  renderWeeklyTasksUI();
+  renderStaff();
+  renderLeaderboard();
+  renderActivityFeed();
+  showToast('تم التصفير وإرجاع النقاط');
+});
+
+/* ===== GENERIC MODAL / CRUD SYSTEM ===== */
+let modalContext = null;
+
+function staffSelectOptions(){
+  return Object.keys(STAFF_LABELS).map(k=>({ value:k, label: STAFF_LABELS[k] }));
+}
+
+function openModal(title, fields, onSave, onDelete){
+  document.getElementById('modalTitle').textContent = title;
+  const fieldsEl = document.getElementById('modalFields');
+  fieldsEl.innerHTML = fields.map(f=>{
+    if(f.type === 'select'){
+      const opts = f.options.map(o=>`<option value="${escapeHtml(o.value)}" ${o.value===f.value?'selected':''}>${escapeHtml(o.label)}</option>`).join('');
+      return `<div class="modal-field"><label>${escapeHtml(f.label)}</label><select data-key="${f.key}">${opts}</select></div>`;
+    }
+    if(f.type === 'textarea'){
+      return `<div class="modal-field"><label>${escapeHtml(f.label)}</label><textarea data-key="${f.key}" placeholder="${escapeHtml(f.placeholder||'')}">${escapeHtml(f.value||'')}</textarea></div>`;
+    }
+    if(f.type === 'weeks'){
+      const vals = f.value || [0,0,0,0];
+      return `<div class="modal-field"><label>${escapeHtml(f.label)}</label><div class="modal-weeks-row">
+        ${[0,1,2,3].map(i=>`<input type="number" data-key="${f.key}_${i}" value="${vals[i]||0}">`).join('')}
+      </div></div>`;
+    }
+    return `<div class="modal-field"><label>${escapeHtml(f.label)}</label><input type="${f.type||'text'}" data-key="${f.key}" value="${escapeHtml(f.value!==undefined && f.value!==null ? String(f.value) : '')}"></div>`;
+  }).join('');
+
+  document.getElementById('modalDelete').style.display = onDelete ? 'block' : 'none';
+  document.getElementById('formModal').classList.add('show');
+  modalContext = { fields, onSave, onDelete };
+}
+
+function closeModal(){
+  document.getElementById('formModal').classList.remove('show');
+  modalContext = null;
+}
+
+function collectModalValues(){
+  const values = {};
+  modalContext.fields.forEach(f=>{
+    if(f.type === 'weeks'){
+      values[f.key] = [0,1,2,3].map(i=>{
+        const el = document.querySelector(`[data-key="${f.key}_${i}"]`);
+        return parseInt(el.value,10) || 0;
+      });
+    } else {
+      const el = document.querySelector(`[data-key="${f.key}"]`);
+      values[f.key] = (f.type === 'number') ? (parseInt(el.value,10) || 0) : el.value;
+    }
+  });
+  return values;
+}
+
+document.getElementById('modalCancel').addEventListener('click', closeModal);
+document.getElementById('formModal').addEventListener('click', (e)=>{ if(e.target.id === 'formModal') closeModal(); });
+document.getElementById('modalSave').addEventListener('click', ()=>{
+  if(!modalContext) return;
+  const values = collectModalValues();
+  modalContext.onSave(values);
+  closeModal();
+});
+document.getElementById('modalDelete').addEventListener('click', ()=>{
+  if(!modalContext || !modalContext.onDelete) return;
+  if(!confirm('متأكدة تبين تحذفين هذا العنصر؟')) return;
+  modalContext.onDelete();
+  closeModal();
+});
+
+/* ---- Daily / Weekly task forms ---- */
+const ROLE_OPTIONS = [
+  { value:'ceo', label:'CEO' },
+  { value:'admin', label:'Admins' },
+  { value:'helper', label:'Helper' },
+  { value:'event', label:'Event Team' }
+];
+
+function openDailyTaskForm(taskId){
+  const existing = taskId ? tasksConfig.daily.find(t=>t.id===taskId) : null;
+  openModal(existing ? 'تعديل مهمة يومية' : 'مهمة يومية جديدة', [
+    { key:'role', label:'الرول المسؤول (أي وحدة فيه تقدر تسويها)', type:'select', options: ROLE_OPTIONS, value: existing ? existing.role : 'admin' },
+    { key:'label', label:'وصف المهمة', type:'text', value: existing ? existing.label : '' },
+    { key:'points', label:'النقاط', type:'number', value: existing ? existing.points : 15 }
+  ], (values)=>{
+    if(existing){
+      existing.role = values.role; existing.label = values.label; existing.points = values.points;
+    } else {
+      tasksConfig.daily.push({ id: genId('dtask'), role: values.role, label: values.label, points: values.points });
+    }
+    saveTasksConfig();
+    renderDailyTasksUI();
+    showToast('تم الحفظ');
+  }, existing ? ()=>{
+    tasksConfig.daily = tasksConfig.daily.filter(t=>t.id !== existing.id);
+    delete dailyTasks.tasks[existing.id];
+    saveTasksConfig();
+    saveDailyTasks();
+    renderDailyTasksUI();
+    showToast('تم الحذف');
+  } : null);
+}
+
+function openWeeklyTaskForm(taskId){
+  const existing = taskId ? tasksConfig.weekly.find(t=>t.id===taskId) : null;
+  openModal(existing ? 'تعديل مهمة أسبوعية' : 'مهمة أسبوعية جديدة', [
+    { key:'role', label:'الرول المسؤول (أي وحدة فيه تقدر تسويها)', type:'select', options: ROLE_OPTIONS, value: existing ? existing.role : 'ceo' },
+    { key:'label', label:'وصف المهمة', type:'text', value: existing ? existing.label : '' },
+    { key:'points', label:'النقاط', type:'number', value: existing ? existing.points : 35 }
+  ], (values)=>{
+    if(existing){
+      existing.role = values.role; existing.label = values.label; existing.points = values.points;
+    } else {
+      tasksConfig.weekly.push({ id: genId('wtask'), role: values.role, label: values.label, points: values.points });
+    }
+    saveTasksConfig();
+    renderWeeklyTasksUI();
+    showToast('تم الحفظ');
+  }, existing ? ()=>{
+    tasksConfig.weekly = tasksConfig.weekly.filter(t=>t.id !== existing.id);
+    delete weeklyTasks.tasks[existing.id];
+    saveTasksConfig();
+    saveWeeklyTasks();
+    renderWeeklyTasksUI();
+    showToast('تم الحذف');
+  } : null);
+}
+
+/* ---- Schedule ---- */
+function renderScheduleUI(){
+  const container = document.getElementById('scheduleContainer');
+  if(!scheduleConfig.length){
+    container.innerHTML = '<div class="lb-empty">🐚 ما فيه جدول مضاف بعد</div>';
+    return;
+  }
+  container.innerHTML = scheduleConfig.map(s=>{
+    const editRow = isOwner ? `<div class="schedule-card-actions"><button class="edit-ico-btn" data-editsch="${s.id}">✏️ تعديل</button></div>` : '';
+    return `<div class="card ${s.highlight?'highlight':''}">
+      <div class="card-top"><span class="day-name">${escapeHtml(s.icon||'')} ${escapeHtml(s.day)}</span><span class="day-badge">${escapeHtml(s.time)}</span></div>
+      <div class="row"><span class="ico">📌</span><span>${escapeHtml(s.activity)}</span></div>
+      <div class="row"><span class="ico">👥</span><span><b>${escapeHtml(s.team)}</b></span></div>
+      ${editRow}
+    </div>`;
+  }).join('');
+}
+
+function openScheduleForm(id){
+  const existing = id ? scheduleConfig.find(s=>s.id===id) : null;
+  openModal(existing ? 'تعديل نشاط الجدول' : 'نشاط جديد بالجدول', [
+    { key:'day', label:'اليوم', type:'text', value: existing ? existing.day : '' },
+    { key:'icon', label:'إيموجي (اختياري)', type:'text', value: existing ? existing.icon : '' },
+    { key:'time', label:'الوقت', type:'text', value: existing ? existing.time : '7:00 م' },
+    { key:'activity', label:'النشاط', type:'text', value: existing ? existing.activity : '' },
+    { key:'team', label:'الفريق المسؤول', type:'text', value: existing ? existing.team : '' },
+    { key:'highlight', label:'نشاط مميز؟', type:'select', options:[{value:'no',label:'عادي'},{value:'yes',label:'مميز ⭐'}], value: existing && existing.highlight ? 'yes' : 'no' }
+  ], (values)=>{
+    const obj = { day:values.day, icon:values.icon, time:values.time, activity:values.activity, team:values.team, highlight: values.highlight==='yes' };
+    if(existing){ Object.assign(existing, obj); }
+    else{ scheduleConfig.push({ id: genId('sch'), ...obj }); }
+    saveScheduleConfig();
+    renderScheduleUI();
+    showToast('تم الحفظ');
+  }, existing ? ()=>{
+    scheduleConfig = scheduleConfig.filter(s=>s.id !== existing.id);
+    saveScheduleConfig();
+    renderScheduleUI();
+    showToast('تم الحذف');
+  } : null);
+}
+
+document.getElementById('scheduleContainer').addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-editsch]');
+  if(btn && isOwner) openScheduleForm(btn.dataset.editsch);
+});
+document.getElementById('addScheduleBtn').addEventListener('click', ()=>{ if(isOwner) openScheduleForm(null); });
+
+/* ---- Channels ---- */
+function parseChannelLines(text){
+  return (text||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+    if(l.toLowerCase().startsWith('v:')) return { type:'voice', name:l.slice(2).trim() };
+    return { type:'text', name:l };
+  });
+}
+
+function renderChannelsUI(){
+  const container = document.getElementById('channelsContainer');
+  if(!channelsConfig.length){
+    container.innerHTML = '<div class="lb-empty">🐚 ما فيه أقسام قنوات مضافة بعد</div>';
+    return;
+  }
+  container.innerHTML = channelsConfig.map(cat=>{
+    const chans = parseChannelLines(cat.channelsText);
+    const openClass = cat._open ? ' open' : '';
+    const editBtn = isOwner ? `<button class="edit-ico-btn" data-editcat="${cat.id}" style="margin-left:6px;">✏️</button>` : '';
+    return `<div class="cat-card${openClass}" data-cat="${cat.id}">
+      <div class="cat-header">
+        <div class="cat-header-left"><span class="cat-name">${escapeHtml(cat.icon||'')} ${escapeHtml(cat.name)}</span><span class="cat-count">${chans.length}</span></div>
+        <div style="display:flex; align-items:center;">${editBtn}<span class="cat-chevron">⌄</span></div>
+      </div>
+      <div class="cat-body"><div class="cat-body-inner">
+        ${chans.length ? chans.map(c=>`<div class="chan-item"><span class="chan-ico">${c.type==='voice'?'🔊':'#'}</span><span>${escapeHtml(c.name)}</span></div>`).join('') : '<div class="chan-item" style="opacity:.5">لا توجد قنوات بعد</div>'}
+      </div></div>
+    </div>`;
+  }).join('');
+}
+
+function openChannelCatForm(id){
+  const existing = id ? channelsConfig.find(c=>c.id===id) : null;
+  openModal(existing ? 'تعديل قسم قنوات' : 'قسم قنوات جديد', [
+    { key:'name', label:'اسم القسم', type:'text', value: existing ? existing.name : '' },
+    { key:'icon', label:'إيموجي (اختياري)', type:'text', value: existing ? existing.icon : '' },
+    { key:'channelsText', label:'القنوات (سطر لكل قناة — اكتبي v: قبل اسم أي قناة صوتية)', type:'textarea', placeholder:'مثال:\nchat\nv:Lobby', value: existing ? existing.channelsText : '' }
+  ], (values)=>{
+    if(existing){
+      existing.name = values.name; existing.icon = values.icon; existing.channelsText = values.channelsText;
+    } else {
+      channelsConfig.push({ id: genId('ccat'), name:values.name, icon:values.icon, channelsText:values.channelsText, _open:true });
+    }
+    saveChannelsConfig();
+    renderChannelsUI();
+    showToast('تم الحفظ');
+  }, existing ? ()=>{
+    channelsConfig = channelsConfig.filter(c=>c.id !== existing.id);
+    saveChannelsConfig();
+    renderChannelsUI();
+    showToast('تم الحذف');
+  } : null);
+}
+
+document.getElementById('channelsContainer').addEventListener('click', (e)=>{
+  const editBtn = e.target.closest('[data-editcat]');
+  if(editBtn){ if(isOwner) openChannelCatForm(editBtn.dataset.editcat); return; }
+  const header = e.target.closest('.cat-header');
+  if(header){
+    const card = header.closest('.cat-card');
+    const cat = channelsConfig.find(c=>c.id === card.dataset.cat);
+    if(cat) cat._open = !cat._open;
+    card.classList.toggle('open');
+  }
+});
+document.getElementById('addChannelCatBtn').addEventListener('click', ()=>{ if(isOwner) openChannelCatForm(null); });
+
+/* ---- Events ---- */
+function renderEventsUI(){
+  const container = document.getElementById('eventsContainer');
+  if(!eventsConfig.length){
+    container.innerHTML = '<div class="lb-empty">🐚 ما فيه فعاليات مضافة بعد</div>';
+    return;
+  }
+  container.innerHTML = eventsConfig.map(ev=>{
+    const editRow = isOwner ? `<div class="card-edit-row"><button class="edit-ico-btn" data-editevent="${ev.id}">✏️ تعديل</button></div>` : '';
+    return `<div class="card ${ev.highlight?'highlight':''}">
+      <span class="event-date-pill">${escapeHtml(ev.date)} — ${escapeHtml(ev.day)}</span>
+      <div class="event-name">${escapeHtml(ev.title)}</div>
+      <div class="row"><span class="ico">⏰</span><span>${escapeHtml(ev.time)}</span></div>
+      <div class="row"><span class="ico">👥</span><span><b>${escapeHtml(ev.team)}</b></span></div>
+      <span class="reward-tag">${escapeHtml(ev.reward)}</span>
+      ${editRow}
+    </div>`;
+  }).join('');
+}
+
+function openEventForm(id){
+  const existing = id ? eventsConfig.find(e=>e.id===id) : null;
+  openModal(existing ? 'تعديل فعالية' : 'فعالية جديدة', [
+    { key:'date', label:'التاريخ', type:'text', value: existing ? existing.date : '' },
+    { key:'day', label:'اليوم', type:'text', value: existing ? existing.day : '' },
+    { key:'title', label:'اسم الفعالية', type:'text', value: existing ? existing.title : '' },
+    { key:'time', label:'الوقت', type:'text', value: existing ? existing.time : '' },
+    { key:'team', label:'الفريق المسؤول', type:'text', value: existing ? existing.team : '' },
+    { key:'reward', label:'الجائزة', type:'text', value: existing ? existing.reward : '' },
+    { key:'highlight', label:'فعالية مميزة؟', type:'select', options:[{value:'no',label:'عادية'},{value:'yes',label:'مميزة ⭐'}], value: existing && existing.highlight ? 'yes' : 'no' }
+  ], (values)=>{
+    const obj = { date:values.date, day:values.day, title:values.title, time:values.time, team:values.team, reward:values.reward, highlight: values.highlight==='yes' };
+    if(existing){ Object.assign(existing, obj); }
+    else{ eventsConfig.push({ id: genId('ev'), ...obj }); }
+    saveEventsConfig();
+    renderEventsUI();
+    showToast('تم الحفظ');
+  }, existing ? ()=>{
+    eventsConfig = eventsConfig.filter(e=>e.id !== existing.id);
+    saveEventsConfig();
+    renderEventsUI();
+    showToast('تم الحذف');
+  } : null);
+}
+
+document.getElementById('eventsContainer').addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-editevent]');
+  if(btn && isOwner) openEventForm(btn.dataset.editevent);
+});
+document.getElementById('addEventBtn').addEventListener('click', ()=>{ if(isOwner) openEventForm(null); });
+
+/* ---- Goals ---- */
+function renderGoalsUI(){
+  const container = document.getElementById('goalsContainer');
+  if(!goalsConfig.length){
+    container.innerHTML = '<div class="lb-empty">🐚 ما فيه مؤشرات مضافة بعد</div>';
+    return;
+  }
+  container.innerHTML = goalsConfig.map(g=>{
+    const editRow = isOwner ? `<div class="card-edit-row"><button class="edit-ico-btn" data-editgoal="${g.id}">✏️ تعديل</button></div>` : '';
+    return `<div class="card"><div class="kpi-title">${escapeHtml(g.icon)} ${escapeHtml(g.title)}</div>
+      <div class="kpi-weeks">${g.weeks.map((w,i)=>`<div class="kpi-week"><span class="wk-label">أ${i+1}</span><span class="wk-val">${w}</span></div>`).join('')}</div>
+      <div class="kpi-goal">🎯 ${escapeHtml(g.goalText)}</div>
+      ${editRow}
+    </div>`;
+  }).join('');
+}
+
+function openGoalForm(id){
+  const existing = id ? goalsConfig.find(g=>g.id===id) : null;
+  openModal(existing ? 'تعديل مؤشر' : 'مؤشر جديد', [
+    { key:'icon', label:'إيموجي', type:'text', value: existing ? existing.icon : '📊' },
+    { key:'title', label:'اسم المؤشر', type:'text', value: existing ? existing.title : '' },
+    { key:'weeks', label:'أرقام الأسابيع الأربعة', type:'weeks', value: existing ? existing.weeks : [0,0,0,0] },
+    { key:'goalText', label:'نص الهدف', type:'text', value: existing ? existing.goalText : '' }
+  ], (values)=>{
+    if(existing){
+      existing.icon = values.icon; existing.title = values.title; existing.weeks = values.weeks; existing.goalText = values.goalText;
+    } else {
+      goalsConfig.push({ id: genId('g'), icon:values.icon, title:values.title, weeks:values.weeks, goalText:values.goalText });
+    }
+    saveGoalsConfig();
+    renderGoalsUI();
+    showToast('تم الحفظ');
+  }, existing ? ()=>{
+    goalsConfig = goalsConfig.filter(g=>g.id !== existing.id);
+    saveGoalsConfig();
+    renderGoalsUI();
+    showToast('تم الحذف');
+  } : null);
+}
+
+document.getElementById('goalsContainer').addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-editgoal]');
+  if(btn && isOwner) openGoalForm(btn.dataset.editgoal);
+});
+document.getElementById('addGoalBtn').addEventListener('click', ()=>{ if(isOwner) openGoalForm(null); });
+
+
+function getBadge(points){
+  if(points >= 100) return '👑';
+  if(points >= 50) return '🌟';
+  if(points >= 20) return '🐚';
+  return '🌱';
+}
+
+function renderLeaderboard(){
+  const list = document.getElementById('leaderboardList');
+  const entries = Object.keys(STAFF_LABELS).map(key=>({
+    key, name: staffData.names[key] || '', label: STAFF_LABELS[key], points: staffData.points[key] || 0
+  })).filter(e=>e.name.trim() !== '').sort((a,b)=>b.points - a.points);
+
+  if(entries.length === 0){
+    list.innerHTML = '<div class="lb-empty">🐚 لسه ما فيه أسماء مسجلة. الأونرية تضيفهم من تبويب "الستاف"</div>';
+    return;
+  }
+
+  list.innerHTML = entries.map((e,i)=>{
+    const rank = i+1;
+    const rankClass = rank===1?'rank1':rank===2?'rank2':rank===3?'rank3':'';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
+    return `<div class="lb-item ${rankClass}">
+      <div class="lb-rank">${medal}</div>
+      <div class="lb-info"><div class="lb-name">${getBadge(e.points)} ${escapeHtml(e.name)}</div><div class="lb-role">${e.label}</div></div>
+      <div class="lb-points"><div class="lb-points-num">${e.points}</div><div class="lb-points-label">نقطة</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderHallOfFame(){
+  const el = document.getElementById('hallOfFame');
+  if(!monthArchive.length){
+    el.innerHTML = '<div class="lb-empty">🐚 قاعة الشهرة بتتعبى أول ما يخلص أول شهر منافسة</div>';
+    return;
+  }
+  el.innerHTML = monthArchive.map(m=>{
+    const winner = m.top3[0];
+    return `<div class="fame-item">
+      <span class="fame-crown">👑</span>
+      <div><div class="fame-month">${m.monthLabel}</div><div class="fame-winner">${winner ? escapeHtml(winner.name)+' — '+winner.points+' نقطة' : '—'}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function getLastNDays(n, offsetDays){
+  const days = [];
+  for(let i=offsetDays; i<offsetDays+n; i++){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  return days;
+}
+
+function renderHistory(){
+  const el = document.getElementById('historyDays');
+  const days = getLastNDays(7,0);
+  el.innerHTML = days.map(d=>{
+    const rec = dailyHistory[d] || {tasksDone:0,totalTasks:12};
+    const pct = rec.totalTasks ? Math.round((rec.tasksDone/rec.totalTasks)*100) : 0;
+    const label = new Date(d).toLocaleDateString('ar-KW',{weekday:'short'});
+    return `<div class="history-day">
+      <span class="history-date">${label}</span>
+      <div class="history-bar-wrap"><div class="history-bar-fill" style="width:${pct}%"></div></div>
+      <span class="history-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderTrend(){
+  const thisWeek = getLastNDays(7,0);
+  const lastWeek = getLastNDays(7,7);
+  const sum = days => days.reduce((acc,d)=> acc + ((dailyHistory[d]&&dailyHistory[d].pointsAwarded)||0), 0);
+  const thisSum = sum(thisWeek);
+  const lastSum = sum(lastWeek);
+
+  const box = document.getElementById('trendBox');
+  const val = document.getElementById('trendVal');
+
+  if(lastSum === 0 && thisSum === 0){
+    val.textContent = '—'; box.classList.remove('down'); return;
+  }
+  if(lastSum === 0){
+    val.textContent = '+' + thisSum + ' نقطة جديدة'; box.classList.remove('down'); return;
+  }
+  const change = Math.round(((thisSum - lastSum)/Math.abs(lastSum))*100);
+  box.classList.toggle('down', change < 0);
+  val.textContent = (change >= 0 ? '▲ +' : '▼ ') + change + '%';
+}
+
+function renderOverviewStats(){
+  const filledCount = Object.keys(STAFF_LABELS).filter(k=> (staffData.names[k]||'').trim() !== '').length;
+  const totalEl = document.getElementById('totalStaffFilled');
+  if(totalEl) totalEl.textContent = filledCount;
+
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const activeSet = new Set();
+  activityLog.forEach(a=>{
+    if(a.ts >= todayStart.getTime() && (a.type==='task' || a.type==='manual_points') && a.delta > 0 && a.staffKey){
+      a.staffKey.split(',').forEach(k=>{ if(k) activeSet.add(k); });
+    }
+  });
+  const activeEl = document.getElementById('activeStaffToday');
+  if(activeEl) activeEl.textContent = activeSet.size;
+}
+
+function activityIcon(type){
+  if(type==='task') return '✅';
+  if(type==='manual_points') return '🎁';
+  if(type==='name_change') return '✏️';
+  if(type==='reset') return '🔄';
+  return '📌';
+}
+
+function renderActivityFeed(){
+  const el = document.getElementById('activityFeed');
+  if(!activityLog.length){
+    el.innerHTML = '<div class="activity-empty">لسه ما فيه نشاط مسجل</div>';
+    return;
+  }
+  el.innerHTML = activityLog.slice(0,30).map(a=>{
+    const deltaText = (a.delta!==undefined && a.delta!==0) ? ` (${a.delta>0?'+':''}${a.delta} نقطة)` : '';
+    return `<div class="activity-item">
+      <span class="activity-ico">${activityIcon(a.type)}</span>
+      <div class="activity-body">
+        <b>${escapeHtml(a.owner)}</b> — ${escapeHtml(a.staffName||'')}${deltaText}
+        ${a.reason ? '<br>' + escapeHtml(a.reason) : ''}
+        <div class="activity-meta">${timeAgo(a.ts)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+function copyTpl(id){
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(()=>showToast()).catch(()=>{
+    alert('انسخي النص يدوياً: \n\n' + text);
+  });
+}
+
+loadAll();
+</script>
+
+</body>
+</html>
