@@ -337,13 +337,22 @@
       "admin2": "Hajoory",
       "helper1": "Shosho",
       "helper2": "Raz",
-      "helper3": "Odo"
+      "helper3": "Odo",
+      "owner1": "Bunny"
     },
     "points": {},
     "totalPoints": {},
     "currentMonthKey": "2026-07"
   },
   "activity_log": [
+    {
+      "ts": 1784628628747,
+      "owner": "الأونرية",
+      "type": "name_change",
+      "staffKey": "owner1",
+      "staffName": "Bunny",
+      "reason": "إضافة اسم جديد"
+    },
     {
       "ts": 1784628608738,
       "owner": "الأونرية",
