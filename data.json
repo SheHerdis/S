@@ -345,6 +345,14 @@
   },
   "activity_log": [
     {
+      "ts": 1784628608738,
+      "owner": "الأونرية",
+      "type": "task_rejected",
+      "staffKey": "ceo1",
+      "staffName": "Farah",
+      "reason": "رفض طلب إنجاز مهمة"
+    },
+    {
       "ts": 1784480701170,
       "owner": "amazona",
       "type": "name_change",
@@ -486,5 +494,10 @@
       "label": "Warning-3",
       "placeholder": "اسم"
     }
-  ]
+  ],
+  "daily_tasks": {
+    "date": "2026-07-21",
+    "tasks": {},
+    "pending": {}
+  }
 }
