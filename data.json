@@ -98,42 +98,62 @@
   "events_config": [
     {
       "id": "ev1",
-      "date": "20 أغسطس",
+      "date": "",
       "day": "الثلاثاء",
-      "title": "🎮 تخمين (3 كلمات)",
-      "time": "7:00 م — 7:30 م",
+      "title": "Tier List Night — رتبوا أي شي (أكلات، أنمي، ترندات)",
+      "time": "8:00 م",
       "team": "Event Team",
-      "reward": "💝 Nitro Boost",
+      "reward": "Nitro أسبوع",
       "highlight": false
     },
     {
       "id": "ev2",
-      "date": "22 أغسطس",
-      "day": "الجمعة",
-      "title": "⭐ سؤال اليوم (صوتي)",
-      "time": "8:00 م — 9:00 م",
-      "team": "CEO Lead",
-      "reward": "👑 رول ذهبي خاص",
-      "highlight": true
+      "date": "",
+      "day": "الأربعاء",
+      "title": "Aux Battle — كل وحدة تحط أغنية والباقي يقيّمون",
+      "time": "9:00 م",
+      "team": "Event Team",
+      "reward": "رول خاص",
+      "highlight": false
     },
     {
       "id": "ev3",
-      "date": "27 أغسطس",
-      "day": "الثلاثاء",
-      "title": "✨ أفضل ستايل صيفي",
-      "time": "7:00 م — 7:45 م",
-      "team": "Event Team",
-      "reward": "💝 Nitro Boost",
+      "date": "",
+      "day": "الخميس",
+      "title": "Would You Rather + Hot Takes (رومة صوتية)",
+      "time": "9:00 م",
+      "team": "Helper",
+      "reward": "—",
       "highlight": false
     },
     {
       "id": "ev4",
-      "date": "29 أغسطس",
+      "date": "",
       "day": "الجمعة",
-      "title": "🏆 من هي؟ (تحديات)",
-      "time": "8:00 م — 9:30 م",
-      "team": "CEO Lead + فريق",
-      "reward": "👑 رول + رسالة خاصة",
+      "title": "Movie/Anime Night — تصويت على الفيلم ومشاهدة جماعية",
+      "time": "8:30 م",
+      "team": "CEO Lead",
+      "reward": "رول ذهبي + شاوت أوت",
+      "highlight": true
+    },
+    {
+      "id": "ev5",
+      "date": "",
+      "day": "السبت",
+      "title": "Among Us / لعبة جماعية + كام لصوت",
+      "time": "9:00 م",
+      "team": "Event Team",
+      "reward": "Nitro Boost",
+      "highlight": false
+    },
+    {
+      "id": "ev6",
+      "date": "",
+      "day": "الأحد",
+      "title": "Confessions مجهولة + نقاش خفيف",
+      "time": "9:00 م",
+      "team": "CEO Lead",
+      "reward": "—",
       "highlight": true
     }
   ],
@@ -141,38 +161,38 @@
     {
       "id": "g1",
       "icon": "🎤",
-      "title": "الدخول للرومات",
+      "title": "نشاط الرومات الصوتية",
       "weeks": [
         20,
         30,
         40,
         50
       ],
-      "goalText": "الهدف: 60+ يومياً"
+      "goalText": "الهدف: رومة صوتية فعّالة يومياً"
     },
     {
       "id": "g2",
-      "icon": "👥",
-      "title": "أعضاء جدد نشطين",
+      "icon": "✨",
+      "title": "أعضاء جدد يتفاعلون",
       "weeks": [
         3,
         5,
         8,
         12
       ],
-      "goalText": "الهدف: 50+ شهرياً"
+      "goalText": "الهدف: 50+ عضو نشط شهرياً"
     },
     {
       "id": "g3",
       "icon": "💬",
-      "title": "تفاعل المحتوى",
+      "title": "تفاعل الشات اليومي",
       "weeks": [
         15,
         25,
         35,
         50
       ],
-      "goalText": "الهدف: 100+ يومياً"
+      "goalText": "الهدف: 100+ رسالة تفاعل يومياً"
     },
     {
       "id": "g4",
@@ -184,7 +204,7 @@
         35,
         45
       ],
-      "goalText": "الهدف: 60%+ نسبة"
+      "goalText": "الهدف: 60%+ من الأعضاء"
     }
   ],
   "schedule_config": [
