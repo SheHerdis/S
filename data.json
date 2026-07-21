@@ -511,6 +511,12 @@
       "role": "owners",
       "label": "Owner",
       "placeholder": "اسم"
+    },
+    {
+      "key": "owners2",
+      "role": "owners",
+      "label": "Co-owner",
+      "placeholder": "اسم"
     }
   ],
   "daily_tasks": {
