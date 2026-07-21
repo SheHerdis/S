@@ -772,6 +772,10 @@ const DEFAULT_STAFF_CONFIG = [
 
 let staffConfig = [];
 let staffPins = {};
+let pendingSignups = {};
+async function savePendingSignups(){
+  queueGhSave('pending_signups', pendingSignups);
+}
 async function saveStaffPins(){
   queueGhSave('staff_pins', staffPins);
 }
@@ -977,6 +981,7 @@ async function loadAll(){
   }
 
   staffPins = dbCache.staff_pins ? JSON.parse(JSON.stringify(dbCache.staff_pins)) : {};
+  pendingSignups = dbCache.pending_signups ? JSON.parse(JSON.stringify(dbCache.pending_signups)) : {};
 
   await checkMonthlyReset();
 
@@ -1144,11 +1149,11 @@ document.getElementById('ownerToggle').addEventListener('click', ()=>{
     return;
   }
 
-  // ستاف بدون PIN بعد؟ خليها تسوي واحد
-  const wantsSetup = confirm('❓ الـPIN مو موجود. أول مرة لك؟ اضغطي OK عشان تسوين PIN جديد.');
+  // ستاف بدون PIN بعد؟ خليها تسوي طلب تسجيل (بينتظر موافقة الأونرية)
+  const wantsSetup = confirm('❓ الـPIN مو موجود. أول مرة لك؟ اضغطي OK عشان تسجّلين.');
   if(!wantsSetup) return;
-  const members = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='' && !staffPins[k]);
-  if(!members.length){ showToast('كل الأسماء عندها PIN — كلمي الأونرية', true); return; }
+  const members = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='' && !staffPins[k] && !pendingSignups[k]);
+  if(!members.length){ showToast('كل الأسماء إما مسجلة أو بانتظار الموافقة — كلمي الأونرية', true); return; }
   openModal('منو انتِ؟', [
     { key:'who', label:'اختاري اسمك', type:'select', options: members.map(k=>({value:k, label:staffData.names[k]})), value: members[0] }
   ], (values)=>{
@@ -1158,12 +1163,10 @@ document.getElementById('ownerToggle').addEventListener('click', ()=>{
     if(p1.trim().length < 4){ showToast('⚠ لازم ٤ أرقام على الأقل', true); return; }
     const p2 = prompt('أكّدي الـPIN مرة ثانية:');
     if(p2 === null || p1.trim() !== p2.trim()){ showToast('⚠ الـPIN ما تطابق', true); return; }
-    staffPins[key] = p1.trim();
-    saveStaffPins();
-    isStaff = true; staffKey = key; staffName = staffData.names[key];
-    try{ localStorage.setItem('staff_session', JSON.stringify({ key, exp: Date.now() + 8*3600*1000 })); }catch(e){}
-    updateOwnerUI();
-    showToast('✓ أهلاً ' + staffName);
+    pendingSignups[key] = { pin: p1.trim(), ts: Date.now() };
+    savePendingSignups();
+    renderPulse();
+    showToast('✓ تسجيلك بانتظار موافقة الأونرية');
   }, null);
 });
 
@@ -2113,6 +2116,18 @@ function renderPulse(){
     ? `<div class="pulse-block pulse-alert"><div class="pulse-title">🔔 بانتظار موافقتك</div><div class="pulse-row"><span class="pulse-dot pulse-dot-gold"></span><span>${totalPending} طلب إنجاز مهمة يحتاج موافقة — روحي تاب "المهام"</span></div></div>`
     : '';
 
+  const signupKeys = Object.keys(pendingSignups);
+  const signupHtml = signupKeys.length
+    ? `<div class="pulse-block pulse-alert"><div class="pulse-title">🆔 طلبات تسجيل جديدة</div>${signupKeys.map(k=>`
+        <div class="pulse-row" style="justify-content:space-between;">
+          <span>${escapeHtml(staffData.names[k]||STAFF_LABELS[k])} تبي تسجّل — تأكدي إنها هي فعلاً قبل الموافقة</span>
+        </div>
+        <div class="pending-actions" style="padding:6px 0 2px;">
+          <button class="pulse-approve" data-approvesignup="${k}">✅ أيوة هي</button>
+          <button class="pulse-reject" data-rejectsignup="${k}">❌ مو هي</button>
+        </div>`).join('')}</div>`
+    : '';
+
   // ١. مهام اليوم اللي لسه ما تسوّت
   const pending = (tasksConfig.daily||[]).filter(t=>!dailyTasks.tasks[t.id]);
   const pendingHtml = pending.length
@@ -2151,11 +2166,39 @@ function renderPulse(){
 
   el.innerHTML = `
     ${isOwner ? approvalHtml : ''}
+    ${isOwner ? signupHtml : ''}
     <div class="pulse-block"><div class="pulse-title">📋 مهام اليوم المتبقية</div>${pendingHtml}</div>
     <div class="pulse-block"><div class="pulse-title">🔥 الأكثر نشاطاً هالأسبوع</div>${topHtml}</div>
     <div class="pulse-block"><div class="pulse-title">⏳ تحتاج متابعة</div>${inactiveHtml}</div>
   `;
 }
+
+document.getElementById('pulseBox').addEventListener('click', (e)=>{
+  const approveBtn = e.target.closest('[data-approvesignup]');
+  if(approveBtn){
+    if(!isOwner) return;
+    const key = approveBtn.dataset.approvesignup;
+    const req = pendingSignups[key];
+    if(!req) return;
+    staffPins[key] = req.pin;
+    delete pendingSignups[key];
+    saveStaffPins();
+    savePendingSignups();
+    renderPulse();
+    showToast('✓ تم تفعيل حسابها');
+    return;
+  }
+  const rejectBtn = e.target.closest('[data-rejectsignup]');
+  if(rejectBtn){
+    if(!isOwner) return;
+    const key = rejectBtn.dataset.rejectsignup;
+    if(!confirm('متأكدة تبين ترفضين هذا الطلب؟')) return;
+    delete pendingSignups[key];
+    savePendingSignups();
+    renderPulse();
+    showToast('تم الرفض');
+  }
+});
 
 function renderOverviewStats(){
   const filledCount = Object.keys(STAFF_LABELS).filter(k=> (staffData.names[k]||'').trim() !== '').length;
