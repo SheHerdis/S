@@ -748,6 +748,8 @@ async function saveTemplatesConfig(){
 }
 
 const DEFAULT_STAFF_CONFIG = [
+  { key:'owner1', role:'owners', label:'Owner',    placeholder:'اسم الأونر' },
+  { key:'owner2', role:'owners', label:'Co-Owner', placeholder:'اسم الكو أونر' },
   { key:'ceo1',   role:'ceo',    label:'CEO-1',    placeholder:'اسم المسؤولة الأساسية' },
   { key:'ceo2',   role:'ceo',    label:'CEO-2',    placeholder:'اسم الدعم' },
   { key:'ceo3',   role:'ceo',    label:'CEO-3',    placeholder:'اسم الاستراتيجية' },
@@ -788,6 +790,7 @@ async function saveStaffConfig(){
 }
 
 const ROLE_META = {
+  owners:{ ico:'<svg class="role-ico-svg" viewBox="0 0 24 24" fill="url(#goldIconGrad)" stroke="none"><circle cx="7" cy="12" r="4.2"/><rect x="10.5" y="10.7" width="11.5" height="2.6" rx="1.1"/><rect x="17.5" y="13.3" width="2.6" height="4" rx="1"/></svg>', title:'Owners' },
   ceo:   { ico:'<svg class="role-ico-svg" viewBox="0 0 24 24" fill="url(#goldIconGrad)" stroke="none"><path d="M3 8.5 7 12l5-7.5L17 12l4-3.5-1.8 10.5H4.8z"/></svg>', title:'CEO' },
   admin: { ico:'<svg class="role-ico-svg" viewBox="0 0 24 24" fill="url(#goldIconGrad)" stroke="none"><polygon points="12,2.3 21,9 12,21.7 3,9"/></svg>', title:'Admins' },
   helper:{ ico:'<svg class="role-ico-svg" viewBox="0 0 24 24" fill="url(#goldIconGrad)" stroke="none"><path d="M12 20.8s-7-4.3-9.3-8.3C1 9 2.8 5.7 6 5.7c2 0 3.4 1.2 6 3.7 2.6-2.5 4-3.7 6-3.7 3.2 0 5 3.3 3.3 6.8-2.3 4-9.3 8.3-9.3 8.3z"/></svg>', title:'Helper' },
@@ -1245,7 +1248,7 @@ function updateOwnerUI(){
 
 function renderStaff(){
   const container = document.getElementById('staffContainer');
-  const roles = ['ceo','admin','helper','event','warning'];
+  const roles = ['owners','ceo','admin','helper','event','warning'];
   container.innerHTML = roles.map(role=>{
     const meta = ROLE_META[role];
     const members = staffConfig.filter(s=>s.role===role);
