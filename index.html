@@ -105,6 +105,15 @@
   .trend-val{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:20px; color:var(--green-done);}
   .trend-box.down .trend-val{color:var(--rose-deep);}
 
+  .pulse-block{background:rgba(255,255,255,0.5); border:1px solid rgba(201,160,80,0.22); border-radius:12px; padding:11px 13px; margin-bottom:10px;}
+  .pulse-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:13.5px; color:var(--gold-light); margin-bottom:7px;}
+  .pulse-row{display:flex; align-items:center; gap:7px; font-size:11px; color:var(--cream); padding:3px 0; line-height:1.5;}
+  .pulse-dot{width:7px; height:7px; border-radius:50%; flex:0 0 auto;}
+  .pulse-dot-red{background:#B85C48;}
+  .pulse-dot-green{background:var(--green-done);}
+  .pulse-dot-gold{background:#A6790A;}
+  .pulse-role{color:var(--shell); font-size:9.5px;}
+  .pulse-more{font-size:10px; color:var(--shell); padding-right:14px; opacity:.8;}
   .role-card{margin-bottom:16px;}
   .role-card-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:18px; color:var(--gold-light); margin-bottom:1px;}
   .role-card-sub{font-size:10px; color:var(--rose-deep); font-weight:700; margin-bottom:9px; letter-spacing:.3px;}
@@ -380,6 +389,12 @@
     <div class="stat-box"><span class="stat-num">30+</span><span class="stat-label">قناة نشطة</span></div>
     <div class="stat-box"><span class="stat-num">1255</span><span class="stat-label">أعضاء السيرفر</span></div>
   </div>
+
+  <div class="pearl-divider">✦</div>
+
+  <div class="section-title" style="font-size:18px;">🩺 نبض السيرفر</div>
+  <div class="section-sub" style="margin-bottom:12px; padding-bottom:0; border-bottom:none;">تحديث لحظي — تعرفين وش يصير بدون ما تفتحين كل تبويب</div>
+  <div id="pulseBox"></div>
 
   <div class="pearl-divider">✦</div>
 
@@ -968,7 +983,7 @@ async function loadAll(){
   renderHistory();
   renderActivityFeed();
   renderTrend();
-  renderOverviewStats();
+  renderOverviewStats(); renderPulse();
   updateOwnerUI();
 
   document.getElementById('loadingOverlay').classList.add('hide');
@@ -1040,7 +1055,7 @@ function logActivity(entry){
   activityLog.unshift({ ts: Date.now(), owner: ownerName || 'الأونرية', ...entry });
   if(activityLog.length > 60) activityLog = activityLog.slice(0,60);
   saveActivityLog();
-  renderOverviewStats();
+  renderOverviewStats(); renderPulse();
 }
 
 function timeAgo(ts){
@@ -1078,7 +1093,7 @@ tabs.forEach(tab=>{
     window.scrollTo({top:0, behavior:'smooth'});
     if(tab.dataset.target === 'leaderboard'){ renderLeaderboard(); renderHallOfFame(); }
     if(tab.dataset.target === 'history'){ renderHistory(); renderActivityFeed(); }
-    if(tab.dataset.target === 'overview'){ renderTrend(); renderOverviewStats(); }
+    if(tab.dataset.target === 'overview'){ renderTrend(); renderOverviewStats(); renderPulse(); }
   });
 });
 
@@ -1927,6 +1942,53 @@ function renderTrend(){
   const change = Math.round(((thisSum - lastSum)/Math.abs(lastSum))*100);
   box.classList.toggle('down', change < 0);
   val.textContent = (change >= 0 ? '▲ +' : '▼ ') + change + '%';
+}
+
+function renderPulse(){
+  const el = document.getElementById('pulseBox');
+  if(!el) return;
+
+  // ١. مهام اليوم اللي لسه ما تسوّت
+  const pending = (tasksConfig.daily||[]).filter(t=>!dailyTasks.tasks[t.id]);
+  const pendingHtml = pending.length
+    ? pending.slice(0,5).map(t=>`<div class="pulse-row"><span class="pulse-dot pulse-dot-red"></span><span>${escapeHtml(t.label)} <span class="pulse-role">(${ROLE_META[t.role]?ROLE_META[t.role].title:t.role})</span></span></div>`).join('') + (pending.length>5?`<div class="pulse-more">+${pending.length-5} مهمة ثانية</div>`:'')
+    : `<div class="pulse-row"><span class="pulse-dot pulse-dot-green"></span><span>كل مهام اليوم خلصت 🎉</span></div>`;
+
+  // ٢. الأكثر نشاطاً هالأسبوع
+  const weekStartMs = KUWAIT_NOW.getTime() - 7*86400000;
+  const weekPoints = {};
+  activityLog.forEach(a=>{
+    if(a.ts >= weekStartMs && (a.type==='task'||a.type==='manual_points') && a.delta>0 && a.staffKey){
+      a.staffKey.split(',').forEach(k=>{ if(k) weekPoints[k] = (weekPoints[k]||0) + a.delta; });
+    }
+  });
+  const topKey = Object.keys(weekPoints).sort((a,b)=>weekPoints[b]-weekPoints[a])[0];
+  const topHtml = topKey
+    ? `<div class="pulse-row"><span class="pulse-dot pulse-dot-gold"></span><span>${escapeHtml(staffData.names[topKey]||STAFF_LABELS[topKey]||'—')} — ${weekPoints[topKey]} نقطة هالأسبوع</span></div>`
+    : `<div class="pulse-row"><span class="pulse-dot pulse-dot-gold"></span><span>ما فيه نشاط مسجل هالأسبوع بعد</span></div>`;
+
+  // ٣. ستاف ما نشطت من ٣ أيام
+  const threeDaysAgo = KUWAIT_NOW.getTime() - 3*86400000;
+  const lastActive = {};
+  activityLog.forEach(a=>{
+    if(a.staffKey){
+      a.staffKey.split(',').forEach(k=>{ if(k && (!lastActive[k] || a.ts>lastActive[k])) lastActive[k] = a.ts; });
+    }
+  });
+  const inactive = Object.keys(STAFF_LABELS).filter(k=>{
+    const name = (staffData.names[k]||'').trim();
+    if(!name) return false;
+    return !lastActive[k] || lastActive[k] < threeDaysAgo;
+  });
+  const inactiveHtml = inactive.length
+    ? inactive.slice(0,5).map(k=>`<div class="pulse-row"><span class="pulse-dot pulse-dot-red"></span><span>${escapeHtml(staffData.names[k])} — ما نشطت من ٣ أيام أو أكثر</span></div>`).join('') + (inactive.length>5?`<div class="pulse-more">+${inactive.length-5} وحدة ثانية</div>`:'')
+    : `<div class="pulse-row"><span class="pulse-dot pulse-dot-green"></span><span>الكل نشيطة خلال آخر ٣ أيام 👍</span></div>`;
+
+  el.innerHTML = `
+    <div class="pulse-block"><div class="pulse-title">📋 مهام اليوم المتبقية</div>${pendingHtml}</div>
+    <div class="pulse-block"><div class="pulse-title">🔥 الأكثر نشاطاً هالأسبوع</div>${topHtml}</div>
+    <div class="pulse-block"><div class="pulse-title">⏳ تحتاج متابعة</div>${inactiveHtml}</div>
+  `;
 }
 
 function renderOverviewStats(){
