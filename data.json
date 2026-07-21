@@ -338,13 +338,22 @@
       "helper1": "Shosho",
       "helper2": "Raz",
       "helper3": "Odo",
-      "owner1": "Bunny"
+      "owner1": "Bunny",
+      "owners1": "Amazona"
     },
     "points": {},
     "totalPoints": {},
     "currentMonthKey": "2026-07"
   },
   "activity_log": [
+    {
+      "ts": 1784628655131,
+      "owner": "الأونرية",
+      "type": "name_change",
+      "staffKey": "owners1",
+      "staffName": "Amazona",
+      "reason": "إضافة اسم جديد"
+    },
     {
       "ts": 1784628628747,
       "owner": "الأونرية",
