@@ -397,6 +397,15 @@
   .growth-bar em{position:absolute; bottom:-16px; left:50%; transform:translateX(-50%); font-size:7.5px; color:var(--ink-soft); font-style:normal; white-space:nowrap;}
   .health-score{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:40px; line-height:1; text-align:center;
     background:var(--grad-main); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+
+  /* ═══ بنك الأفكار ═══ */
+  .idea-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;}
+  .idea-chip{background:rgba(255,255,255,.75); border:1.5px solid rgba(46,143,135,.25); color:var(--ink-soft); font-size:10px; font-weight:700; padding:6px 12px; border-radius:999px; cursor:pointer; font-family:'Cairo',sans-serif; transition:all .2s;}
+  .idea-chip:hover{border-color:var(--lagoon);}
+  .idea-chip.active{background:var(--grad-main); color:#fff; border-color:transparent;}
+  .idea-lucky{display:block; width:100%; text-align:center; background:var(--grad-main); border:none; color:#fff; font-family:'Cairo',sans-serif; font-weight:800; font-size:13px; padding:14px; border-radius:14px; cursor:pointer; margin-bottom:14px; box-shadow:0 6px 18px rgba(28,107,100,.3); transition:transform .15s;}
+  .idea-lucky:active{transform:scale(.98);}
+  .idea-featured{border:2px solid var(--lagoon) !important; box-shadow:0 8px 26px rgba(28,107,100,.22) !important; animation:fadeIn .3s ease;}
 </style>
 </head>
 <body>
@@ -467,6 +476,7 @@
   <div class="tabs" id="tabs">
     <div class="tab active" data-target="overview"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-7h5v7"/></svg><span>نظرة عامة</span></div>
         <div class="tab" data-target="growth"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 7-8"/><path d="M14 7h6v6"/></svg><span>النمو</span></div>
+        <div class="tab" data-target="ideas"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.8.7-1 1.5-1 2.5H9c0-1-.2-1.8-1-2.5A6 6 0 0 1 12 3z"/></svg><span>الأفكار</span></div>
     <div class="tab" data-target="schedule"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.2"/><path d="M16 3v4M8 3v4M3.5 10h17"/><circle cx="8" cy="14.5" r="1" fill="url(#goldIconGrad)" stroke="none"/><circle cx="12" cy="14.5" r="1" fill="url(#goldIconGrad)" stroke="none"/><circle cx="16" cy="14.5" r="1" fill="url(#goldIconGrad)" stroke="none"/></svg><span>الجدول</span></div>
     <div class="tab" data-target="staff"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.3"/><path d="M2.7 20v-1.3a4.3 4.3 0 0 1 4.3-4.3h4a4.3 4.3 0 0 1 4.3 4.3V20"/><path d="M16 4.2a3.3 3.3 0 0 1 0 6.4"/><path d="M20 20v-1.3a4.3 4.3 0 0 0-2.7-4"/></svg><span>الستاف</span></div>
     <div class="tab" data-target="daily"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg><span>المهام</span></div>
@@ -534,6 +544,16 @@
   <button class="tpl-add-btn owner-only-btn" id="addGrowthBtn" disabled>➕ تسجيل عدد الأعضاء الحالي</button>
   <button class="tpl-add-btn owner-only-btn" id="setGrowthTargetBtn" disabled>🎯 تعديل هدف الشهر</button>
   <div id="growthList"></div>
+</div>
+
+<div class="section" id="ideas">
+  <div class="section-title">💡 بنك الأفكار</div>
+  <div class="section-sub">ما فيه بعد اليوم "ما عندنا أفكار" — فلترتي حسب الروم، أو اسحبي فكرة عشوائية، وانسخيها بضغطة</div>
+  <button class="idea-lucky" id="luckyIdeaBtn">🎲 اسحبي لي فكرة الحين</button>
+  <div class="idea-chips" id="ideaChips"></div>
+  <div id="ideaFeatured"></div>
+  <div id="ideasList"></div>
+  <button class="tpl-add-btn owner-only-btn" id="addIdeaBtn" disabled>➕ إضافة فكرة خاصة فينا</button>
 </div>
 
 <div class="section" id="schedule">
@@ -2924,6 +2944,164 @@ loadAll = async function(){
   syncGrowthFromCache();
   renderGrowthUI();
   renderHealth();
+})();
+
+
+/* ═══════════ بنك الأفكار — مخصص لرومات She/Her ═══════════ */
+const DEFAULT_IDEAS = [
+ /* الشات العام */
+ {id:'i01', room:'الشات العام', title:'⚖️ محكمة الفود', desc:'كل يوم نحاكم أكلة مثيرة للجدل (بيتزا الأناناس، الببسي بالحليب). الستاف تعين محامية دفاع ومدعية عامة من الأعضاء، والباقي هيئة محلفين يصوتون بالإيموجي. الحكم النهائي يتثبت بالروم.'},
+ {id:'i02', room:'الشات العام', title:'🤐 يوم بدون سياق', desc:'يوم كامل ممنوع أي وحدة تعطي سياق لأي شي تنزله — بس صور وجمل عشوائية. آخر اليوم البنات يحاولون يركبون قصة وحدة من كل الفوضى وينشرونها.'},
+ {id:'i03', room:'الشات العام', title:'🕵️ الجاسوسة بيننا', desc:'كل أسبوع الستاف تختار عضوة سراً ومهمتها تدس كلمة معينة (مثلاً "برتقال") بالمحادثات بشكل طبيعي. أول وحدة تكشفها تاخذ نقاط، وإذا عدت الجمعة بدون ما تنكشف — هي اللي تفوز.'},
+ {id:'i04', room:'الشات العام', title:'🎭 يوم الشخصية', desc:'اليوم كله نتكلم بشخصية متفق عليها: خالة، بطلة أنمي، NPC بلعبة، طفلة ٢٠١٢. اللي تطلع من الشخصية تدفع "غرامة" نقاط رمزية.'},
+ {id:'i05', room:'الشات العام', title:'🪦 دقيقة حداد', desc:'ثريد جنائزي درامي نعزّي فيه بأشياء سخيفة: الشاحن اللي مات، الأحمر اللي وقف، الستريك اللي انقطع. أكثر تعزية مبالغ فيها تفوز.'},
+ {id:'i06', room:'الشات العام', title:'🔥 آراء مجهولة', desc:'فورم مجهول يجمع Hot Takes جريئة (عن الأكل والمسلسلات، مو أشخاص). الستاف تنشرها وحدة وحدة والكل يخمن مين كاتبتها. فضايح ذوق، مو فضايح ناس.'},
+ {id:'i07', room:'الشات العام', title:'📞 لعبة الهمسة', desc:'رسالة تبدأ من الستاف وتنتقل بالخاص بين ١٠ بنات، كل وحدة تعيد صياغتها من ذاكرتها. آخر وحدة تنشر النسخة النهائية جنب الأصلية — الفرق دايماً كارثي وممتع.'},
+ {id:'i08', room:'الشات العام', title:'🧠 ذبحتني الخوارزمية', desc:'ثريد يومي: كل وحدة تنزل أغرب شي طلع لها اليوم بالـFYP بدون تعليق. تصويت لأغرب خوارزمية، وصاحبتها تاخذ لقب "ضحية التيك توك" ليوم.'},
+ /* الميمز */
+ {id:'i09', room:'الميمز', title:'🗡️ ميم وار', desc:'الستاف تنزل صورة خام وحدة (بدون كابشن) والكل عنده ساعة يسوي عليها أقوى كابشن. تصويت بالإيموجي، والميم الفائز يصير بنر الروم أسبوع كامل.'},
+ {id:'i10', room:'الميمز', title:'📼 أرشيف ٢٠١٦', desc:'يوم نوستالجيا: ممنوع إلا ميمز قديمة (المنيونز، دوجي، الضفدع كيرمت) والشرط إن الكل يتفاعل معها كأنها نزلت اليوم وأول مرة يشوفونها.'},
+ {id:'i11', room:'الميمز', title:'🔤 ترجمة حرفية', desc:'ناخذ ميمز إنجليزية مشهورة ونترجمها ترجمة حرفية كارثية بالعربي. "It is what it is" = "هو ما هو عليه". أسوأ ترجمة (يعني أفضلها) تفوز.'},
+ /* الرسم */
+ {id:'i12', room:'الرسم', title:'🖌️ الرسمة المتنقلة', desc:'وحدة تبدأ رسمة وعندها ٥ دقايق بس، ترسلها للي بعدها تكمل عليها ٥ دقايق، وهكذا لـ٦ بنات. محد يشوف النتيجة إلا بالنهاية — تنكشف لايف بروم صوتي.'},
+ {id:'i13', room:'الرسم', title:'👁️ ارسميها من الوصف', desc:'عضوة تختار صورة وما تنزلها — توصفها بالكلام فقط بأدق التفاصيل. الكل يرسم من الوصف، وبعدين تنكشف الصورة الأصلية ونقارن الكوارث.'},
+ {id:'i14', room:'الرسم', title:'🎰 عجلة الثيمات', desc:'عجلة عشوائية فيها ثيمات (Y2K، فضاء، كويت التسعينات، ديزني شريرة) — اللي تطلع، الكل يعيد تصميم شعار السيرفر أو شخصيته عليها خلال ٣ أيام.'},
+ /* الأفلام */
+ {id:'i15', room:'الأفلام', title:'🔮 سينما التوقعات', desc:'قبل الفلم بيوم ننشر البوستر فقط، وكل وحدة تكتب توقعها الكامل للقصة. بعد المشاهدة الجماعية نقرأ التوقعات ونتوّج أقرب وحدة بلقب "العرافة".'},
+ {id:'i16', room:'الأفلام', title:'🎙️ دبلجة لايف', desc:'نشغل مشهد بدون صوت بروم Movie Time وبنتين يدبلجون الحوار لايف بالمايك بلهجتنا. أفضل ثنائي دبلجة ياخذ نقاط — يصير ستاند أب كوميدي بدون قصد.'},
+ {id:'i17', room:'الأفلام', title:'🗳️ فلم بالديمقراطية', desc:'نبدأ فلم، وكل ١٥ دقيقة تصويت سريع: نكمل ولا ننتقل لفلم ثاني؟ ليلة كاملة ممكن نشوف فيها ٥ بدايات أفلام — الفوضى هي الهدف.'},
+ /* الأغاني */
+ {id:'i18', room:'الأغاني', title:'⚖️ محكمة الذوق', desc:'وحدة تنزل أغنية تحبها من قلب، والباقي يحاكمون ذوقها بقسوة كوميدية، وهي تدافع. بعدين تنعكس الأدوار على وحدة ثانية. ممنوع الزعل — القاعدة الأولى.'},
+ {id:'i19', room:'الأغاني', title:'🎧 منهي صاحبة البلايليست؟', desc:'كل أسبوع ننشر ٥ أغاني من بلايليست عضوة (ترسلها للستاف بالسر) والكل يخمن منهي. اللي انكشفت تحكي قصة أغنية وحدة منهم.'},
+ {id:'i20', room:'الأغاني', title:'🎬 أغنية على موقف', desc:'الستاف تنزل موقف ("مشيتي على صديقتك المزيفة"، "خلصتي فاينل وطلعتي") والبنات ينزلون الأغنية اللي تصير ساوندتراك للموقف. أنسب اختيار ياخذ تثبيت.'},
+ /* الرومات الصوتية */
+ {id:'i21', room:'الصوتيات', title:'😴 بودكاست Napflix', desc:'ليلة أسبوعية بروم Napflix: وحدة بصوت هادي تقرأ قصة قبل النوم أو تسولف همس والباقي كاميرات مطفية ومايكات مقفلة — أهدأ فعالية وأكثرها إدمان.'},
+ {id:'i22', room:'الصوتيات', title:'🎤 كاريوكي التخمين', desc:'بروم Siren\u2019s Lounge: وحدة تغني أغنية بس بالهمهمة أو بالعكس أو بصوت شخصية كرتونية، والباقي يخمنون الأغنية. اللي تخمن تصير هي المغنية الجاية.'},
+ {id:'i23', room:'الصوتيات', title:'🙊 اعترافات المايك', desc:'جلسة مايك مفتوح: كل وحدة تعترف بأغرب عادة عندها (تاكل البطاط بالشوكولاته؟ ترتب أغراضها بالألوان؟). تصويت لأغرب اعتراف وصاحبته تاخذ لقب أسبوعي.'},
+ {id:'i24', room:'الصوتيات', title:'🌌 ليلة الطاقة الخامسة', desc:'بعد ١٢ بالليل، روم صوتي بأسئلة وجودية عميقة: لو تقدرين تمسحين ذكرى وحدة؟ شنو أكثر شي خايفة تعترفين فيه لنفسك؟ الأجواء بعد منتصف الليل تسوي السحر.'},
+ {id:'i25', room:'الصوتيات', title:'🕵️‍♀️ منهي صاحبة الصوت؟', desc:'عضوة تدخل الروم بصوت متنكر بالكامل (فلتر أو تمثيل) وتسولف ٥ دقايق، والكل يخمن منهي. مناسبة جداً لكسر حاجز الخجل عند البنات الجدد.'},
+ /* القيمنق */
+ {id:'i26', room:'القيمنق', title:'🔪 فالو بشروط غبية', desc:'بروم Valo Ocean: راوندات بشروط عبيطة — بس سكاكين، أو الكل تلعب شخصية عمرها ما لعبتها، أو ممنوع الكلام إلا بالغناء. الخسارة مضمونة والضحك أضمن.'},
+ {id:'i27', room:'القيمنق', title:'🏆 بطولة رسمية للعبة غير رسمية', desc:'ناخذ لعبة أطفال (Fall Guys، Among Us، حتى XO) ونسوي لها بطولة درامية جداً: حفل افتتاح، معلقة صوتية، مقابلات مع "المحترفات"، وكأس بالنهاية.'},
+ {id:'i28', room:'القيمنق', title:'🎲 قرعة الدوو العشوائي', desc:'كل خميس نسحب أسماء المسجلات ونطلع أزواج لعب عشوائية بالكامل — هدفها الأول كسر الشللية وتعارف البنات اللي عمرهم ما لعبوا مع بعض.'},
+ /* الستريك */
+ {id:'i29', room:'الستريك', title:'📸 ستريك بثيم أسبوعي', desc:'كل أسبوع ثيم للصورة اليومية: سماء اليوم، قهوتك، شي لونه وردي، شي عمره أكبر منك. أطول ستريك بنهاية الشهر تاخذ لقب "عدسة السيرفر" ورول خاص.'},
+ /* الكليبات */
+ {id:'i30', room:'الكليبات', title:'🏅 أوسكار الكليبات', desc:'آخر كل شهر: ترشيحات من روم Clips على فئات (أفضل خورطة، أفضل صرخة، أفضل لقطة حظ) وحفل توزيع جوائز لايف بالروم الصوتي مع تصفيق ودراما.'},
+ /* البدليات */
+ {id:'i31', room:'البدليات', title:'👗 ستايل باتل', desc:'ثيم أسبوعي (Old Money، مدرسة ٢٠١٠، بنات البحر) والكل تنزل تنسيقها — من تطبيقات التنسيق أو صور حقيقية. تصويت مجهول والفائزة تختار ثيم الأسبوع الجاي.'},
+ /* الأذكار */
+ {id:'i32', room:'الأذكار', title:'🤲 دعوة بالسر', desc:'كل وحدة تسحب اسم عضوة بالسر وتدعي لها طول الأسبوع. الجمعة تنكشف الأسماء وكل وحدة تعرف منهي اللي كانت تدعي لها — من أجمل ما يقوي الروابط.'},
+ {id:'i33', room:'الأذكار', title:'📿 عداد الاستغفار الجماعي', desc:'هدف جماعي أسبوعي (مثلاً ١٠٠٠٠ استغفار) وكل وحدة تسجل عددها بالثريد، والعداد يكبر قدام الكل. لما نوصل الهدف نحتفل ونرفعه.'},
+ /* فعاليات السيرفر الكبيرة */
+ {id:'i34', room:'فعاليات كبرى', title:'🔄 يوم الانقلاب', desc:'يوم كامل بالسنة: الستاف يصيرون أعضاء عاديين، وأعضاء مختارات (بالقرعة) ياخذون رولات الإدارة ويديرون السيرفر فعلياً. يطلع محتوى أسطوري ويحسس الأعضاء بالملكية.'},
+ {id:'i35', room:'فعاليات كبرى', title:'📖 مسلسل السيرفر التفاعلي', desc:'قصة أسبوعية بطلاتها عضوات السيرفر بأسمائهم: كل يوم الستاف تنشر جزء وينتهي بقرار مصيري يتحسم بالتصويت. الأعضاء يدخلون يومياً عشان يعرفون وش صار فيهم.'},
+ {id:'i36', room:'فعاليات كبرى', title:'⏳ كبسولة الزمن', desc:'روم يفتح أسبوع واحد: كل وحدة تكتب رسالة لنفسها بعد ٦ شهور. الروم ينقفل ويختفي، وبعد ٦ شهور بالضبط ينفتح — فعالية وحدة تضمن رجعة الكل بعد نص سنة.'},
+ {id:'i37', room:'فعاليات كبرى', title:'🛍️ سوق She/Her', desc:'يوم تداول بالنقاط: البنات يفتحون "محلات" يبيعون فيها خدمات حقيقية (أرسم لك بروفايل، أسوي لك بلايليست، أساعدك بواجبك) والدفع بنقاط اللوحة — يعطي النقاط قيمة فعلية.'},
+ {id:'i38', room:'فعاليات كبرى', title:'👯 توأم السيرفر', desc:'فورم توافق شهري (أسئلة ذوق وشخصية) والستاف تطلع أعلى نسب التوافق وتعلن "توائم الشهر" — ولهم تحدي ثنائي خاص ورول مشترك.'},
+];
+let customIdeas = [];
+let ideaFilter = 'الكل';
+
+function allIdeas(){ return DEFAULT_IDEAS.concat(customIdeas); }
+function ideaRooms(){
+  const set = [];
+  allIdeas().forEach(i=>{ if(set.indexOf(i.room) === -1) set.push(i.room); });
+  return ['الكل'].concat(set);
+}
+function ideaCopyText(i){ return '💡 **' + i.title + '**\n' + i.desc; }
+
+function renderIdeasUI(){
+  const chips = document.getElementById('ideaChips');
+  const list = document.getElementById('ideasList');
+  if(!chips || !list) return;
+
+  chips.innerHTML = ideaRooms().map(r=>
+    '<button class="idea-chip' + (r===ideaFilter?' active':'') + '" data-ideachip="' + r + '">' + r + '</button>').join('');
+
+  const items = allIdeas().filter(i=> ideaFilter==='الكل' || i.room===ideaFilter);
+  list.innerHTML = items.map(i=>`
+    <div class="card">
+      <div class="card-top"><span class="day-name">${i.title}</span><span class="day-badge">${i.room}</span></div>
+      <div class="row"><span>${escapeHtml(i.desc)}</span></div>
+      <div class="card-edit-row">
+        <button class="edit-ico-btn" data-copyidea="${i.id}">📋 نسخ للديسكورد</button>
+        ${(isOwner && i.custom) ? `<button class="edit-ico-btn danger" data-delidea="${i.id}">🗑</button>` : ''}
+      </div>
+    </div>`).join('') || '<div class="lb-empty">ما فيه أفكار بهالتصنيف</div>';
+}
+document.getElementById('ideaChips').addEventListener('click', (e)=>{
+  const c = e.target.closest('[data-ideachip]');
+  if(!c) return;
+  ideaFilter = c.dataset.ideachip;
+  document.getElementById('ideaFeatured').innerHTML = '';
+  renderIdeasUI();
+});
+document.getElementById('ideasList').addEventListener('click', (e)=>{
+  const cp = e.target.closest('[data-copyidea]');
+  if(cp){
+    const idea = allIdeas().find(i=>i.id===cp.dataset.copyidea);
+    if(idea) copyIdeaText(ideaCopyText(idea));
+    return;
+  }
+  const del = e.target.closest('[data-delidea]');
+  if(del && isOwner){
+    if(!confirm('حذف هالفكرة؟')) return;
+    customIdeas = customIdeas.filter(i=>i.id!==del.dataset.delidea);
+    queueGhSave('ideas_custom', customIdeas);
+    renderIdeasUI();
+    showToast('🗑 تم الحذف');
+  }
+});
+function copyIdeaText(txt){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>showToast('📋 انسخت — الصقيها بالروم'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    showToast('📋 انسخت');
+  }
+}
+document.getElementById('luckyIdeaBtn').addEventListener('click', ()=>{
+  const pool = allIdeas().filter(i=> ideaFilter==='الكل' || i.room===ideaFilter);
+  if(!pool.length) return;
+  const pick = pool[Math.floor(Math.random()*pool.length)];
+  const f = document.getElementById('ideaFeatured');
+  f.innerHTML = `
+    <div class="card idea-featured">
+      <div class="card-top"><span class="day-name">🎲 ${pick.title}</span><span class="day-badge">${pick.room}</span></div>
+      <div class="row"><span>${escapeHtml(pick.desc)}</span></div>
+      <div class="card-edit-row"><button class="edit-ico-btn" data-luckycopy="1">📋 نسخ للديسكورد</button></div>
+    </div>`;
+  f.querySelector('[data-luckycopy]').addEventListener('click', ()=>copyIdeaText(ideaCopyText(pick)));
+  f.scrollIntoView({behavior:'smooth', block:'center'});
+});
+document.getElementById('addIdeaBtn').addEventListener('click', ()=>{
+  if(!isOwner) return;
+  const room = prompt('لأي روم/تصنيف هالفكرة؟ (مثال: الشات العام)');
+  if(!room) return;
+  const title = prompt('عنوان الفكرة (قصير مع إيموجي):');
+  if(!title) return;
+  const desc = prompt('اشرحي الفكرة وطريقة تنفيذها:');
+  if(!desc) return;
+  customIdeas.push({ id: genId('idea'), room: room.trim(), title: title.trim(), desc: desc.trim(), custom: true });
+  queueGhSave('ideas_custom', customIdeas);
+  renderIdeasUI();
+  showToast('💡 انضافت الفكرة');
+});
+
+const _origLoadAll3 = loadAll;
+loadAll = async function(){
+  await _origLoadAll3();
+  customIdeas = Array.isArray(dbCache.ideas_custom) ? dbCache.ideas_custom.slice() : [];
+  renderIdeasUI();
+};
+(function waitIdeasInit(){
+  const ov = document.getElementById('loadingOverlay');
+  if(ov && !ov.classList.contains('hide')){ setTimeout(waitIdeasInit, 300); return; }
+  customIdeas = Array.isArray(dbCache.ideas_custom) ? dbCache.ideas_custom.slice() : [];
+  renderIdeasUI();
 })();
 
 </script>
