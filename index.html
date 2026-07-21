@@ -539,26 +539,46 @@
   <div class="section-title">📢 قوالب النشر الجاهزة</div>
   <div class="section-sub">انسخي ولصقي مباشرة</div>
 
-  <div class="day-name" style="margin-bottom:8px; font-size:13px;">إعلان رسمي في السيرفر</div>
-  <div class="template-box" id="tpl1">🐚 She/Her Server — تحديث جديد
+  <div class="day-name" style="margin-bottom:8px; font-size:13px;">ترحيب بعضو جديد</div>
+  <div class="template-box" id="tpl1">yaaay وصلتي! 🐚 حياج الله بينا بـ She/Her
 
-فيه لوحة تحكم حية جديدة للسيرفر فيها الجدول والمهام ونظام نقاط شهري!
-
-🔗 الرابط: [ضيفي الرابط هنا]
-
-💛 نتشرف فيكم!</div>
+عرّفي عن نفسج بـ intro واحنا نعرّفج على الرومات ✨
+أي شي تحتاجينه احنا هنا، لا تستحين تسألين 💛</div>
   <button class="copy-btn" onclick="copyTpl('tpl1')">📋 نسخ</button>
 
-  <div class="day-name" style="margin-bottom:8px; font-size:13px;">رسالة خاصة للستاف</div>
-  <div class="template-box" id="tpl2">يا بنات! 👋
+  <div class="day-name" style="margin-bottom:8px; font-size:13px;">سؤال اليوم (Question of the Day)</div>
+  <div class="template-box" id="tpl2">🗣️ QOTD:
 
-فيه لوحة تحكم حية جديدة فيها نقاطك ومهامك.
-كل مهمة تخلصينها = نقاط! أفضل وحدة كل شهر تدخل قاعة الشهرة 👑
+لو تقدرين تعيشين يوم واحد بأي شخصية أنمي/مسلسل — منو بتختارين وليش؟
 
-الرابط: [ضيفي الرابط هنا]
-
-دعواتكم يا حلوات 🐚💛</div>
+جاوبوا تحت 👇 وردوا على بعض!</div>
   <button class="copy-btn" onclick="copyTpl('tpl2')">📋 نسخ</button>
+
+  <div class="day-name" style="margin-bottom:8px; font-size:13px;">إعلان فعالية</div>
+  <div class="template-box" id="tpl3">📢 تجمّعوا يا شباب!
+
+الليلة عندنا [اسم الفعالية] الساعة [الوقت] بالرومة الصوتية 🎉
+فيه جوائز 👀 واللي ما يحضر بيندم
+
+كونوا حاضرين 💛</div>
+  <button class="copy-btn" onclick="copyTpl('tpl3')">📋 نسخ</button>
+
+  <div class="day-name" style="margin-bottom:8px; font-size:13px;">تكريم عضو اليوم النشط</div>
+  <div class="template-box" id="tpl4">🌟 Spotlight اليوم على: [اسم العضو]
+
+مبدعة/مبدع بالتفاعل وطاقتها/طاقته حلوة للسيرفر 💫
+شكراً إنك جزء منّا — استمري/استمر!
+
+منو التالي؟ 👀</div>
+  <button class="copy-btn" onclick="copyTpl('tpl4')">📋 نسخ</button>
+
+  <div class="day-name" style="margin-bottom:8px; font-size:13px;">إحياء رومة هادئة</div>
+  <div class="template-box" id="tpl5">وينكم؟ 👀 الرومة ساكنة زيادة
+
+Hot take سريع: [ضعي رأي مثير للجدل خفيف، مثل: "الآيفون أحسن من الأندرويد"]
+
+أنا بديت — كمّلوا 🔥</div>
+  <button class="copy-btn" onclick="copyTpl('tpl5')">📋 نسخ</button>
 </div>
 
 <div class="section" id="events">
@@ -748,17 +768,19 @@ const DEFAULT_WEEKLY_TASKS = [
 ];
 
 const DEFAULT_EVENTS = [
-  { id:'ev1', date:'20 أغسطس', day:'الثلاثاء', title:'🎮 تخمين (3 كلمات)', time:'7:00 م — 7:30 م', team:'Event Team', reward:'💝 Nitro Boost', highlight:false },
-  { id:'ev2', date:'22 أغسطس', day:'الجمعة', title:'⭐ سؤال اليوم (صوتي)', time:'8:00 م — 9:00 م', team:'CEO Lead', reward:'👑 رول ذهبي خاص', highlight:true },
-  { id:'ev3', date:'27 أغسطس', day:'الثلاثاء', title:'✨ أفضل ستايل صيفي', time:'7:00 م — 7:45 م', team:'Event Team', reward:'💝 Nitro Boost', highlight:false },
-  { id:'ev4', date:'29 أغسطس', day:'الجمعة', title:'🏆 من هي؟ (تحديات)', time:'8:00 م — 9:30 م', team:'CEO Lead + فريق', reward:'👑 رول + رسالة خاصة', highlight:true }
+  { id:'ev1', date:'', day:'الثلاثاء', title:'Tier List Night — رتبوا أي شي (أكلات، أنمي، ترندات)', time:'8:00 م', team:'Event Team', reward:'Nitro أسبوع', highlight:false },
+  { id:'ev2', date:'', day:'الأربعاء', title:'Aux Battle — كل وحدة تحط أغنية والباقي يقيّمون', time:'9:00 م', team:'Event Team', reward:'رول خاص', highlight:false },
+  { id:'ev3', date:'', day:'الخميس', title:'Would You Rather + Hot Takes (رومة صوتية)', time:'9:00 م', team:'Helper', reward:'—', highlight:false },
+  { id:'ev4', date:'', day:'الجمعة', title:'Movie/Anime Night — تصويت على الفيلم ومشاهدة جماعية', time:'8:30 م', team:'CEO Lead', reward:'رول ذهبي + شاوت أوت', highlight:true },
+  { id:'ev5', date:'', day:'السبت', title:'Among Us / لعبة جماعية + كام لصوت', time:'9:00 م', team:'Event Team', reward:'Nitro Boost', highlight:false },
+  { id:'ev6', date:'', day:'الأحد', title:'Confessions مجهولة + نقاش خفيف', time:'9:00 م', team:'CEO Lead', reward:'—', highlight:true }
 ];
 
 const DEFAULT_GOALS = [
-  { id:'g1', icon:'🎤', title:'الدخول للرومات', weeks:[20,30,40,50], goalText:'الهدف: 60+ يومياً' },
-  { id:'g2', icon:'👥', title:'أعضاء جدد نشطين', weeks:[3,5,8,12], goalText:'الهدف: 50+ شهرياً' },
-  { id:'g3', icon:'💬', title:'تفاعل المحتوى', weeks:[15,25,35,50], goalText:'الهدف: 100+ يومياً' },
-  { id:'g4', icon:'🎉', title:'حضور الفعاليات', weeks:[15,25,35,45], goalText:'الهدف: 60%+ نسبة' }
+  { id:'g1', icon:'🎤', title:'نشاط الرومات الصوتية', weeks:[20,30,40,50], goalText:'الهدف: رومة صوتية فعّالة يومياً' },
+  { id:'g2', icon:'✨', title:'أعضاء جدد يتفاعلون', weeks:[3,5,8,12], goalText:'الهدف: 50+ عضو نشط شهرياً' },
+  { id:'g3', icon:'💬', title:'تفاعل الشات اليومي', weeks:[15,25,35,50], goalText:'الهدف: 100+ رسالة تفاعل يومياً' },
+  { id:'g4', icon:'🎉', title:'حضور الفعاليات', weeks:[15,25,35,45], goalText:'الهدف: 60%+ من الأعضاء' }
 ];
 
 let tasksConfig = { daily: [], weekly: [] };
