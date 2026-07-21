@@ -1389,6 +1389,16 @@ function taskRowHtml(t, assignee, isWeekly, pending){
     const pendingName = staffData.names[pending.staffKey] || STAFF_LABELS[pending.staffKey] || '—';
     const approveAttr = isWeekly ? `data-wapprove="${t.id}"` : `data-approve="${t.id}"`;
     const rejectAttr = isWeekly ? `data-wreject="${t.id}"` : `data-reject="${t.id}"`;
+    const cancelAttr = isWeekly ? `data-wcancelreq="${t.id}"` : `data-cancelreq="${t.id}"`;
+    const isMine = isStaff && staffKey === pending.staffKey;
+    let actionsHtml;
+    if(isOwner){
+      actionsHtml = `<div class="pending-actions"><button class="pulse-approve" ${approveAttr}>✅ موافقة</button><button class="pulse-reject" ${rejectAttr}>❌ رفض</button></div>`;
+    } else if(isMine){
+      actionsHtml = `<div class="pending-actions"><button class="pulse-reject" ${cancelAttr}>↩️ إلغاء طلبي</button></div>`;
+    } else {
+      actionsHtml = '<div class="pulse-wait-note">بانتظار موافقة الأونرية</div>';
+    }
     return `<div class="card pending-card">
       <div class="task-item-row">
         <div class="task-item pending-item">
@@ -1396,7 +1406,7 @@ function taskRowHtml(t, assignee, isWeekly, pending){
           <div class="task-text">${escapeHtml(t.label)} <span class="wtask-pts">${t.points} نقطة</span> — بانتظار الموافقة: <b>${escapeHtml(pendingName)}</b></div>
         </div>
       </div>
-      ${isOwner?`<div class="pending-actions"><button class="pulse-approve" ${approveAttr}>✅ موافقة</button><button class="pulse-reject" ${rejectAttr}>❌ رفض</button></div>`:'<div class="pulse-wait-note">بانتظار موافقة الأونرية</div>'}
+      ${actionsHtml}
     </div>`;
   }
 
@@ -1626,6 +1636,19 @@ document.getElementById('dailyTasksContainer').addEventListener('click', (e)=>{
   if(approveBtn){ if(isOwner) approveDailyTask(approveBtn.dataset.approve); return; }
   const rejectBtn = e.target.closest('[data-reject]');
   if(rejectBtn){ if(isOwner) rejectDailyTask(rejectBtn.dataset.reject); return; }
+  const cancelBtn = e.target.closest('[data-cancelreq]');
+  if(cancelBtn){
+    const taskId = cancelBtn.dataset.cancelreq;
+    const p = dailyTasks.pending[taskId];
+    if(p && isStaff && staffKey === p.staffKey){
+      delete dailyTasks.pending[taskId];
+      saveDailyTasks();
+      renderDailyTasksUI();
+      renderPulse();
+      showToast('تم إلغاء طلبك');
+    }
+    return;
+  }
   const item = e.target.closest('.task-item');
   if(item) onDailyTaskClick(item.dataset.task);
 });
@@ -1637,6 +1660,19 @@ document.getElementById('weeklyTasksContainer').addEventListener('click', (e)=>{
   if(approveBtn){ if(isOwner) approveWeeklyTask(approveBtn.dataset.wapprove); return; }
   const rejectBtn = e.target.closest('[data-wreject]');
   if(rejectBtn){ if(isOwner) rejectWeeklyTask(rejectBtn.dataset.wreject); return; }
+  const cancelBtn = e.target.closest('[data-wcancelreq]');
+  if(cancelBtn){
+    const taskId = cancelBtn.dataset.wcancelreq;
+    const p = weeklyTasks.pending[taskId];
+    if(p && isStaff && staffKey === p.staffKey){
+      delete weeklyTasks.pending[taskId];
+      saveWeeklyTasks();
+      renderWeeklyTasksUI();
+      renderPulse();
+      showToast('تم إلغاء طلبك');
+    }
+    return;
+  }
   const item = e.target.closest('.task-item');
   if(item) onWeeklyTaskClick(item.dataset.wtask);
 });
