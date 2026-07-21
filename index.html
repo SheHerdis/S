@@ -173,6 +173,9 @@
   .kpi-week .wk-val{font-size:12px; color:var(--gold-light); font-weight:800; font-family:'Cormorant Garamond',serif;}
   .kpi-goal{text-align:center; background:linear-gradient(135deg, rgba(201,160,80,0.25), rgba(217,139,122,0.18)); border:1.5px solid rgba(201,160,80,0.4); border-radius:9px; padding:7px; color:var(--gold-light); font-weight:700; font-size:10.5px; font-family:'Cairo',sans-serif;}
 
+  .tpl-card{margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid rgba(201,160,80,0.15);}
+  .tpl-owner-row{display:flex; gap:8px; margin-top:8px;}
+  .tpl-del{color:var(--rose-deep) !important; border-color:rgba(217,139,122,0.4) !important;}
   .template-box{background:rgba(58,36,24,0.04); border:1px dashed rgba(201,160,80,0.4); border-radius:10px; padding:12px; font-size:11px; color:var(--shell); line-height:1.7; white-space:pre-wrap; margin-bottom:8px;}
   .copy-btn{background:rgba(201,160,80,0.18); border:1px solid rgba(201,160,80,0.5); color:var(--gold-light); font-family:'Cairo',sans-serif; font-weight:700; font-size:10.5px; padding:7px 14px; border-radius:8px; cursor:pointer; margin-bottom:14px;}
 
@@ -536,49 +539,12 @@
 </div>
 
 <div class="section" id="templates">
-  <div class="section-title">📢 قوالب النشر الجاهزة</div>
-  <div class="section-sub">انسخي ولصقي مباشرة</div>
+  <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;"><span>📢 قوالب النشر الجاهزة</span><span class="staff-role-count" id="templatesCount">0</span></div>
+  <div class="section-sub">انسخي ولصقي مباشرة — الأونرية تقدر تعدّل وتضيف قوالب</div>
 
-  <div class="day-name" style="margin-bottom:8px; font-size:13px;">ترحيب بعضو جديد</div>
-  <div class="template-box" id="tpl1">yaaay وصلتي! 🐚 حياج الله بينا بـ She/Her
+  <div id="templatesContainer"></div>
 
-عرّفي عن نفسج بـ intro واحنا نعرّفج على الرومات ✨
-أي شي تحتاجينه احنا هنا، لا تستحين تسألين 💛</div>
-  <button class="copy-btn" onclick="copyTpl('tpl1')">📋 نسخ</button>
-
-  <div class="day-name" style="margin-bottom:8px; font-size:13px;">سؤال اليوم (Question of the Day)</div>
-  <div class="template-box" id="tpl2">🗣️ QOTD:
-
-لو تقدرين تعيشين يوم واحد بأي شخصية أنمي/مسلسل — منو بتختارين وليش؟
-
-جاوبوا تحت 👇 وردوا على بعض!</div>
-  <button class="copy-btn" onclick="copyTpl('tpl2')">📋 نسخ</button>
-
-  <div class="day-name" style="margin-bottom:8px; font-size:13px;">إعلان فعالية</div>
-  <div class="template-box" id="tpl3">📢 تجمّعوا يا شباب!
-
-الليلة عندنا [اسم الفعالية] الساعة [الوقت] بالرومة الصوتية 🎉
-فيه جوائز 👀 واللي ما يحضر بيندم
-
-كونوا حاضرين 💛</div>
-  <button class="copy-btn" onclick="copyTpl('tpl3')">📋 نسخ</button>
-
-  <div class="day-name" style="margin-bottom:8px; font-size:13px;">تكريم عضو اليوم النشط</div>
-  <div class="template-box" id="tpl4">🌟 Spotlight اليوم على: [اسم العضو]
-
-مبدعة/مبدع بالتفاعل وطاقتها/طاقته حلوة للسيرفر 💫
-شكراً إنك جزء منّا — استمري/استمر!
-
-منو التالي؟ 👀</div>
-  <button class="copy-btn" onclick="copyTpl('tpl4')">📋 نسخ</button>
-
-  <div class="day-name" style="margin-bottom:8px; font-size:13px;">إحياء رومة هادئة</div>
-  <div class="template-box" id="tpl5">وينكم؟ 👀 الرومة ساكنة زيادة
-
-Hot take سريع: [ضعي رأي مثير للجدل خفيف، مثل: "الآيفون أحسن من الأندرويد"]
-
-أنا بديت — كمّلوا 🔥</div>
-  <button class="copy-btn" onclick="copyTpl('tpl5')">📋 نسخ</button>
+  <button class="tpl-add-btn owner-only-btn" id="addTemplateBtn" disabled>➕ إضافة قالب جديد</button>
 </div>
 
 <div class="section" id="events">
@@ -786,6 +752,18 @@ const DEFAULT_GOALS = [
 let tasksConfig = { daily: [], weekly: [] };
 let eventsConfig = [];
 let goalsConfig = [];
+
+const DEFAULT_TEMPLATES = [
+  { id:'t1', title:'ترحيب بعضو جديد', body:'yaaay وصلتي! 🐚 حياج الله بينا بـ She/Her\n\nعرّفي عن نفسج بـ intro واحنا نعرّفج على الرومات ✨\nأي شي تحتاجينه احنا هنا، لا تستحين تسألين 💛' },
+  { id:'t2', title:'سؤال اليوم (QOTD)', body:'🗣️ QOTD:\n\nلو تقدرين تعيشين يوم واحد بأي شخصية أنمي/مسلسل — منو بتختارين وليش؟\n\nجاوبوا تحت 👇 وردوا على بعض!' },
+  { id:'t3', title:'إعلان فعالية', body:'📢 تجمّعوا يا شباب!\n\nالليلة عندنا [اسم الفعالية] الساعة [الوقت] بالرومة الصوتية 🎉\nفيه جوائز 👀 واللي ما يحضر بيندم\n\nكونوا حاضرين 💛' },
+  { id:'t4', title:'تكريم عضو نشط', body:'🌟 Spotlight اليوم على: [اسم العضو]\n\nمبدعة بالتفاعل وطاقتها حلوة للسيرفر 💫\nشكراً إنك جزء منّا — استمري!\n\nمنو التالي؟ 👀' },
+  { id:'t5', title:'إحياء رومة هادئة', body:'وينكم؟ 👀 الرومة ساكنة زيادة\n\nHot take سريع: [ضعي رأي خفيف مثير للجدل]\n\nأنا بديت — كمّلوا 🔥' }
+];
+let templatesConfig = [];
+async function saveTemplatesConfig(){
+  queueGhSave('templates_config', templatesConfig);
+}
 
 const DEFAULT_STAFF_CONFIG = [
   { key:'ceo1',   role:'ceo',    label:'CEO-1',    placeholder:'اسم المسؤولة الأساسية' },
@@ -1002,6 +980,13 @@ async function loadAll(){
   }
   if(channelsConfig[0]) channelsConfig[0]._open = true;
 
+  if(dbCache.templates_config){
+    templatesConfig = JSON.parse(JSON.stringify(dbCache.templates_config));
+  } else {
+    templatesConfig = JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
+    dbCache.templates_config = templatesConfig;
+  }
+
   await checkMonthlyReset();
 
   renderStaff();
@@ -1011,6 +996,7 @@ async function loadAll(){
   renderChannelsUI();
   renderEventsUI();
   renderGoalsUI();
+  renderTemplatesUI();
   renderLeaderboard();
   renderHallOfFame();
   renderHistory();
@@ -2163,12 +2149,77 @@ function escapeHtml(str){
   return div.innerHTML;
 }
 
-function copyTpl(id){
-  const text = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(text).then(()=>showToast()).catch(()=>{
-    alert('انسخي النص يدوياً: \n\n' + text);
+function renderTemplatesUI(){
+  const container = document.getElementById('templatesContainer');
+  if(!container) return;
+  const countEl = document.getElementById('templatesCount');
+  if(countEl) countEl.textContent = templatesConfig.length;
+
+  if(!templatesConfig.length){
+    container.innerHTML = '<div class="lb-empty">🐚 ما فيه قوالب بعد — ضيفي أول قالب</div>';
+    return;
+  }
+
+  container.innerHTML = templatesConfig.map(t=>{
+    const editRow = isOwner ? `<div class="tpl-owner-row"><button class="edit-ico-btn" data-edittpl="${t.id}">✏️ تعديل</button><button class="edit-ico-btn tpl-del" data-deltpl="${t.id}">🗑 حذف</button></div>` : '';
+    return `<div class="tpl-card">
+      <div class="day-name" style="margin-bottom:8px; font-size:13px;">${escapeHtml(t.title)}</div>
+      <div class="template-box" id="tplbox_${t.id}">${escapeHtml(t.body)}</div>
+      <button class="copy-btn" data-copytpl="${t.id}">📋 نسخ</button>
+      ${editRow}
+    </div>`;
+  }).join('');
+}
+
+function copyTemplate(id){
+  const t = templatesConfig.find(x=>x.id===id);
+  if(!t) return;
+  navigator.clipboard.writeText(t.body).then(()=>showToast('✓ تم النسخ')).catch(()=>{
+    alert('انسخي النص يدوياً: \n\n' + t.body);
   });
 }
+
+function openTemplateForm(id){
+  const existing = id ? templatesConfig.find(t=>t.id===id) : null;
+  openModal(existing?'تعديل القالب':'قالب جديد', [
+    { key:'title', label:'اسم القالب', type:'text', value: existing?existing.title:'' },
+    { key:'body', label:'نص القالب', type:'textarea', value: existing?existing.body:'' }
+  ], (values)=>{
+    if(!values.title.trim() || !values.body.trim()){ showToast('⚠ عبّي الاسم والنص', true); return; }
+    if(existing){
+      existing.title = values.title.trim();
+      existing.body = values.body;
+    } else {
+      templatesConfig.push({ id: genId('tpl'), title: values.title.trim(), body: values.body });
+    }
+    saveTemplatesConfig();
+    renderTemplatesUI();
+    showToast(existing?'✓ تم التعديل':'✓ تمت الإضافة');
+  }, existing ? ()=>{
+    if(!confirm('متأكدة تبين تحذفين هذا القالب؟')) return;
+    templatesConfig = templatesConfig.filter(t=>t.id!==id);
+    saveTemplatesConfig();
+    renderTemplatesUI();
+    showToast('🗑 تم الحذف');
+  } : null);
+}
+
+document.getElementById('templatesContainer').addEventListener('click', (e)=>{
+  const copyBtn = e.target.closest('[data-copytpl]');
+  if(copyBtn){ copyTemplate(copyBtn.dataset.copytpl); return; }
+  const editBtn = e.target.closest('[data-edittpl]');
+  if(editBtn){ if(isOwner) openTemplateForm(editBtn.dataset.edittpl); return; }
+  const delBtn = e.target.closest('[data-deltpl]');
+  if(delBtn){
+    if(!isOwner) return;
+    if(!confirm('متأكدة تبين تحذفين هذا القالب؟')) return;
+    templatesConfig = templatesConfig.filter(t=>t.id!==delBtn.dataset.deltpl);
+    saveTemplatesConfig();
+    renderTemplatesUI();
+    showToast('🗑 تم الحذف');
+  }
+});
+document.getElementById('addTemplateBtn').addEventListener('click', ()=>{ if(isOwner) openTemplateForm(null); });
 
 loadAll();
 </script>
