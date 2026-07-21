@@ -375,8 +375,8 @@
   <p class="subtext">لوحة حية مشتركة <span class="live-dot"></span></p>
 
   <div class="owner-controls">
-    <button class="owner-btn" id="ownerToggle">🔑 دخول الأونرية</button>
-    <button class="owner-btn" id="myPointsBtn" style="margin-right:8px;">👤 نقاطي</button>
+    <button class="owner-btn" id="ownerToggle">🔑 Staff Dashboard</button>
+    <button class="owner-btn" id="myPointsBtn" style="display:none;">👤 نقاطي</button>
     <span class="owner-name-tag" id="ownerNameTag" style="display:none;"></span>
   </div>
 </div>
@@ -611,6 +611,9 @@
 const OWNER_PIN = "SHEHER2026";
 let isOwner = false;
 let ownerName = '';
+let isStaff = false;
+let staffKey = '';
+let staffName = '';
 
 /* ===== GitHub-as-Database ===== */
 const GH_OWNER = 'SheHerdis';
@@ -1106,50 +1109,104 @@ tabs.forEach(tab=>{
 });
 
 document.getElementById('ownerToggle').addEventListener('click', ()=>{
-  if(isOwner){
+  if(isOwner || isStaff){
     isOwner = false; ownerName = '';
-    try{ localStorage.removeItem('owner_session'); }catch(e){}
+    isStaff = false; staffKey = ''; staffName = '';
+    try{ localStorage.removeItem('owner_session'); localStorage.removeItem('staff_session'); }catch(e){}
     updateOwnerUI();
     showToast('تم تسجيل الخروج');
     return;
   }
-  const pin = prompt('🔑 أدخلي كود الأونرية:');
+  const pin = prompt('🔑 Staff Dashboard — حطي الـPIN حقك:');
   if(pin === null) return;
-  if(pin === OWNER_PIN){
+  const entered = pin.trim();
+
+  // أونرية؟
+  if(entered === OWNER_PIN){
     let name = prompt('✏️ اكتبي اسمك (يظهر بسجل النشاط):');
     ownerName = (name && name.trim()) ? name.trim() : 'الأونرية';
     isOwner = true;
     try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 8*3600*1000 })); }catch(e){}
     updateOwnerUI();
     showToast('✓ أهلاً ' + ownerName);
-  } else {
-    showToast('❌ الكود غير صحيح', true);
+    return;
   }
+
+  // ستاف بـPIN شخصي؟
+  const matchKey = Object.keys(staffPins).find(k=> staffPins[k] === entered && (staffData.names[k]||'').trim()!=='');
+  if(matchKey){
+    isStaff = true;
+    staffKey = matchKey;
+    staffName = staffData.names[matchKey];
+    try{ localStorage.setItem('staff_session', JSON.stringify({ key: matchKey, exp: Date.now() + 8*3600*1000 })); }catch(e){}
+    updateOwnerUI();
+    showToast('✓ أهلاً ' + staffName);
+    return;
+  }
+
+  // ستاف بدون PIN بعد؟ خليها تسوي واحد
+  const wantsSetup = confirm('❓ الـPIN مو موجود. أول مرة لك؟ اضغطي OK عشان تسوين PIN جديد.');
+  if(!wantsSetup) return;
+  const members = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='' && !staffPins[k]);
+  if(!members.length){ showToast('كل الأسماء عندها PIN — كلمي الأونرية', true); return; }
+  openModal('منو انتِ؟', [
+    { key:'who', label:'اختاري اسمك', type:'select', options: members.map(k=>({value:k, label:staffData.names[k]})), value: members[0] }
+  ], (values)=>{
+    const key = values.who;
+    const p1 = prompt(`✨ اختاري PIN جديد لـ${staffData.names[key]} (٤ أرقام أو أكثر):`);
+    if(p1 === null) return;
+    if(p1.trim().length < 4){ showToast('⚠ لازم ٤ أرقام على الأقل', true); return; }
+    const p2 = prompt('أكّدي الـPIN مرة ثانية:');
+    if(p2 === null || p1.trim() !== p2.trim()){ showToast('⚠ الـPIN ما تطابق', true); return; }
+    staffPins[key] = p1.trim();
+    saveStaffPins();
+    isStaff = true; staffKey = key; staffName = staffData.names[key];
+    try{ localStorage.setItem('staff_session', JSON.stringify({ key, exp: Date.now() + 8*3600*1000 })); }catch(e){}
+    updateOwnerUI();
+    showToast('✓ أهلاً ' + staffName);
+  }, null);
 });
 
-// استرجاع جلسة الأونرية لو لسه صالحة (٨ ساعات) — عشان ما يطلب PIN كل ريفرش
+// استرجاع الجلسات (أونرية أو ستاف) لو لسه صالحة (٨ ساعات)
 function restoreOwnerSession(){
   try{
     const raw = localStorage.getItem('owner_session');
-    if(!raw) return;
-    const s = JSON.parse(raw);
-    if(s && s.exp && Date.now() < s.exp){
-      isOwner = true;
-      ownerName = s.name || 'الأونرية';
-    } else {
+    if(raw){
+      const s = JSON.parse(raw);
+      if(s && s.exp && Date.now() < s.exp){
+        isOwner = true;
+        ownerName = s.name || 'الأونرية';
+        return;
+      }
       localStorage.removeItem('owner_session');
+    }
+    const sraw = localStorage.getItem('staff_session');
+    if(sraw){
+      const s = JSON.parse(sraw);
+      if(s && s.exp && Date.now() < s.exp && s.key){
+        isStaff = true;
+        staffKey = s.key;
+      } else {
+        localStorage.removeItem('staff_session');
+      }
     }
   }catch(e){}
 }
 
 function updateOwnerUI(){
   const btn = document.getElementById('ownerToggle');
-  btn.textContent = isOwner ? '🔓 خروج' : '🔑 دخول الأونرية';
-  btn.classList.toggle('active', isOwner);
+  btn.textContent = (isOwner || isStaff) ? '🔓 خروج' : '🔑 Staff Dashboard';
+  btn.classList.toggle('active', isOwner || isStaff);
 
   const tag = document.getElementById('ownerNameTag');
-  tag.style.display = isOwner ? 'inline-block' : 'none';
-  tag.textContent = isOwner ? ('👤 ' + ownerName) : '';
+  const loggedIn = isOwner || isStaff;
+  tag.style.display = loggedIn ? 'inline-block' : 'none';
+  if(isOwner) tag.textContent = '👤 ' + ownerName;
+  else if(isStaff) tag.textContent = '👤 ' + (staffData.names[staffKey] || staffName || '');
+  else tag.textContent = '';
+
+  const myBtn = document.getElementById('myPointsBtn');
+  if(myBtn) myBtn.style.display = isStaff ? '' : 'none';
 
   document.querySelectorAll('.slot input').forEach(inp=>{ inp.disabled = !isOwner; });
   document.querySelectorAll('.owner-only').forEach(el=>{ el.style.display = isOwner ? 'flex' : 'none'; });
@@ -1467,16 +1524,13 @@ function onDailyTaskClick(taskId){
   }
 
   if(current || dailyTasks.pending[taskId]) return;
-  const members = getRoleMembers(def.role);
-  if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
-  openModal('مين سوت هذي المهمة؟', [
-    { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة (بينتظر موافقة الأونرية)', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
-  ], (values)=>{
-    dailyTasks.pending[taskId] = { staffKey: values.assignee, ts: Date.now() };
-    saveDailyTasks();
-    renderDailyTasksUI();
-    showToast('✓ أُرسل للأونرية للموافقة');
-  }, null);
+
+  if(!isStaff){ showToast('🔑 سجلي دخول من Staff Dashboard عشان تقدمين طلب', true); return; }
+  if(!confirm(`تأكدين إنك خلصتي "${def.label}"؟ (${def.points} نقطة — بينتظر موافقة الأونرية)`)) return;
+  dailyTasks.pending[taskId] = { staffKey: staffKey, ts: Date.now() };
+  saveDailyTasks();
+  renderDailyTasksUI();
+  showToast('✓ أُرسل للأونرية للموافقة');
 }
 
 function onWeeklyTaskClick(taskId){
@@ -1495,16 +1549,13 @@ function onWeeklyTaskClick(taskId){
   }
 
   if(current || weeklyTasks.pending[taskId]) return;
-  const members = getRoleMembers(def.role);
-  if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
-  openModal('مين سوت هذي المهمة؟', [
-    { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة (بينتظر موافقة الأونرية)', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
-  ], (values)=>{
-    weeklyTasks.pending[taskId] = { staffKey: values.assignee, ts: Date.now() };
-    saveWeeklyTasks();
-    renderWeeklyTasksUI();
-    showToast('✓ أُرسل للأونرية للموافقة');
-  }, null);
+
+  if(!isStaff){ showToast('🔑 سجلي دخول من Staff Dashboard عشان تقدمين طلب', true); return; }
+  if(!confirm(`تأكدين إنك خلصتي "${def.label}"؟ (${def.points} نقطة — بينتظر موافقة الأونرية)`)) return;
+  weeklyTasks.pending[taskId] = { staffKey: staffKey, ts: Date.now() };
+  saveWeeklyTasks();
+  renderWeeklyTasksUI();
+  showToast('✓ أُرسل للأونرية للموافقة');
 }
 
 function approveDailyTask(taskId){
@@ -2291,44 +2342,6 @@ document.getElementById('templatesContainer').addEventListener('click', (e)=>{
 document.getElementById('addTemplateBtn').addEventListener('click', ()=>{ if(isOwner) openTemplateForm(null); });
 
 /* ===== نظام "نقاطي" — كل ستاف تشوف نقاطها بنفسها ===== */
-function getMyStaffKey(){
-  try{ return localStorage.getItem('my_staff_key'); }catch(e){ return null; }
-}
-function setMyStaffKey(key){
-  try{ localStorage.setItem('my_staff_key', key); }catch(e){}
-}
-function clearMyStaffKey(){
-  try{ localStorage.removeItem('my_staff_key'); }catch(e){}
-}
-
-function pickMyName(onDone){
-  const members = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='');
-  if(!members.length){ showToast('ما فيه أسماء مسجلة بعد', true); return; }
-  openModal('منو انتِ؟', [
-    { key:'who', label:'اختاري اسمك', type:'select', options: members.map(k=>({value:k, label:staffData.names[k]})), value: members[0] }
-  ], (values)=>{ onDone(values.who); }, null);
-}
-
-function verifyOrSetPin(key, onSuccess){
-  const name = staffData.names[key];
-  if(staffPins[key]){
-    const entered = prompt(`🔑 حطي الـPIN حق ${name}:`);
-    if(entered === null) return;
-    if(entered === staffPins[key]){ onSuccess(); }
-    else showToast('❌ PIN غلط', true);
-  } else {
-    const p1 = prompt(`✨ أول مرة لك؟ اختاري PIN جديد لـ${name} (٤ أرقام أو أكثر):`);
-    if(p1 === null) return;
-    if(p1.trim().length < 4){ showToast('⚠ لازم ٤ أرقام على الأقل', true); return; }
-    const p2 = prompt('أكّدي الـPIN مرة ثانية:');
-    if(p2 === null) return;
-    if(p1.trim() !== p2.trim()){ showToast('⚠ الـPIN ما تطابق', true); return; }
-    staffPins[key] = p1.trim();
-    saveStaffPins();
-    onSuccess();
-  }
-}
-
 function showMyStats(key){
   const name = staffData.names[key] || STAFF_LABELS[key];
   const points = staffData.points[key] || 0;
@@ -2364,22 +2377,18 @@ function showMyStats(key){
 }
 
 document.getElementById('myPointsBtn').addEventListener('click', ()=>{
-  const existing = getMyStaffKey();
-  if(existing && STAFF_LABELS[existing]){
-    verifyOrSetPin(existing, ()=> showMyStats(existing));
-  } else {
-    pickMyName((key)=>{
-      verifyOrSetPin(key, ()=>{ setMyStaffKey(key); showMyStats(key); });
-    });
-  }
+  if(isStaff && staffKey){ showMyStats(staffKey); return; }
+  showToast('سجلي دخول من Staff Dashboard أول', true);
 });
 document.getElementById('myStatsClose').addEventListener('click', ()=>{
   document.getElementById('myStatsModal').classList.remove('show');
 });
 document.getElementById('myStatsSwitch').addEventListener('click', ()=>{
   document.getElementById('myStatsModal').classList.remove('show');
-  clearMyStaffKey();
-  showToast('تم تبديل الحساب — اضغطي "نقاطي" مرة ثانية');
+  isStaff = false; staffKey = ''; staffName = '';
+  try{ localStorage.removeItem('staff_session'); }catch(e){}
+  updateOwnerUI();
+  showToast('تم تسجيل الخروج — سجلي بحساب ثاني من Staff Dashboard');
 });
 
 loadAll();
