@@ -450,6 +450,27 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box">
+    <div class="modal-title">🔑 Staff Dashboard — تسجيل الدخول</div>
+    <form id="loginForm" action="#" method="post">
+      <div class="modal-field">
+        <label>اسمك بالسيرفر</label>
+        <input type="text" id="loginName" name="username" autocomplete="username" placeholder="اسمك" autocapitalize="off" autocorrect="off">
+      </div>
+      <div class="modal-field">
+        <label>الرقم السري (PIN)</label>
+        <input type="password" id="loginPin" name="password" autocomplete="current-password" placeholder="••••••" required>
+      </div>
+      <div style="font-size:9.5px; color:var(--ink-soft); opacity:.8; margin-bottom:4px;">💡 أول ما تدخلين، الآيفون بيعرض عليك حفظ الرقم السري — اقبلي وبيعبّيه لك تلقائياً كل مرة</div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn cancel" id="loginCancel">إلغاء</button>
+        <button type="submit" class="modal-btn save">دخول</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="app-shell">
 <div class="hero">
   <span class="hero-shell">🐚</span>
@@ -1257,12 +1278,12 @@ document.getElementById('ownerToggle').addEventListener('click', ()=>{
       ], (values)=>{
         isStaff = true; staffKey = values.who; staffName = staffData.names[values.who];
         ownerLinkedStaffKey = values.who;
-        try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 8*3600*1000, linkedStaffKey: values.who })); }catch(e){}
+        try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000, linkedStaffKey: values.who })); }catch(e){}
         updateOwnerUI();
         showToast('✓ أهلاً ' + ownerName + ' — حسابك مربوط كستاف كمان');
       }, null);
     } else {
-      try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 8*3600*1000 })); }catch(e){}
+      try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000 })); }catch(e){}
       updateOwnerUI();
       showToast('✓ أهلاً ' + ownerName);
     }
@@ -1275,7 +1296,7 @@ document.getElementById('ownerToggle').addEventListener('click', ()=>{
     isStaff = true;
     staffKey = matchKey;
     staffName = staffData.names[matchKey];
-    try{ localStorage.setItem('staff_session', JSON.stringify({ key: matchKey, exp: Date.now() + 8*3600*1000 })); }catch(e){}
+    try{ localStorage.setItem('staff_session', JSON.stringify({ key: matchKey, exp: Date.now() + 30*24*3600*1000 })); }catch(e){}
     updateOwnerUI();
     showToast('✓ أهلاً ' + staffName);
     return;
@@ -3102,6 +3123,102 @@ loadAll = async function(){
   if(ov && !ov.classList.contains('hide')){ setTimeout(waitIdeasInit, 300); return; }
   customIdeas = Array.isArray(dbCache.ideas_custom) ? dbCache.ideas_custom.slice() : [];
   renderIdeasUI();
+})();
+
+
+/* ═══════════ تسجيل دخول بنموذج حقيقي — عشان كيتشين الآيفون يحفظ ويعبي تلقائياً ═══════════ */
+(function(){
+  const oldBtn = document.getElementById('ownerToggle');
+  const btn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(btn, oldBtn); // يشيل مستمع البرومبت القديم
+
+  const modal = document.getElementById('loginModal');
+  const form = document.getElementById('loginForm');
+  const nameInp = document.getElementById('loginName');
+  const pinInp = document.getElementById('loginPin');
+
+  function closeLogin(){ modal.classList.remove('show'); form.reset(); }
+
+  btn.addEventListener('click', ()=>{
+    if(isRealOwner || isStaff){
+      isOwner = false; isRealOwner = false; ownerName = ''; previewingAsStaff = false;
+      isStaff = false; staffKey = ''; staffName = '';
+      try{ localStorage.removeItem('owner_session'); localStorage.removeItem('staff_session'); }catch(e){}
+      updateOwnerUI();
+      showToast('تم تسجيل الخروج');
+      return;
+    }
+    modal.classList.add('show');
+    setTimeout(()=>{ nameInp.focus(); }, 150);
+  });
+  document.getElementById('loginCancel').addEventListener('click', closeLogin);
+  modal.addEventListener('click', (e)=>{ if(e.target === modal) closeLogin(); });
+
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const typedName = nameInp.value.trim();
+    const entered = pinInp.value.trim();
+    if(!entered) return;
+
+    /* أونرية؟ */
+    if(entered === OWNER_PIN){
+      ownerName = typedName || 'الأونرية';
+      isOwner = true; isRealOwner = true;
+      closeLogin();
+
+      const linkable = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='');
+      if(linkable.length && confirm('👤 هل انتِ كمان ستاف بالسيرفر؟ اضغطي OK إذا تبين تربطين حسابك باسمك كستاف (تقدرين تستخدمين "نقاطي" وتطلبين إنجاز مهام مثل باقي الستاف، مع احتفاظك بكل صلاحيات الأونرية).')){
+        openModal('اختاري اسمك كستاف', [
+          { key:'who', label:'اسمك', type:'select', options: linkable.map(k=>({value:k, label:staffData.names[k]})), value: linkable[0] }
+        ], (values)=>{
+          isStaff = true; staffKey = values.who; staffName = staffData.names[values.who];
+          ownerLinkedStaffKey = values.who;
+          try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000, linkedStaffKey: values.who })); }catch(err){}
+          updateOwnerUI();
+          showToast('✓ أهلاً ' + ownerName + ' — حسابك مربوط كستاف كمان');
+        }, null);
+      } else {
+        try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000 })); }catch(err){}
+        updateOwnerUI();
+        showToast('✓ أهلاً ' + ownerName);
+      }
+      return;
+    }
+
+    /* ستاف بـPIN شخصي؟ */
+    const matchKey = Object.keys(staffPins).find(k=> staffPins[k] === entered && (staffData.names[k]||'').trim()!=='');
+    if(matchKey){
+      isStaff = true;
+      staffKey = matchKey;
+      staffName = staffData.names[matchKey];
+      try{ localStorage.setItem('staff_session', JSON.stringify({ key: matchKey, exp: Date.now() + 30*24*3600*1000 })); }catch(err){}
+      closeLogin();
+      updateOwnerUI();
+      showToast('✓ أهلاً ' + staffName);
+      return;
+    }
+
+    /* ستاف بدون PIN بعد؟ طلب تسجيل */
+    closeLogin();
+    const wantsSetup = confirm('❓ الـPIN مو موجود. أول مرة لك؟ اضغطي OK عشان تسجّلين.');
+    if(!wantsSetup) return;
+    const members = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='' && !staffPins[k] && !pendingSignups[k]);
+    if(!members.length){ showToast('كل الأسماء إما مسجلة أو بانتظار الموافقة — كلمي الأونرية', true); return; }
+    openModal('منو انتِ؟', [
+      { key:'who', label:'اختاري اسمك', type:'select', options: members.map(k=>({value:k, label:staffData.names[k]})), value: members[0] }
+    ], (values)=>{
+      const key = values.who;
+      const p1 = prompt('✨ اختاري PIN جديد لـ' + staffData.names[key] + ' (٤ أرقام أو أكثر):');
+      if(p1 === null) return;
+      if(p1.trim().length < 4){ showToast('⚠ لازم ٤ أرقام على الأقل', true); return; }
+      const p2 = prompt('أكّدي الـPIN مرة ثانية:');
+      if(p2 === null || p1.trim() !== p2.trim()){ showToast('⚠ الـPIN ما تطابق', true); return; }
+      pendingSignups[key] = { pin: p1.trim(), ts: Date.now() };
+      savePendingSignups();
+      renderPulse();
+      showToast('✓ تسجيلك بانتظار موافقة الأونرية');
+    }, null);
+  });
 })();
 
 </script>
