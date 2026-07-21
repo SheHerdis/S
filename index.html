@@ -1128,9 +1128,22 @@ document.getElementById('ownerToggle').addEventListener('click', ()=>{
     let name = prompt('✏️ اكتبي اسمك (يظهر بسجل النشاط):');
     ownerName = (name && name.trim()) ? name.trim() : 'الأونرية';
     isOwner = true; isRealOwner = true;
-    try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 8*3600*1000 })); }catch(e){}
-    updateOwnerUI();
-    showToast('✓ أهلاً ' + ownerName);
+
+    const linkable = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='');
+    if(linkable.length && confirm('👤 هل انتِ كمان ستاف بالسيرفر؟ اضغطي OK إذا تبين تربطين حسابك باسمك كستاف (تقدرين تستخدمين "نقاطي" وتطلبين إنجاز مهام مثل باقي الستاف، مع احتفاظك بكل صلاحيات الأونرية).')){
+      openModal('اختاري اسمك كستاف', [
+        { key:'who', label:'اسمك', type:'select', options: linkable.map(k=>({value:k, label:staffData.names[k]})), value: linkable[0] }
+      ], (values)=>{
+        isStaff = true; staffKey = values.who; staffName = staffData.names[values.who];
+        try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 8*3600*1000, linkedStaffKey: values.who })); }catch(e){}
+        updateOwnerUI();
+        showToast('✓ أهلاً ' + ownerName + ' — حسابك مربوط كستاف كمان');
+      }, null);
+    } else {
+      try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 8*3600*1000 })); }catch(e){}
+      updateOwnerUI();
+      showToast('✓ أهلاً ' + ownerName);
+    }
     return;
   }
 
@@ -1176,6 +1189,7 @@ function restoreOwnerSession(){
       if(s && s.exp && Date.now() < s.exp){
         isOwner = true; isRealOwner = true;
         ownerName = s.name || 'الأونرية';
+        if(s.linkedStaffKey){ isStaff = true; staffKey = s.linkedStaffKey; }
         return;
       }
       localStorage.removeItem('owner_session');
