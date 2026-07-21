@@ -105,6 +105,15 @@
   .trend-val{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:20px; color:var(--green-done);}
   .trend-box.down .trend-val{color:var(--rose-deep);}
 
+  .pulse-alert{background:linear-gradient(160deg, rgba(255,215,0,0.15), rgba(255,255,255,0.5)); border-color:rgba(184,134,62,0.5);}
+  .pending-card{border-color:rgba(184,134,62,0.5); background:linear-gradient(160deg, rgba(255,215,0,0.08), rgba(255,255,255,0.5));}
+  .pending-item{display:flex; align-items:center; gap:10px; flex:1;}
+  .pending-check{width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; background:rgba(255,215,0,0.18); border:1.5px solid rgba(184,134,62,0.5); flex:0 0 auto;}
+  .pending-actions{display:flex; gap:8px; padding:0 14px 12px;}
+  .pulse-approve, .pulse-reject{flex:1; font-size:11px; font-weight:700; padding:8px; border-radius:9px; cursor:pointer; font-family:'Cairo',sans-serif; border:1px solid;}
+  .pulse-approve{background:rgba(138,155,110,0.18); border-color:rgba(95,122,74,0.4); color:var(--green-done);}
+  .pulse-reject{background:rgba(217,139,122,0.15); border-color:rgba(217,139,122,0.4); color:var(--rose-deep);}
+  .pulse-wait-note{font-size:10px; color:var(--shell); padding:0 14px 12px; opacity:.8;}
   .pulse-block{background:rgba(255,255,255,0.5); border:1px solid rgba(201,160,80,0.22); border-radius:12px; padding:11px 13px; margin-bottom:10px;}
   .pulse-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:13.5px; color:var(--gold-light); margin-bottom:7px;}
   .pulse-row{display:flex; align-items:center; gap:7px; font-size:11px; color:var(--cream); padding:3px 0; line-height:1.5;}
@@ -917,16 +926,18 @@ async function loadAll(){
   if(dbCache.daily_tasks && dbCache.daily_tasks.date === todayKey){
     dailyTasks = JSON.parse(JSON.stringify(dbCache.daily_tasks));
   } else {
-    dailyTasks = { date: todayKey, tasks:{} };
+    dailyTasks = { date: todayKey, tasks:{}, pending:{} };
   }
+  if(!dailyTasks.pending) dailyTasks.pending = {};
 
   dailyHistory = dbCache.daily_history ? JSON.parse(JSON.stringify(dbCache.daily_history)) : {};
 
   if(dbCache.weekly_tasks && dbCache.weekly_tasks.weekKey === currentWeekKey){
     weeklyTasks = JSON.parse(JSON.stringify(dbCache.weekly_tasks));
   } else {
-    weeklyTasks = { weekKey: currentWeekKey, tasks:{} };
+    weeklyTasks = { weekKey: currentWeekKey, tasks:{}, pending:{} };
   }
+  if(!weeklyTasks.pending) weeklyTasks.pending = {};
 
   activityLog = dbCache.activity_log ? JSON.parse(JSON.stringify(dbCache.activity_log)) : [];
   monthArchive = dbCache.month_archive ? JSON.parse(JSON.stringify(dbCache.month_archive)) : [];
@@ -1271,14 +1282,30 @@ function updateProgress(){
   return pct;
 }
 
-function taskRowHtml(t, assignee, isWeekly){
+function taskRowHtml(t, assignee, isWeekly, pending){
   const editAttr = isWeekly ? `data-editweekly="${t.id}"` : `data-editdaily="${t.id}"`;
   const clickAttr = isWeekly ? `data-wtask="${t.id}"` : `data-task="${t.id}"`;
   const checked = !!assignee;
   const assigneeName = assignee ? (staffData.names[assignee] || STAFF_LABELS[assignee] || assignee) : '';
+
+  if(!checked && pending){
+    const pendingName = staffData.names[pending.staffKey] || STAFF_LABELS[pending.staffKey] || '—';
+    const approveAttr = isWeekly ? `data-wapprove="${t.id}"` : `data-approve="${t.id}"`;
+    const rejectAttr = isWeekly ? `data-wreject="${t.id}"` : `data-reject="${t.id}"`;
+    return `<div class="card pending-card">
+      <div class="task-item-row">
+        <div class="task-item pending-item">
+          <div class="checkbox pending-check">⏳</div>
+          <div class="task-text">${escapeHtml(t.label)} <span class="wtask-pts">${t.points} نقطة</span> — بانتظار الموافقة: <b>${escapeHtml(pendingName)}</b></div>
+        </div>
+      </div>
+      ${isOwner?`<div class="pending-actions"><button class="pulse-approve" ${approveAttr}>✅ موافقة</button><button class="pulse-reject" ${rejectAttr}>❌ رفض</button></div>`:'<div class="pulse-wait-note">بانتظار موافقة الأونرية</div>'}
+    </div>`;
+  }
+
   return `<div class="card">
     <div class="task-item-row">
-      <div class="task-item${checked?' done':''}${!isOwner?' locked':''}" ${clickAttr}>
+      <div class="task-item${checked?' done':''}" ${clickAttr}>
         <div class="checkbox${checked?' checked':''}"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round"/></svg></div>
         <div class="task-text">${escapeHtml(t.label)} <span class="wtask-pts">${t.points} نقطة</span>${checked?` — <b>${escapeHtml(assigneeName)}</b>`:''}</div>
       </div>
@@ -1311,7 +1338,7 @@ function renderDailyTasksUI(){
     html += `<div class="task-role-header"><span class="task-role-ico">${groups[roleName].ico}</span><span class="task-role-title">${escapeHtml(roleName)}</span></div>`;
     html += `<div class="task-role-note">💡 أي وحدة بهذا الرول تقدر تسوي أي مهمة من هذي — كلهم متساويين بالنقاط</div>`;
     groups[roleName].items.forEach(t=>{
-      html += taskRowHtml(t, dailyTasks.tasks[t.id], false);
+      html += taskRowHtml(t, dailyTasks.tasks[t.id], false, dailyTasks.pending[t.id]);
     });
   });
   container.innerHTML = html;
@@ -1329,7 +1356,7 @@ function renderWeeklyTasksUI(){
   order.forEach(roleName=>{
     html += `<div class="task-role-header"><span class="task-role-ico">${groups[roleName].ico}</span><span class="task-role-title">${escapeHtml(roleName)}</span></div>`;
     groups[roleName].items.forEach(t=>{
-      html += taskRowHtml(t, weeklyTasks.tasks[t.id], true);
+      html += taskRowHtml(t, weeklyTasks.tasks[t.id], true, weeklyTasks.pending[t.id]);
     });
   });
   container.innerHTML = html;
@@ -1411,42 +1438,103 @@ async function completeWeeklyTask(taskId, newAssignee){
 }
 
 function onDailyTaskClick(taskId){
-  if(!isOwner){ showToast('🔒 بس الأونرية تقدر تعلّم المهام', true); return; }
   const def = tasksConfig.daily.find(t=>t.id===taskId);
   if(!def) return;
   const current = dailyTasks.tasks[taskId] || null;
 
-  if(current){
-    completeDailyTask(taskId, null);
+  if(isOwner){
+    if(current){ completeDailyTask(taskId, null); return; }
+    const members = getRoleMembers(def.role);
+    if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
+    openModal('مين سوت هذي المهمة؟', [
+      { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
+    ], (values)=>{ completeDailyTask(taskId, values.assignee); }, null);
     return;
   }
+
+  if(current || dailyTasks.pending[taskId]) return;
   const members = getRoleMembers(def.role);
   if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
   openModal('مين سوت هذي المهمة؟', [
-    { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
-  ], (values)=>{ completeDailyTask(taskId, values.assignee); }, null);
+    { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة (بينتظر موافقة الأونرية)', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
+  ], (values)=>{
+    dailyTasks.pending[taskId] = { staffKey: values.assignee, ts: Date.now() };
+    saveDailyTasks();
+    renderDailyTasksUI();
+    showToast('✓ أُرسل للأونرية للموافقة');
+  }, null);
 }
 
 function onWeeklyTaskClick(taskId){
-  if(!isOwner){ showToast('🔒 بس الأونرية تقدر تعلّم المهام', true); return; }
   const def = tasksConfig.weekly.find(t=>t.id===taskId);
   if(!def) return;
   const current = weeklyTasks.tasks[taskId] || null;
 
-  if(current){
-    completeWeeklyTask(taskId, null);
+  if(isOwner){
+    if(current){ completeWeeklyTask(taskId, null); return; }
+    const members = getRoleMembers(def.role);
+    if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
+    openModal('مين سوت هذي المهمة؟', [
+      { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
+    ], (values)=>{ completeWeeklyTask(taskId, values.assignee); }, null);
     return;
   }
+
+  if(current || weeklyTasks.pending[taskId]) return;
   const members = getRoleMembers(def.role);
   if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
   openModal('مين سوت هذي المهمة؟', [
-    { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
-  ], (values)=>{ completeWeeklyTask(taskId, values.assignee); }, null);
+    { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة (بينتظر موافقة الأونرية)', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
+  ], (values)=>{
+    weeklyTasks.pending[taskId] = { staffKey: values.assignee, ts: Date.now() };
+    saveWeeklyTasks();
+    renderWeeklyTasksUI();
+    showToast('✓ أُرسل للأونرية للموافقة');
+  }, null);
+}
+
+function approveDailyTask(taskId){
+  const pending = dailyTasks.pending[taskId];
+  if(!pending) return;
+  delete dailyTasks.pending[taskId];
+  completeDailyTask(taskId, pending.staffKey);
+}
+function rejectDailyTask(taskId){
+  const pending = dailyTasks.pending[taskId];
+  if(!pending) return;
+  const name = staffData.names[pending.staffKey] || STAFF_LABELS[pending.staffKey];
+  delete dailyTasks.pending[taskId];
+  saveDailyTasks();
+  logActivity({ type:'task_rejected', staffKey: pending.staffKey, staffName: name, reason: 'رفض طلب إنجاز مهمة' });
+  renderDailyTasksUI();
+  renderActivityFeed();
+  showToast('تم الرفض');
+}
+function approveWeeklyTask(taskId){
+  const pending = weeklyTasks.pending[taskId];
+  if(!pending) return;
+  delete weeklyTasks.pending[taskId];
+  completeWeeklyTask(taskId, pending.staffKey);
+}
+function rejectWeeklyTask(taskId){
+  const pending = weeklyTasks.pending[taskId];
+  if(!pending) return;
+  const name = staffData.names[pending.staffKey] || STAFF_LABELS[pending.staffKey];
+  delete weeklyTasks.pending[taskId];
+  saveWeeklyTasks();
+  logActivity({ type:'task_rejected', staffKey: pending.staffKey, staffName: name, reason: 'رفض طلب إنجاز مهمة أسبوعية' });
+  renderWeeklyTasksUI();
+  renderActivityFeed();
+  showToast('تم الرفض');
 }
 
 document.getElementById('dailyTasksContainer').addEventListener('click', (e)=>{
   const editBtn = e.target.closest('[data-editdaily]');
   if(editBtn){ if(isOwner) openDailyTaskForm(editBtn.dataset.editdaily); return; }
+  const approveBtn = e.target.closest('[data-approve]');
+  if(approveBtn){ if(isOwner) approveDailyTask(approveBtn.dataset.approve); return; }
+  const rejectBtn = e.target.closest('[data-reject]');
+  if(rejectBtn){ if(isOwner) rejectDailyTask(rejectBtn.dataset.reject); return; }
   const item = e.target.closest('.task-item');
   if(item) onDailyTaskClick(item.dataset.task);
 });
@@ -1454,6 +1542,10 @@ document.getElementById('dailyTasksContainer').addEventListener('click', (e)=>{
 document.getElementById('weeklyTasksContainer').addEventListener('click', (e)=>{
   const editBtn = e.target.closest('[data-editweekly]');
   if(editBtn){ if(isOwner) openWeeklyTaskForm(editBtn.dataset.editweekly); return; }
+  const approveBtn = e.target.closest('[data-wapprove]');
+  if(approveBtn){ if(isOwner) approveWeeklyTask(approveBtn.dataset.wapprove); return; }
+  const rejectBtn = e.target.closest('[data-wreject]');
+  if(rejectBtn){ if(isOwner) rejectWeeklyTask(rejectBtn.dataset.wreject); return; }
   const item = e.target.closest('.task-item');
   if(item) onWeeklyTaskClick(item.dataset.wtask);
 });
@@ -1472,7 +1564,7 @@ document.getElementById('resetTasks').addEventListener('click', async ()=>{
     applyTaskPoints(assignee, -def.points, name);
   });
 
-  dailyTasks = { date: todayKey, tasks:{} };
+  dailyTasks = { date: todayKey, tasks:{}, pending:{} };
   await saveDailyTasks();
   await saveStaffData();
   logActivity({ type:'reset', staffKey:'', staffName:'', reason:'تصفير المهام اليومية (مع إرجاع النقاط)' });
@@ -1494,7 +1586,7 @@ document.getElementById('resetWeeklyTasks').addEventListener('click', async ()=>
     applyTaskPoints(assignee, -def.points, name);
   });
 
-  weeklyTasks = { weekKey: currentWeekKey, tasks:{} };
+  weeklyTasks = { weekKey: currentWeekKey, tasks:{}, pending:{} };
   await saveWeeklyTasks();
   await saveStaffData();
   logActivity({ type:'reset', staffKey:'', staffName:'', reason:'تصفير المهام الأسبوعية (مع إرجاع النقاط)' });
@@ -1948,6 +2040,14 @@ function renderPulse(){
   const el = document.getElementById('pulseBox');
   if(!el) return;
 
+  // ٠. طلبات بانتظار الموافقة
+  const pendingDailyCount = Object.keys(dailyTasks.pending||{}).length;
+  const pendingWeeklyCount = Object.keys(weeklyTasks.pending||{}).length;
+  const totalPending = pendingDailyCount + pendingWeeklyCount;
+  const approvalHtml = totalPending
+    ? `<div class="pulse-block pulse-alert"><div class="pulse-title">🔔 بانتظار موافقتك</div><div class="pulse-row"><span class="pulse-dot pulse-dot-gold"></span><span>${totalPending} طلب إنجاز مهمة يحتاج موافقة — روحي تاب "المهام"</span></div></div>`
+    : '';
+
   // ١. مهام اليوم اللي لسه ما تسوّت
   const pending = (tasksConfig.daily||[]).filter(t=>!dailyTasks.tasks[t.id]);
   const pendingHtml = pending.length
@@ -1985,6 +2085,7 @@ function renderPulse(){
     : `<div class="pulse-row"><span class="pulse-dot pulse-dot-green"></span><span>الكل نشيطة خلال آخر ٣ أيام 👍</span></div>`;
 
   el.innerHTML = `
+    ${isOwner ? approvalHtml : ''}
     <div class="pulse-block"><div class="pulse-title">📋 مهام اليوم المتبقية</div>${pendingHtml}</div>
     <div class="pulse-block"><div class="pulse-title">🔥 الأكثر نشاطاً هالأسبوع</div>${topHtml}</div>
     <div class="pulse-block"><div class="pulse-title">⏳ تحتاج متابعة</div>${inactiveHtml}</div>
