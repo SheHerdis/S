@@ -105,6 +105,9 @@
   .trend-val{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:20px; color:var(--green-done);}
   .trend-box.down .trend-val{color:var(--rose-deep);}
 
+  .signup-req-card{background:rgba(255,255,255,0.6); border:1px solid rgba(184,134,62,0.35); border-radius:10px; padding:10px 12px; margin-bottom:8px;}
+  .signup-req-name{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:15px; color:var(--cream);}
+  .signup-req-meta{font-size:10.5px; color:var(--shell); margin-top:3px;}
   .pulse-alert{background:linear-gradient(160deg, rgba(255,215,0,0.15), rgba(255,255,255,0.5)); border-color:rgba(184,134,62,0.5);}
   .pending-card{border-color:rgba(184,134,62,0.5); background:linear-gradient(160deg, rgba(255,215,0,0.08), rgba(255,255,255,0.5));}
   .pending-item{display:flex; align-items:center; gap:10px; flex:1;}
@@ -2118,14 +2121,21 @@ function renderPulse(){
 
   const signupKeys = Object.keys(pendingSignups);
   const signupHtml = signupKeys.length
-    ? `<div class="pulse-block pulse-alert"><div class="pulse-title">🆔 طلبات تسجيل جديدة</div>${signupKeys.map(k=>`
-        <div class="pulse-row" style="justify-content:space-between;">
-          <span>${escapeHtml(staffData.names[k]||STAFF_LABELS[k])} تبي تسجّل — تأكدي إنها هي فعلاً قبل الموافقة</span>
-        </div>
-        <div class="pending-actions" style="padding:6px 0 2px;">
-          <button class="pulse-approve" data-approvesignup="${k}">✅ أيوة هي</button>
-          <button class="pulse-reject" data-rejectsignup="${k}">❌ مو هي</button>
-        </div>`).join('')}</div>`
+    ? `<div class="pulse-block pulse-alert"><div class="pulse-title">🆔 طلبات تسجيل جديدة</div>${signupKeys.map(k=>{
+        const slotInfo = staffConfig.find(s=>s.key===k);
+        const roleInfo = slotInfo ? ROLE_META[slotInfo.role] : null;
+        const roleTitle = roleInfo ? roleInfo.title : '—';
+        const slotLabel = slotInfo ? slotInfo.label : k;
+        return `
+        <div class="signup-req-card">
+          <div class="signup-req-name">${escapeHtml(staffData.names[k]||STAFF_LABELS[k])}</div>
+          <div class="signup-req-meta">${roleInfo?roleInfo.ico:''} الفريق: <b>${escapeHtml(roleTitle)}</b> — التصنيف: <b>${escapeHtml(slotLabel)}</b></div>
+          <div class="pending-actions" style="padding:8px 0 0;">
+            <button class="pulse-approve" data-approvesignup="${k}">✅ أيوة هي</button>
+            <button class="pulse-reject" data-rejectsignup="${k}">❌ مو هي</button>
+          </div>
+        </div>`;
+      }).join('')}</div>`
     : '';
 
   // ١. مهام اليوم اللي لسه ما تسوّت
