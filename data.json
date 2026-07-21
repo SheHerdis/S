@@ -502,6 +502,12 @@
       "role": "warning",
       "label": "Warning-3",
       "placeholder": "اسم"
+    },
+    {
+      "key": "owners1",
+      "role": "owners",
+      "label": "Owner",
+      "placeholder": "اسم"
     }
   ],
   "daily_tasks": {
