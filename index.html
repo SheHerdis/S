@@ -727,24 +727,24 @@ async function ghSaveRaw(){
 /* ===== end GitHub-as-Database ===== */
 
 const DEFAULT_DAILY_TASKS = [
-  { id:'admin_post_am',   role:'admin',  points:15, label:'منشور المحتوى الصباحي' },
-  { id:'admin_post_pm',   role:'admin',  points:15, label:'منشور المحتوى المسائي' },
-  { id:'admin_attendance',role:'admin',  points:15, label:'تسجيل الحضور والملاحظات' },
-  { id:'admin_thanks',    role:'admin',  points:15, label:'منشور شكر ورصد المشاكل' },
-  { id:'helper_voice_1',  role:'helper', points:30, label:'مناوبة الرومة الصوتية' },
-  { id:'helper_voice_2',  role:'helper', points:30, label:'مناوبة الرومة الصوتية' },
-  { id:'helper_voice_3',  role:'helper', points:30, label:'مناوبة الرومة الصوتية' },
-  { id:'helper_voice_4',  role:'helper', points:30, label:'مناوبة الرومة الصوتية' },
-  { id:'helper_onboard_1',role:'helper', points:30, label:'استقبال الأعضاء الجدد' },
-  { id:'helper_onboard_2',role:'helper', points:30, label:'استقبال الأعضاء الجدد' }
+  { id:'admin_qotd',      role:'admin',  points:15, label:'نشر "سؤال اليوم" الصباحي وتثبيته لفتح نقاش' },
+  { id:'admin_challenge',  role:'admin',  points:15, label:'إطلاق تحدي/لعبة سريعة مسائية بالشات العام' },
+  { id:'admin_revive',    role:'admin',  points:20, label:'إحياء رومة هادئة بموضوع أو سؤال جديد' },
+  { id:'admin_spotlight', role:'admin',  points:20, label:'ترشيح "عضو اليوم النشط" وتكريمه علناً' },
+  { id:'helper_welcome',  role:'helper', points:25, label:'استقبال كل عضو جديد برسالة شخصية (مو نسخ-لصق)' },
+  { id:'helper_followup', role:'helper', points:25, label:'متابعة عضو انضم قبل ٣ أيام والاطمئنان عليه' },
+  { id:'helper_voice',    role:'helper', points:30, label:'تفعيل رومة صوتية ساعة على الأقل بوقت الذروة' },
+  { id:'helper_connect',  role:'helper', points:20, label:'ربط عضوين عندهم اهتمام مشترك ببعض' },
+  { id:'warning_patrol',  role:'warning',points:20, label:'جولة تفقد يومية على الرومات ورصد أي مخالفة' },
+  { id:'warning_note',    role:'warning',points:15, label:'توثيق أي سلوك متكرر يحتاج متابعة' }
 ];
 
 const DEFAULT_WEEKLY_TASKS = [
-  { id:'ceo_friday_1',   role:'ceo',   points:35, label:'فعالية الجمعة الرئيسية' },
-  { id:'ceo_friday_2',   role:'ceo',   points:35, label:'فعالية الجمعة الرئيسية' },
-  { id:'ceo_friday_3',   role:'ceo',   points:35, label:'فعالية الجمعة الرئيسية' },
-  { id:'event_tuesday_1',role:'event', points:35, label:'فعالية الثلاثاء الصغيرة' },
-  { id:'event_tuesday_2',role:'event', points:35, label:'فعالية الثلاثاء الصغيرة' }
+  { id:'ceo_star',      role:'ceo',   points:40, label:'اختيار "نجمة الأسبوع" وكتابة سبب اختيارها' },
+  { id:'ceo_recap',     role:'ceo',   points:35, label:'كتابة رسالة أسبوعية عن إنجازات السيرفر' },
+  { id:'ceo_theme',     role:'ceo',   points:35, label:'تحديد ثيم/موضوع الأسبوع القادم حسب المناسبات' },
+  { id:'event_main',    role:'event', points:40, label:'تنفيذ فعالية الأسبوع الرئيسية (الجمعة)' },
+  { id:'event_surprise',role:'event', points:35, label:'تجهيز مفاجأة صغيرة غير معلنة للأعضاء' }
 ];
 
 const DEFAULT_EVENTS = [
