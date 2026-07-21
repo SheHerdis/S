@@ -355,6 +355,17 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="myStatsModal">
+  <div class="modal-box">
+    <div class="modal-title">👤 نقاطي</div>
+    <div id="myStatsBody"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" id="myStatsSwitch">تبديل الحساب</button>
+      <button class="modal-btn save" id="myStatsClose">إغلاق</button>
+    </div>
+  </div>
+</div>
+
 <div class="app-shell">
 <div class="hero">
   <span class="hero-shell">🐚</span>
@@ -365,6 +376,7 @@
 
   <div class="owner-controls">
     <button class="owner-btn" id="ownerToggle">🔑 دخول الأونرية</button>
+    <button class="owner-btn" id="myPointsBtn" style="margin-right:8px;">👤 نقاطي</button>
     <span class="owner-name-tag" id="ownerNameTag" style="display:none;"></span>
   </div>
 </div>
@@ -756,6 +768,10 @@ const DEFAULT_STAFF_CONFIG = [
 ];
 
 let staffConfig = [];
+let staffPins = {};
+async function saveStaffPins(){
+  queueGhSave('staff_pins', staffPins);
+}
 let STAFF_LABELS = {};
 function rebuildStaffLabels(){
   STAFF_LABELS = {};
@@ -956,6 +972,8 @@ async function loadAll(){
     templatesConfig = JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
     dbCache.templates_config = templatesConfig;
   }
+
+  staffPins = dbCache.staff_pins ? JSON.parse(JSON.stringify(dbCache.staff_pins)) : {};
 
   await checkMonthlyReset();
 
@@ -2271,6 +2289,98 @@ document.getElementById('templatesContainer').addEventListener('click', (e)=>{
   }
 });
 document.getElementById('addTemplateBtn').addEventListener('click', ()=>{ if(isOwner) openTemplateForm(null); });
+
+/* ===== نظام "نقاطي" — كل ستاف تشوف نقاطها بنفسها ===== */
+function getMyStaffKey(){
+  try{ return localStorage.getItem('my_staff_key'); }catch(e){ return null; }
+}
+function setMyStaffKey(key){
+  try{ localStorage.setItem('my_staff_key', key); }catch(e){}
+}
+function clearMyStaffKey(){
+  try{ localStorage.removeItem('my_staff_key'); }catch(e){}
+}
+
+function pickMyName(onDone){
+  const members = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='');
+  if(!members.length){ showToast('ما فيه أسماء مسجلة بعد', true); return; }
+  openModal('منو انتِ؟', [
+    { key:'who', label:'اختاري اسمك', type:'select', options: members.map(k=>({value:k, label:staffData.names[k]})), value: members[0] }
+  ], (values)=>{ onDone(values.who); }, null);
+}
+
+function verifyOrSetPin(key, onSuccess){
+  const name = staffData.names[key];
+  if(staffPins[key]){
+    const entered = prompt(`🔑 حطي الـPIN حق ${name}:`);
+    if(entered === null) return;
+    if(entered === staffPins[key]){ onSuccess(); }
+    else showToast('❌ PIN غلط', true);
+  } else {
+    const p1 = prompt(`✨ أول مرة لك؟ اختاري PIN جديد لـ${name} (٤ أرقام أو أكثر):`);
+    if(p1 === null) return;
+    if(p1.trim().length < 4){ showToast('⚠ لازم ٤ أرقام على الأقل', true); return; }
+    const p2 = prompt('أكّدي الـPIN مرة ثانية:');
+    if(p2 === null) return;
+    if(p1.trim() !== p2.trim()){ showToast('⚠ الـPIN ما تطابق', true); return; }
+    staffPins[key] = p1.trim();
+    saveStaffPins();
+    onSuccess();
+  }
+}
+
+function showMyStats(key){
+  const name = staffData.names[key] || STAFF_LABELS[key];
+  const points = staffData.points[key] || 0;
+  const badge = getBadge(points);
+
+  const entries = Object.keys(STAFF_LABELS).map(k=>({ key:k, name:staffData.names[k]||'', points: staffData.points[k]||0 }))
+    .filter(e=>e.name.trim()!=='').sort((a,b)=>b.points-a.points);
+  const rank = entries.findIndex(e=>e.key===key) + 1;
+
+  const thresholds = [20,50,100];
+  const next = thresholds.find(t=>t>points);
+  const toNext = next ? next - points : 0;
+
+  const myActivity = activityLog.filter(a=>a.staffKey && a.staffKey.split(',').includes(key)).slice(0,10);
+  const activityHtml = myActivity.length
+    ? myActivity.map(a=>{
+        const d = (a.delta!==undefined && a.delta!==0) ? ` (${a.delta>0?'+':''}${a.delta})` : '';
+        return `<div class="pulse-row"><span class="pulse-dot ${a.delta>0?'pulse-dot-green':'pulse-dot-red'}"></span><span>${escapeHtml(a.reason||a.type)}${d} — ${timeAgo(a.ts)}</span></div>`;
+      }).join('')
+    : '<div class="pulse-row"><span>ما فيه نشاط مسجل بعد</span></div>';
+
+  document.getElementById('myStatsBody').innerHTML = `
+    <div class="pulse-block" style="text-align:center;">
+      <div style="font-size:32px;">${badge}</div>
+      <div class="role-card-title" style="margin-top:4px;">${escapeHtml(name)}</div>
+      <div style="font-size:26px; font-weight:800; color:var(--gold1); font-family:'Cormorant Garamond',serif; margin-top:6px;">${points} نقطة</div>
+      <div style="font-size:11px; color:var(--shell); margin-top:4px;">ترتيبك: #${rank||'—'} من ${entries.length}</div>
+      ${next ? `<div style="font-size:10.5px; color:var(--shell); margin-top:6px;">تحتاجين ${toNext} نقطة للشارة الجاية</div>` : `<div style="font-size:10.5px; color:var(--shell); margin-top:6px;">وصلتي لأعلى شارة 👑</div>`}
+    </div>
+    <div class="pulse-block"><div class="pulse-title">🕐 آخر نشاطك</div>${activityHtml}</div>
+  `;
+  document.getElementById('myStatsModal').classList.add('show');
+}
+
+document.getElementById('myPointsBtn').addEventListener('click', ()=>{
+  const existing = getMyStaffKey();
+  if(existing && STAFF_LABELS[existing]){
+    verifyOrSetPin(existing, ()=> showMyStats(existing));
+  } else {
+    pickMyName((key)=>{
+      verifyOrSetPin(key, ()=>{ setMyStaffKey(key); showMyStats(key); });
+    });
+  }
+});
+document.getElementById('myStatsClose').addEventListener('click', ()=>{
+  document.getElementById('myStatsModal').classList.remove('show');
+});
+document.getElementById('myStatsSwitch').addEventListener('click', ()=>{
+  document.getElementById('myStatsModal').classList.remove('show');
+  clearMyStaffKey();
+  showToast('تم تبديل الحساب — اضغطي "نقاطي" مرة ثانية');
+});
 
 loadAll();
 </script>
