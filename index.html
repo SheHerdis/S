@@ -456,8 +456,10 @@
     <form id="loginForm" action="#" method="post">
       <div class="modal-field">
         <label>اسمك بالسيرفر</label>
-        <input type="text" id="loginName" name="username" autocomplete="username" placeholder="اسمك" autocapitalize="off" autocorrect="off">
+        <input type="text" id="loginName" name="username" autocomplete="username" list="staffNamesList" placeholder="اختاري اسمك أو اكتبيه" autocapitalize="off" autocorrect="off">
+        <datalist id="staffNamesList"></datalist>
       </div>
+      <div style="font-size:9px; color:var(--ink-soft); opacity:.75; margin:-6px 0 10px;">👆 اضغطي بالخانة يطلع لك اقتراح كل الأسماء المسجلة — أو اكتبي اسمك إذا أول مرة لك</div>
       <div class="modal-field">
         <label>الرقم السري (PIN)</label>
         <input type="password" id="loginPin" name="password" autocomplete="current-password" placeholder="••••••" required>
@@ -3126,7 +3128,17 @@ loadAll = async function(){
 })();
 
 
-/* ═══════════ تسجيل دخول بنموذج حقيقي — عشان كيتشين الآيفون يحفظ ويعبي تلقائياً ═══════════ */
+/* ═══════════ تسجيل دخول: اختيار الاسم من قائمة + كيتشين الآيفون + طلبات حساب جديد ═══════════ */
+let pendingNewAccounts = {};
+async function savePendingNewAccounts(){ queueGhSave('pending_new_accounts', pendingNewAccounts); }
+
+function refreshStaffNamesDatalist(){
+  const dl = document.getElementById('staffNamesList');
+  if(!dl) return;
+  const names = Object.keys(staffData.names||{}).map(k=>staffData.names[k]).filter(n=>(n||'').trim()!=='');
+  dl.innerHTML = names.map(n=>'<option value="'+String(n).replace(/"/g,'&quot;')+'"></option>').join('');
+}
+
 (function(){
   const oldBtn = document.getElementById('ownerToggle');
   const btn = oldBtn.cloneNode(true);
@@ -3148,6 +3160,7 @@ loadAll = async function(){
       showToast('تم تسجيل الخروج');
       return;
     }
+    refreshStaffNamesDatalist();
     modal.classList.add('show');
     setTimeout(()=>{ nameInp.focus(); }, 150);
   });
@@ -3158,11 +3171,11 @@ loadAll = async function(){
     e.preventDefault();
     const typedName = nameInp.value.trim();
     const entered = pinInp.value.trim();
-    if(!entered) return;
+    if(!entered || !typedName) return;
 
-    /* أونرية؟ */
+    /* أونرية بالـPIN الرئيسي؟ */
     if(entered === OWNER_PIN){
-      ownerName = typedName || 'الأونرية';
+      ownerName = typedName;
       isOwner = true; isRealOwner = true;
       closeLogin();
 
@@ -3185,40 +3198,132 @@ loadAll = async function(){
       return;
     }
 
-    /* ستاف بـPIN شخصي؟ */
-    const matchKey = Object.keys(staffPins).find(k=> staffPins[k] === entered && (staffData.names[k]||'').trim()!=='');
+    /* الاسم المكتوب يطابق عضوة مسجلة بالفعل؟ */
+    const matchKey = Object.keys(staffData.names||{}).find(k => (staffData.names[k]||'').trim() === typedName);
+
     if(matchKey){
-      isStaff = true;
-      staffKey = matchKey;
-      staffName = staffData.names[matchKey];
-      try{ localStorage.setItem('staff_session', JSON.stringify({ key: matchKey, exp: Date.now() + 30*24*3600*1000 })); }catch(err){}
-      closeLogin();
-      updateOwnerUI();
-      showToast('✓ أهلاً ' + staffName);
+      /* عندها PIN فعّال؟ */
+      if(staffPins[matchKey] === entered){
+        isStaff = true;
+        staffKey = matchKey;
+        staffName = staffData.names[matchKey];
+        try{ localStorage.setItem('staff_session', JSON.stringify({ key: matchKey, exp: Date.now() + 30*24*3600*1000 })); }catch(err){}
+        closeLogin();
+        updateOwnerUI();
+        showToast('✓ أهلاً ' + staffName);
+        return;
+      }
+      /* ما عندها PIN بعد، ومو منتظرة موافقة؟ أول دخول لها — نرسل طلب تفعيل PIN للأونرية */
+      if(!staffPins[matchKey] && !pendingSignups[matchKey]){
+        pendingSignups[matchKey] = { pin: entered, ts: Date.now() };
+        savePendingSignups();
+        closeLogin();
+        renderPulse();
+        showToast('✓ تسجيلك بانتظار موافقة الأونرية');
+        return;
+      }
+      if(pendingSignups[matchKey]){
+        closeLogin();
+        showToast('⏳ طلبك لسه بانتظار موافقة الأونرية');
+        return;
+      }
+      /* عندها PIN لكن غلط */
+      showToast('⚠ الرقم السري غير صحيح', true);
       return;
     }
 
-    /* ستاف بدون PIN بعد؟ طلب تسجيل */
+    /* الاسم مو موجود إطلاقاً — طلب حساب جديد كامل يروح للأونرية */
+    const alreadyRequested = Object.keys(pendingNewAccounts).find(id => pendingNewAccounts[id].name === typedName);
+    if(alreadyRequested){
+      closeLogin();
+      showToast('⏳ طلب حسابك لسه بانتظار موافقة الأونرية');
+      return;
+    }
+    const reqId = genId('newacc');
+    pendingNewAccounts[reqId] = { name: typedName, pin: entered, ts: Date.now() };
+    savePendingNewAccounts();
     closeLogin();
-    const wantsSetup = confirm('❓ الـPIN مو موجود. أول مرة لك؟ اضغطي OK عشان تسجّلين.');
-    if(!wantsSetup) return;
-    const members = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='' && !staffPins[k] && !pendingSignups[k]);
-    if(!members.length){ showToast('كل الأسماء إما مسجلة أو بانتظار الموافقة — كلمي الأونرية', true); return; }
-    openModal('منو انتِ؟', [
-      { key:'who', label:'اختاري اسمك', type:'select', options: members.map(k=>({value:k, label:staffData.names[k]})), value: members[0] }
-    ], (values)=>{
-      const key = values.who;
-      const p1 = prompt('✨ اختاري PIN جديد لـ' + staffData.names[key] + ' (٤ أرقام أو أكثر):');
-      if(p1 === null) return;
-      if(p1.trim().length < 4){ showToast('⚠ لازم ٤ أرقام على الأقل', true); return; }
-      const p2 = prompt('أكّدي الـPIN مرة ثانية:');
-      if(p2 === null || p1.trim() !== p2.trim()){ showToast('⚠ الـPIN ما تطابق', true); return; }
-      pendingSignups[key] = { pin: p1.trim(), ts: Date.now() };
-      savePendingSignups();
-      renderPulse();
-      showToast('✓ تسجيلك بانتظار موافقة الأونرية');
-    }, null);
+    renderPulse();
+    showToast('🆕 طلب حساب جديد انبعث للأونرية — انتظري الموافقة');
   });
+})();
+
+/* ═══════════ الأونرية: الموافقة على حسابات جديدة كلياً ═══════════ */
+const _origRenderPulse = renderPulse;
+renderPulse = function(){
+  _origRenderPulse();
+  if(!isOwner) return;
+  const el = document.getElementById('pulseBox');
+  if(!el) return;
+  const reqIds = Object.keys(pendingNewAccounts);
+  if(!reqIds.length) return;
+  const html = '<div class="pulse-block pulse-alert"><div class="pulse-title">🆕 طلبات حساب جديد (أسماء غير مسجلة)</div>' +
+    reqIds.map(id=>{
+      const r = pendingNewAccounts[id];
+      return '<div class="signup-req-card">' +
+        '<div class="signup-req-name">' + escapeHtml(r.name) + '</div>' +
+        '<div class="signup-req-meta">طلبت حساب جديد بالكامل — مو موجودة بأي قائمة حالياً</div>' +
+        '<div class="pending-actions" style="padding:8px 0 0;">' +
+        '<button class="pulse-approve" data-approvenewacc="' + id + '">✅ إنشاء حساب</button>' +
+        '<button class="pulse-reject" data-rejectnewacc="' + id + '">❌ رفض</button>' +
+        '</div></div>';
+    }).join('') + '</div>';
+  el.insertAdjacentHTML('afterbegin', html);
+};
+
+document.getElementById('pulseBox').addEventListener('click', (e)=>{
+  const appr = e.target.closest('[data-approvenewacc]');
+  if(appr){
+    if(!isOwner) return;
+    const id = appr.dataset.approvenewacc;
+    const req = pendingNewAccounts[id];
+    if(!req) return;
+    const roleOptions = Object.keys(ROLE_META).map(r=>({ value:r, label: ROLE_META[r].title }));
+    openModal('أي فريق تنضم له ' + req.name + '؟', [
+      { key:'role', label:'الفريق', type:'select', options: roleOptions, value: roleOptions[0].value }
+    ], (values)=>{
+      const role = values.role;
+      let n = 1;
+      while(staffConfig.some(sc=>sc.key === role + n)) n++;
+      const key = role + n;
+      staffConfig.push({ key, role, label: req.name, placeholder:'اسم' });
+      rebuildStaffLabels();
+      staffData.names[key] = req.name;
+      staffPins[key] = req.pin;
+      delete pendingNewAccounts[id];
+      saveStaffConfig();
+      saveStaffData();
+      saveStaffPins();
+      savePendingNewAccounts();
+      renderStaff();
+      renderLeaderboard();
+      renderPulse();
+      showToast('✓ انضمت ' + req.name + ' كـ' + ROLE_META[role].title);
+    }, null);
+    return;
+  }
+  const rej = e.target.closest('[data-rejectnewacc]');
+  if(rej){
+    if(!isOwner) return;
+    if(!confirm('متأكدة تبين ترفضين طلب هالحساب؟')) return;
+    delete pendingNewAccounts[rej.dataset.rejectnewacc];
+    savePendingNewAccounts();
+    renderPulse();
+    showToast('تم الرفض');
+  }
+});
+
+const _origLoadAll5 = loadAll;
+loadAll = async function(){
+  await _origLoadAll5();
+  pendingNewAccounts = dbCache.pending_new_accounts ? JSON.parse(JSON.stringify(dbCache.pending_new_accounts)) : {};
+  refreshStaffNamesDatalist();
+};
+(function waitLogin5Init(){
+  const ov = document.getElementById('loadingOverlay');
+  if(ov && !ov.classList.contains('hide')){ setTimeout(waitLogin5Init, 300); return; }
+  pendingNewAccounts = dbCache.pending_new_accounts ? JSON.parse(JSON.stringify(dbCache.pending_new_accounts)) : {};
+  refreshStaffNamesDatalist();
 })();
 
 </script>
