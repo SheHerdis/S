@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>She/Her Server — Live Owner Panel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Cormorant+Garamond:wght@500;600;700&family=Cairo:wght@400;600;700;800&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -630,6 +630,7 @@ const GH_RAW_URL = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${G
 const GH_API_URL = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_DATA_PATH}`;
 
 let dbCache = {};
+let pendingChanges = {};
 
 async function ghLoad(){
   try{
@@ -645,33 +646,59 @@ function getGhToken(){
 }
 
 let ghSaveQueue = Promise.resolve();
-function queueGhSave(){
+function queueGhSaveRetry(){
   ghSaveQueue = ghSaveQueue.then(()=> ghSaveRaw()).catch(e=>console.error(e));
   return ghSaveQueue;
 }
+function queueGhSave(key, value){
+  dbCache[key] = value;
+  pendingChanges[key] = value;
+  return queueGhSaveRetry();
+}
 
+// يدمج التغييرات المحلية فوق أحدث نسخة من GitHub (مو الكتابة فوق الملف كامل)،
+// عشان لو أونر ثانية حفظت شي بنفس اللحظة، تعديلها ما يضيع.
 async function ghSaveRaw(){
   if(!isOwner) return;
+  if(!Object.keys(pendingChanges).length) return;
   const token = getGhToken();
   if(!token){ showToast('⚠ لازم توكن GitHub عشان يحفظ', true); return; }
+  const myChanges = pendingChanges;
+  pendingChanges = {};
   try{
-    const shaRes = await fetch(GH_API_URL, {
+    const getRes = await fetch(GH_API_URL, {
       headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
     });
-    let sha;
-    if(shaRes.ok){ sha = (await shaRes.json()).sha; }
-    else if(shaRes.status === 401){
-      showToast('⚠ التوكن غير صالح، تواصلي مع المطورة', true);
+    if(!getRes.ok){
+      if(getRes.status === 401){ showToast('⚠ التوكن غير صالح، تواصلي مع المطورة', true); }
+      else{ showToast('⚠ فشل الحفظ', true); Object.assign(pendingChanges, myChanges); }
       return;
     }
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(dbCache, null, 2))));
-    const res = await fetch(GH_API_URL, {
+    const fileInfo = await getRes.json();
+    const remote = JSON.parse(decodeURIComponent(escape(atob(fileInfo.content.replace(/\n/g,'')))));
+    const merged = { ...remote, ...myChanges };
+
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(merged, null, 2))));
+    const putRes = await fetch(GH_API_URL, {
       method: 'PUT',
       headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'Update panel data', content, branch: GH_BRANCH, sha })
+      body: JSON.stringify({ message: 'Update panel data', content, branch: GH_BRANCH, sha: fileInfo.sha })
     });
-    if(!res.ok){ showToast('⚠ فشل الحفظ', true); }
-  }catch(e){ showToast('⚠ فشل الحفظ', true); console.error(e); }
+    if(putRes.ok){
+      dbCache = merged;
+    } else if(putRes.status === 409){
+      // تعارض نادر (حفظ ثاني بنفس اللحظة بالضبط) — أعيدي المحاولة تلقائياً
+      Object.assign(pendingChanges, myChanges);
+      setTimeout(()=> queueGhSaveRetry(), 400);
+    } else {
+      showToast('⚠ فشل الحفظ', true);
+      Object.assign(pendingChanges, myChanges);
+    }
+  }catch(e){
+    showToast('⚠ فشل الحفظ — تأكدي من الاتصال', true);
+    Object.assign(pendingChanges, myChanges);
+    console.error(e);
+  }
 }
 /* ===== end GitHub-as-Database ===== */
 
@@ -743,8 +770,7 @@ function rebuildStaffLabels(){
 }
 
 async function saveStaffConfig(){
-  dbCache.staff_config = staffConfig;
-  queueGhSave();
+  queueGhSave('staff_config', staffConfig);
 }
 
 const ROLE_META = {
@@ -763,13 +789,16 @@ function getRoleMembers(role){
 
 function genId(prefix){ return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
 
-function getISOWeekKey(d){
-  const date = new Date(d);
-  date.setHours(0,0,0,0);
-  date.setDate(date.getDate() + 3 - ((date.getDay()+6)%7));
-  const week1 = new Date(date.getFullYear(),0,4);
-  const weekNum = 1 + Math.round(((date - week1) / 86400000 - 3 + ((week1.getDay()+6)%7)) / 7);
-  return date.getFullYear() + '-W' + weekNum;
+// كل حسابات التاريخ تعتمد على توقيت الكويت (UTC+3) بدل توقيت الجهاز، عشان يوم/أسبوع السيرفر يتصفر بنفس اللحظة للكل بغض النظر عن مكانهم
+function kuwaitNow(){ return new Date(Date.now() + 3*3600*1000); }
+
+function getISOWeekKey(kd){
+  const date = new Date(kd);
+  date.setUTCHours(0,0,0,0);
+  date.setUTCDate(date.getUTCDate() + 3 - ((date.getUTCDay()+6)%7));
+  const week1 = new Date(Date.UTC(date.getUTCFullYear(),0,4));
+  const weekNum = 1 + Math.round(((date - week1) / 86400000 - 3 + ((week1.getUTCDay()+6)%7)) / 7);
+  return date.getUTCFullYear() + '-W' + weekNum;
 }
 
 const ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -781,9 +810,10 @@ let dailyHistory = {};
 let activityLog = [];
 let monthArchive = [];
 
-const todayKey = new Date().toISOString().slice(0,10);
+const KUWAIT_NOW = kuwaitNow();
+const todayKey = KUWAIT_NOW.toISOString().slice(0,10);
 const currentMonthKey = todayKey.slice(0,7);
-const currentWeekKey = getISOWeekKey(new Date());
+const currentWeekKey = getISOWeekKey(KUWAIT_NOW);
 
 let toastTimer;
 function showToast(msg, isError){
@@ -945,48 +975,37 @@ async function loadAll(){
 }
 
 async function saveStaffData(){
-  dbCache.staff_data = staffData;
-  queueGhSave();
+  queueGhSave('staff_data', staffData);
 }
 async function saveTasksConfig(){
-  dbCache.tasks_config = tasksConfig;
-  queueGhSave();
+  queueGhSave('tasks_config', tasksConfig);
 }
 async function saveEventsConfig(){
-  dbCache.events_config = eventsConfig;
-  queueGhSave();
+  queueGhSave('events_config', eventsConfig);
 }
 async function saveGoalsConfig(){
-  dbCache.goals_config = goalsConfig;
-  queueGhSave();
+  queueGhSave('goals_config', goalsConfig);
 }
 async function saveScheduleConfig(){
-  dbCache.schedule_config = scheduleConfig;
-  queueGhSave();
+  queueGhSave('schedule_config', scheduleConfig);
 }
 async function saveChannelsConfig(){
-  dbCache.channels_config = channelsConfig;
-  queueGhSave();
+  queueGhSave('channels_config', channelsConfig);
 }
 async function saveWeeklyTasks(){
-  dbCache.weekly_tasks = weeklyTasks;
-  queueGhSave();
+  queueGhSave('weekly_tasks', weeklyTasks);
 }
 async function saveDailyTasks(){
-  dbCache.daily_tasks = dailyTasks;
-  queueGhSave();
+  queueGhSave('daily_tasks', dailyTasks);
 }
 async function saveDailyHistory(){
-  dbCache.daily_history = dailyHistory;
-  queueGhSave();
+  queueGhSave('daily_history', dailyHistory);
 }
 async function saveActivityLog(){
-  dbCache.activity_log = activityLog;
-  queueGhSave();
+  queueGhSave('activity_log', activityLog);
 }
 async function saveMonthArchive(){
-  dbCache.month_archive = monthArchive;
-  queueGhSave();
+  queueGhSave('month_archive', monthArchive);
 }
 
 async function checkMonthlyReset(){
@@ -1867,8 +1886,8 @@ function renderHallOfFame(){
 function getLastNDays(n, offsetDays){
   const days = [];
   for(let i=offsetDays; i<offsetDays+n; i++){
-    const d = new Date();
-    d.setDate(d.getDate()-i);
+    const d = new Date(KUWAIT_NOW);
+    d.setUTCDate(d.getUTCDate()-i);
     days.push(d.toISOString().slice(0,10));
   }
   return days;
@@ -1915,10 +1934,10 @@ function renderOverviewStats(){
   const totalEl = document.getElementById('totalStaffFilled');
   if(totalEl) totalEl.textContent = filledCount;
 
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayStartMs = Date.parse(todayKey + 'T00:00:00Z') - 3*3600*1000;
   const activeSet = new Set();
   activityLog.forEach(a=>{
-    if(a.ts >= todayStart.getTime() && (a.type==='task' || a.type==='manual_points') && a.delta > 0 && a.staffKey){
+    if(a.ts >= todayStartMs && (a.type==='task' || a.type==='manual_points') && a.delta > 0 && a.staffKey){
       a.staffKey.split(',').forEach(k=>{ if(k) activeSet.add(k); });
     }
   });
