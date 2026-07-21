@@ -12,10 +12,10 @@
     --pearl:#FDFCFA; --pearl-2:#F6F1EA;
     --lagoon:#2E8F87; --lagoon-deep:#1C6B64; --lagoon-soft:rgba(46,143,135,.12);
     --rosegold:#C98A76; --rosegold-deep:#A65C48; --rose-soft:rgba(201,138,118,.14);
-    --gold:#C9A050; --gold-deep:#9A7530; --gold-soft:rgba(201,160,80,.14);
+    --gold:#C0876F; --gold-deep:#A65C48; --gold-soft:rgba(201,138,118,.16);
     --ink:#2B3335; --ink-soft:#5C6B6C;
     --green-done:#3E8E63;
-    --gold1:#B98A1F; --silver1:#9AA6AC; --bronze1:#B5744A;
+    --gold1:#B06A55; --silver1:#9AA6AC; --bronze1:#B5744A;
     --hero-gold:#E8C878; --hero-gold-deep:#C9A050;
     /* legacy aliases so nothing breaks */
     --dusk:var(--pearl); --dusk-2:var(--pearl-2);
@@ -38,7 +38,7 @@
     background:
       radial-gradient(ellipse at 50% -5%, rgba(63,168,154,.20), transparent 55%),
       radial-gradient(circle at 88% 12%, rgba(201,138,118,.16), transparent 42%),
-      radial-gradient(circle at 8% 38%, rgba(201,160,80,.12), transparent 45%),
+      radial-gradient(circle at 8% 38%, rgba(201,138,118,.12), transparent 45%),
       linear-gradient(180deg, #FDFCFA 0%, #F7F3EC 50%, #EFF3F0 100%);
     min-height:100vh; padding-bottom:70px; position:relative;
   }
@@ -138,13 +138,13 @@
   .trend-val{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:21px; color:var(--green-done);}
   .trend-box.down .trend-val{color:var(--rosegold-deep);}
 
-  .signup-req-card{background:rgba(255,255,255,.8); border:1px solid rgba(201,160,80,.35); border-radius:14px; padding:11px 13px; margin-bottom:8px; box-shadow:var(--shadow-sm);}
+  .signup-req-card{background:rgba(255,255,255,.8); border:1px solid rgba(201,138,118,.35); border-radius:14px; padding:11px 13px; margin-bottom:8px; box-shadow:var(--shadow-sm);}
   .signup-req-name{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:15px; color:var(--ink);}
   .signup-req-meta{font-size:10.5px; color:var(--ink-soft); margin-top:3px;}
-  .pulse-alert{background:linear-gradient(165deg, rgba(201,160,80,.14), rgba(255,255,255,.9)); border-color:rgba(201,160,80,.5);}
-  .pending-card{border-color:rgba(201,160,80,.5); background:linear-gradient(165deg, rgba(201,160,80,.08), rgba(255,255,255,.9));}
+  .pulse-alert{background:linear-gradient(165deg, rgba(201,138,118,.14), rgba(255,255,255,.9)); border-color:rgba(201,138,118,.5);}
+  .pending-card{border-color:rgba(201,138,118,.5); background:linear-gradient(165deg, rgba(201,138,118,.08), rgba(255,255,255,.9));}
   .pending-item{display:flex; align-items:center; gap:10px; flex:1;}
-  .pending-check{width:22px; height:22px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:12px; background:var(--gold-soft); border:1.5px solid rgba(201,160,80,.5); flex:0 0 auto;}
+  .pending-check{width:22px; height:22px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:12px; background:var(--gold-soft); border:1.5px solid rgba(201,138,118,.5); flex:0 0 auto;}
   .pending-actions{display:flex; gap:8px; padding:0 14px 12px;}
   .pulse-approve, .pulse-reject{flex:1; font-size:11px; font-weight:700; padding:9px; border-radius:11px; cursor:pointer; font-family:'Cairo',sans-serif; border:1px solid; transition:transform .15s;}
   .pulse-approve:active, .pulse-reject:active{transform:scale(.97);}
@@ -178,7 +178,7 @@
   .slot input{flex:1; min-width:70px; background:transparent; border:none; border-bottom:1.5px dashed rgba(46,143,135,.35); color:var(--ink); font-family:'Tajawal',sans-serif; font-size:12.5px; padding:4px 2px; outline:none; transition:border-color .2s;}
   .slot input::placeholder{color:rgba(43,51,53,.35);}
   .slot input:focus{border-bottom:1.5px solid var(--lagoon);}
-  .slot-points{flex:0 0 auto; font-size:11.5px; font-weight:800; color:var(--gold1); font-family:'Cormorant Garamond',serif; background:rgba(201,160,80,.12); padding:3px 10px; border-radius:8px; border:1px solid rgba(201,160,80,.35);}
+  .slot-points{flex:0 0 auto; font-size:11.5px; font-weight:800; color:var(--gold1); font-family:'Cormorant Garamond',serif; background:rgba(201,138,118,.12); padding:3px 10px; border-radius:8px; border:1px solid rgba(201,138,118,.35);}
   .slot-actions{display:flex; gap:6px; justify-content:flex-end; border-top:1px dashed rgba(46,143,135,.18); padding-top:8px;}
   .pt-btn{font-size:10.5px; font-weight:700; padding:7px 13px; border-radius:10px; border:1px solid rgba(46,143,135,.3); cursor:pointer; font-family:'Cairo',sans-serif; white-space:nowrap; transition:transform .15s;}
   .pt-btn:active{transform:scale(.96);}
@@ -226,7 +226,7 @@
   /* ═══ Leaderboard ═══ */
   .lb-item{display:flex; align-items:center; gap:12px; background:var(--card-bg); border:1px solid var(--card-line); border-radius:16px; padding:13px 15px; margin-bottom:10px; box-shadow:var(--shadow-sm); transition:box-shadow .25s;}
   .lb-item:hover{box-shadow:var(--shadow-md);}
-  .lb-item.rank1{border-color:rgba(185,138,31,.55); background:linear-gradient(165deg, rgba(201,160,80,.14), rgba(255,255,255,.92)); box-shadow:0 6px 20px rgba(185,138,31,.15);}
+  .lb-item.rank1{border-color:rgba(190,120,100,.55); background:linear-gradient(165deg, rgba(201,138,118,.14), rgba(255,255,255,.92)); box-shadow:0 6px 20px rgba(190,120,100,.15);}
   .lb-item.rank2{border-color:rgba(154,166,172,.55); background:linear-gradient(165deg, rgba(154,166,172,.12), rgba(255,255,255,.92));}
   .lb-item.rank3{border-color:rgba(181,116,74,.5); background:linear-gradient(165deg, rgba(181,116,74,.1), rgba(255,255,255,.92));}
   .lb-rank{flex:0 0 auto; font-family:'Cormorant Garamond',serif; font-weight:800; font-size:21px; color:var(--lagoon-deep); width:30px; text-align:center;}
@@ -241,7 +241,7 @@
   .badges-legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; margin-bottom:16px;}
   .badge-chip{background:rgba(255,255,255,.75); border:1px solid rgba(46,143,135,.25); border-radius:999px; padding:6px 13px; font-size:10px; color:var(--ink-soft); box-shadow:var(--shadow-sm);}
 
-  .fame-item{display:flex; align-items:center; gap:10px; background:linear-gradient(165deg, rgba(201,160,80,.12), rgba(255,255,255,.92)); border:1px solid rgba(185,138,31,.35); border-radius:14px; padding:11px 13px; margin-bottom:8px; box-shadow:var(--shadow-sm);}
+  .fame-item{display:flex; align-items:center; gap:10px; background:linear-gradient(165deg, rgba(201,138,118,.12), rgba(255,255,255,.92)); border:1px solid rgba(190,120,100,.35); border-radius:14px; padding:11px 13px; margin-bottom:8px; box-shadow:var(--shadow-sm);}
   .fame-crown{font-size:20px;}
   .fame-month{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:13.5px; color:var(--gold-deep);}
   .fame-winner{font-size:11px; color:var(--ink-soft);}
@@ -299,7 +299,7 @@
   .task-role-ico{font-size:18px;}
   .task-role-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:16px; color:var(--lagoon-deep);}
   .task-role-note{background:linear-gradient(165deg, rgba(46,143,135,.06), rgba(255,255,255,.75)); border:1px dashed rgba(46,143,135,.3); border-radius:14px; padding:12px 14px; font-size:11.5px; color:var(--ink-soft); margin-bottom:12px; line-height:1.65;}
-  .wtask-pts{font-size:9.5px; color:var(--gold-deep); background:rgba(201,160,80,.14); padding:2px 8px; border-radius:7px; margin-right:6px; border:1px solid rgba(201,160,80,.3);}
+  .wtask-pts{font-size:9.5px; color:var(--gold-deep); background:rgba(201,138,118,.14); padding:2px 8px; border-radius:7px; margin-right:6px; border:1px solid rgba(201,138,118,.3);}
 
   .tpl-add-btn{display:block; width:100%; text-align:center; background:rgba(62,142,99,.1); border:1.5px dashed rgba(62,142,99,.45); color:var(--green-done); font-family:'Cairo',sans-serif; font-weight:700; font-size:11.5px; padding:11px; border-radius:13px; cursor:pointer; margin-bottom:14px; transition:all .2s;}
   .tpl-add-btn:hover:not(:disabled){background:rgba(62,142,99,.16);}
@@ -428,9 +428,14 @@
   <h1>She/Her</h1>
   <div class="panel-label">S E R V E R</div>
   <p class="subtext">لوحة حية مشتركة <span class="live-dot"></span></p>
+  <div id="syncLabel" style="font-size:9px; color:var(--ink-soft); opacity:.7; margin-top:5px;"></div>
 
   <div class="owner-controls">
     <button class="owner-btn" id="ownerToggle">🔑 Staff Dashboard</button>
+    <button class="owner-btn" id="refreshBtn" title="تحديث البيانات">🔄 تحديث</button>
+    <button class="owner-btn owner-only-btn" id="backupBtn" disabled style="display:none;">💾 نسخة احتياطية</button>
+    <button class="owner-btn owner-only-btn" id="restoreBtn" disabled style="display:none;">📥 استرجاع</button>
+    <input type="file" id="restoreFile" accept="application/json" style="display:none;">
     <button class="owner-btn" id="myPointsBtn" style="display:none;">👤 نقاطي</button>
     <button class="owner-btn" id="previewToggleBtn" style="display:none;">👁️ عرض كستاف</button>
     <span class="owner-name-tag" id="ownerNameTag" style="display:none;"></span>
@@ -539,6 +544,7 @@
 <div class="section" id="leaderboard">
   <div class="section-title">🏆 لوحة الصدارة</div>
   <div class="section-sub">ترتيب الشهر الحالي — يتصفر تلقائياً أول كل شهر</div>
+  <input type="text" id="lbSearch" placeholder="🔍 ابحثي عن اسم..." style="width:100%; margin-bottom:12px; background:rgba(255,255,255,.85); border:1.5px solid rgba(46,143,135,.25); border-radius:12px; padding:10px 12px; font-family:'Tajawal',sans-serif; font-size:12.5px; color:var(--ink); outline:none;">
   <div id="leaderboardList"></div>
 
   <div class="badges-legend">
@@ -2590,6 +2596,86 @@ document.getElementById('myStatsSwitch').addEventListener('click', ()=>{
 });
 
 loadAll();
+
+/* ═══════════ ترقيات وظيفية — مزامنة حية + نسخ احتياطي + بحث ═══════════ */
+let lastSyncTs = Date.now();
+function updateSyncLabel(){
+  const el = document.getElementById('syncLabel'); if(!el) return;
+  const mins = Math.floor((Date.now()-lastSyncTs)/60000);
+  el.textContent = mins < 1 ? '⟳ آخر مزامنة: الحين' : ('⟳ آخر مزامنة: قبل ' + mins + ' دقيقة');
+}
+function canAutoRefresh(){
+  if(previewingAsStaff) return false;
+  if(Object.keys(pendingChanges).length) return false;
+  if(document.querySelector('.modal-overlay.show')) return false;
+  const ae = document.activeElement;
+  if(ae && (ae.tagName==='INPUT' || ae.tagName==='TEXTAREA' || ae.tagName==='SELECT')) return false;
+  return true;
+}
+let refreshing = false;
+async function refreshFromRemote(force){
+  if(refreshing) return;
+  if(!force && !canAutoRefresh()) return;
+  refreshing = true;
+  try{
+    await loadAll();
+    lastSyncTs = Date.now();
+    updateSyncLabel();
+    if(force) showToast('🔄 تم تحديث البيانات');
+  }catch(e){ if(force) showToast('⚠ فشل التحديث — تأكدي من الاتصال', true); console.error(e); }
+  refreshing = false;
+}
+setInterval(()=>refreshFromRemote(false), 45000);
+setInterval(updateSyncLabel, 20000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) refreshFromRemote(false); });
+document.getElementById('refreshBtn').addEventListener('click', ()=>refreshFromRemote(true));
+updateSyncLabel();
+
+/* نسخة احتياطية — تنزيل كل بيانات اللوحة بملف واحد */
+document.getElementById('backupBtn').addEventListener('click', ()=>{
+  if(!isOwner) return;
+  const blob = new Blob([JSON.stringify(dbCache, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sheher-backup-' + todayKey + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('💾 تم تنزيل النسخة الاحتياطية');
+});
+
+/* استرجاع نسخة احتياطية */
+document.getElementById('restoreBtn').addEventListener('click', ()=>{ if(isOwner) document.getElementById('restoreFile').click(); });
+document.getElementById('restoreFile').addEventListener('change', async (e)=>{
+  const f = e.target.files[0]; e.target.value = ''; if(!f || !isOwner) return;
+  try{
+    const data = JSON.parse(await f.text());
+    if(typeof data !== 'object' || data === null || Array.isArray(data)) throw new Error('bad');
+    if(!confirm('⚠️ الاسترجاع بيستبدل كل بيانات اللوحة الحالية بالنسخة الاحتياطية. متأكدة؟')) return;
+    if(!confirm('تأكيد أخير: ما فيه تراجع بعد الاسترجاع. نكمل؟')) return;
+    Object.keys(data).forEach(k=>{ dbCache[k] = data[k]; pendingChanges[k] = data[k]; });
+    await queueGhSaveRetry();
+    await loadAll();
+    showToast('📥 تم الاسترجاع بنجاح');
+  }catch(err){ showToast('⚠ ملف غير صالح', true); }
+});
+
+/* بحث لوحة الصدارة */
+(function(){
+  const orig = renderLeaderboard;
+  let q = '';
+  renderLeaderboard = function(){
+    orig();
+    if(!q) return;
+    document.querySelectorAll('#leaderboardList .lb-item').forEach(it=>{
+      const nameEl = it.querySelector('.lb-name');
+      const name = nameEl ? nameEl.textContent : '';
+      it.style.display = name.indexOf(q) !== -1 ? '' : 'none';
+    });
+  };
+  const inp = document.getElementById('lbSearch');
+  if(inp) inp.addEventListener('input', ()=>{ q = inp.value.trim(); renderLeaderboard(); });
+})();
+
 </script>
 
 </body>
