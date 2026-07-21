@@ -734,10 +734,10 @@ const DEFAULT_WEEKLY_TASKS = [
 ];
 
 const DEFAULT_EVENTS = [
-  { id:'ev1', date:'', day:'الثلاثاء', title:'Tier List Night — رتبوا أي شي (أكلات، أنمي، ترندات)', time:'8:00 م', team:'Event Team', reward:'Nitro أسبوع', highlight:false },
+  { id:'ev1', date:'', day:'الثلاثاء', title:'Tier List Night — رتبوا أي شي (أكلات، مشاهير، ترندات)', time:'8:00 م', team:'Event Team', reward:'Nitro أسبوع', highlight:false },
   { id:'ev2', date:'', day:'الأربعاء', title:'Aux Battle — كل وحدة تحط أغنية والباقي يقيّمون', time:'9:00 م', team:'Event Team', reward:'رول خاص', highlight:false },
   { id:'ev3', date:'', day:'الخميس', title:'Would You Rather + Hot Takes (رومة صوتية)', time:'9:00 م', team:'Helper', reward:'—', highlight:false },
-  { id:'ev4', date:'', day:'الجمعة', title:'Movie/Anime Night — تصويت على الفيلم ومشاهدة جماعية', time:'8:30 م', team:'CEO Lead', reward:'رول ذهبي + شاوت أوت', highlight:true },
+  { id:'ev4', date:'', day:'الجمعة', title:'Movie Night — تصويت على الفيلم ومشاهدة جماعية', time:'8:30 م', team:'CEO Lead', reward:'رول ذهبي + شاوت أوت', highlight:true },
   { id:'ev5', date:'', day:'السبت', title:'Among Us / لعبة جماعية + كام لصوت', time:'9:00 م', team:'Event Team', reward:'Nitro Boost', highlight:false },
   { id:'ev6', date:'', day:'الأحد', title:'Confessions مجهولة + نقاش خفيف', time:'9:00 م', team:'CEO Lead', reward:'—', highlight:true }
 ];
@@ -755,7 +755,7 @@ let goalsConfig = [];
 
 const DEFAULT_TEMPLATES = [
   { id:'t1', title:'ترحيب بعضو جديد', body:'yaaay وصلتي! 🐚 حياج الله بينا بـ She/Her\n\nعرّفي عن نفسج بـ intro واحنا نعرّفج على الرومات ✨\nأي شي تحتاجينه احنا هنا، لا تستحين تسألين 💛' },
-  { id:'t2', title:'سؤال اليوم (QOTD)', body:'🗣️ QOTD:\n\nلو تقدرين تعيشين يوم واحد بأي شخصية أنمي/مسلسل — منو بتختارين وليش؟\n\nجاوبوا تحت 👇 وردوا على بعض!' },
+  { id:'t2', title:'سؤال اليوم (QOTD)', body:'🗣️ QOTD:\n\nلو تقدرين تعيشين يوم واحد بأي شخصية من مسلسل أو فيلم — منو بتختارين وليش؟\n\nجاوبوا تحت 👇 وردوا على بعض!' },
   { id:'t3', title:'إعلان فعالية', body:'📢 تجمّعوا يا شباب!\n\nالليلة عندنا [اسم الفعالية] الساعة [الوقت] بالرومة الصوتية 🎉\nفيه جوائز 👀 واللي ما يحضر بيندم\n\nكونوا حاضرين 💛' },
   { id:'t4', title:'تكريم عضو نشط', body:'🌟 Spotlight اليوم على: [اسم العضو]\n\nمبدعة بالتفاعل وطاقتها حلوة للسيرفر 💫\nشكراً إنك جزء منّا — استمري!\n\nمنو التالي؟ 👀' },
   { id:'t5', title:'إحياء رومة هادئة', body:'وينكم؟ 👀 الرومة ساكنة زيادة\n\nHot take سريع: [ضعي رأي خفيف مثير للجدل]\n\nأنا بديت — كمّلوا 🔥' }
@@ -883,13 +883,13 @@ function checkBadgeCrossing(oldPts, newPts, name){
 }
 
 const DEFAULT_SCHEDULE = [
-  { id:'sch1', icon:'🌅', day:'الأحد', time:'7:00 م', activity:'رومة صوتية عامة', team:'Voice Moderators', highlight:false },
-  { id:'sch2', icon:'', day:'الاثنين', time:'7:00 م', activity:'نقاش + ألعاب', team:'Voice Moderators', highlight:false },
-  { id:'sch3', icon:'🎉', day:'الثلاثاء', time:'7:00 م', activity:'فعالية صغيرة — مسابقة', team:'Event Team', highlight:true },
-  { id:'sch4', icon:'', day:'الأربعاء', time:'7:00 م', activity:'رومة صوتية عامة', team:'Voice Moderators', highlight:false },
-  { id:'sch5', icon:'', day:'الخميس', time:'7:00 م', activity:'نقاش موضوعي', team:'Admin + Moderators', highlight:false },
-  { id:'sch6', icon:'⭐', day:'الجمعة', time:'8:00 م', activity:'الفعالية الرئيسية', team:'CEO Lead + فريق', highlight:true },
-  { id:'sch7', icon:'🌙', day:'السبت', time:'6:00 م', activity:'رومة فضفاضة', team:'Voice Moderators', highlight:false }
+  { id:'sch1', icon:'', day:'الأحد', time:'9:00 م', activity:'Confessions مجهولة + نقاش خفيف', team:'CEO Lead', highlight:false },
+  { id:'sch2', icon:'', day:'الاثنين', time:'9:00 م', activity:'رومة صوتية تشيل + موسيقى', team:'Helper', highlight:false },
+  { id:'sch3', icon:'', day:'الثلاثاء', time:'8:00 م', activity:'Tier List Night — رتبوا أي شي', team:'Event Team', highlight:true },
+  { id:'sch4', icon:'', day:'الأربعاء', time:'9:00 م', activity:'Aux Battle — معركة أغاني', team:'Event Team', highlight:false },
+  { id:'sch5', icon:'', day:'الخميس', time:'9:00 م', activity:'Would You Rather + Hot Takes', team:'Helper', highlight:false },
+  { id:'sch6', icon:'', day:'الجمعة', time:'8:30 م', activity:'Movie Night — مشاهدة جماعية', team:'CEO Lead', highlight:true },
+  { id:'sch7', icon:'', day:'السبت', time:'9:00 م', activity:'Among Us / لعبة جماعية', team:'Event Team', highlight:false }
 ];
 
 const DEFAULT_CHANNELS = [
