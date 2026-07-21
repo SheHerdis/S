@@ -426,12 +426,6 @@
       "placeholder": "اسم الأونر"
     },
     {
-      "key": "owner2",
-      "role": "owners",
-      "label": "Co-Owner",
-      "placeholder": "اسم الكو أونر"
-    },
-    {
       "key": "ceo1",
       "role": "ceo",
       "label": "CEO-1",
