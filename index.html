@@ -908,6 +908,7 @@ let scheduleConfig = [];
 let channelsConfig = [];
 
 async function loadAll(){
+  restoreOwnerSession();
   await ghLoad();
 
   if(dbCache.staff_config && Array.isArray(dbCache.staff_config) && dbCache.staff_config.length){
@@ -1119,6 +1120,7 @@ tabs.forEach(tab=>{
 document.getElementById('ownerToggle').addEventListener('click', ()=>{
   if(isOwner){
     isOwner = false; ownerName = '';
+    try{ localStorage.removeItem('owner_session'); }catch(e){}
     updateOwnerUI();
     showToast('تم تسجيل الخروج');
     return;
@@ -1129,12 +1131,28 @@ document.getElementById('ownerToggle').addEventListener('click', ()=>{
     let name = prompt('✏️ اكتبي اسمك (يظهر بسجل النشاط):');
     ownerName = (name && name.trim()) ? name.trim() : 'الأونرية';
     isOwner = true;
+    try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 8*3600*1000 })); }catch(e){}
     updateOwnerUI();
     showToast('✓ أهلاً ' + ownerName);
   } else {
     showToast('❌ الكود غير صحيح', true);
   }
 });
+
+// استرجاع جلسة الأونرية لو لسه صالحة (٨ ساعات) — عشان ما يطلب PIN كل ريفرش
+function restoreOwnerSession(){
+  try{
+    const raw = localStorage.getItem('owner_session');
+    if(!raw) return;
+    const s = JSON.parse(raw);
+    if(s && s.exp && Date.now() < s.exp){
+      isOwner = true;
+      ownerName = s.name || 'الأونرية';
+    } else {
+      localStorage.removeItem('owner_session');
+    }
+  }catch(e){}
+}
 
 function updateOwnerUI(){
   const btn = document.getElementById('ownerToggle');
