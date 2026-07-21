@@ -607,6 +607,7 @@ const OWNER_PIN = "SHEHER2026";
 let isOwner = false;
 let isRealOwner = false;
 let previewingAsStaff = false;
+let ownerLinkedStaffKey = '';
 let ownerName = '';
 let isStaff = false;
 let staffKey = '';
@@ -1135,6 +1136,7 @@ document.getElementById('ownerToggle').addEventListener('click', ()=>{
         { key:'who', label:'اسمك', type:'select', options: linkable.map(k=>({value:k, label:staffData.names[k]})), value: linkable[0] }
       ], (values)=>{
         isStaff = true; staffKey = values.who; staffName = staffData.names[values.who];
+        ownerLinkedStaffKey = values.who;
         try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 8*3600*1000, linkedStaffKey: values.who })); }catch(e){}
         updateOwnerUI();
         showToast('✓ أهلاً ' + ownerName + ' — حسابك مربوط كستاف كمان');
@@ -1189,7 +1191,7 @@ function restoreOwnerSession(){
       if(s && s.exp && Date.now() < s.exp){
         isOwner = true; isRealOwner = true;
         ownerName = s.name || 'الأونرية';
-        if(s.linkedStaffKey){ isStaff = true; staffKey = s.linkedStaffKey; }
+        if(s.linkedStaffKey){ isStaff = true; staffKey = s.linkedStaffKey; ownerLinkedStaffKey = s.linkedStaffKey; }
         return;
       }
       localStorage.removeItem('owner_session');
@@ -2444,12 +2446,41 @@ function showMyStats(key){
   document.getElementById('myStatsModal').classList.add('show');
 }
 
+function enterStaffPreview(key){
+  isOwner = false;
+  isStaff = true;
+  staffKey = key;
+  staffName = staffData.names[key] || STAFF_LABELS[key];
+  updateOwnerUI();
+  showToast('👁️ هذه الواجهة التي تراها الستاف المسجّلة.');
+}
+
 document.getElementById('previewToggleBtn').addEventListener('click', ()=>{
   if(!isRealOwner) return;
-  previewingAsStaff = !previewingAsStaff;
-  isOwner = !previewingAsStaff;
-  updateOwnerUI();
-  showToast(previewingAsStaff ? '👁️ تشوفين الواجهة الحين زي ما يشوفها غير المسجلين' : '🔓 رجعتي لواجهة الأونرية الكاملة');
+
+  if(previewingAsStaff){
+    // الرجوع لواجهة الأونرية الكاملة
+    previewingAsStaff = false;
+    isOwner = true;
+    isStaff = !!ownerLinkedStaffKey;
+    staffKey = ownerLinkedStaffKey || '';
+    staffName = ownerLinkedStaffKey ? (staffData.names[ownerLinkedStaffKey]||'') : '';
+    updateOwnerUI();
+    showToast('🔓 رجعتِ لواجهة الأونرية الكاملة.');
+    return;
+  }
+
+  previewingAsStaff = true;
+  if(ownerLinkedStaffKey){
+    enterStaffPreview(ownerLinkedStaffKey);
+    return;
+  }
+  const members = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='');
+  if(!members.length){ showToast('⚠ ما فيه أسماء ستاف مسجّلة بعد للمعاينة.', true); previewingAsStaff = false; return; }
+  previewingAsStaff = false;
+  openModal('عاينِي كأي ستاف', [
+    { key:'who', label:'اختاري اسماً للمعاينة', type:'select', options: members.map(k=>({value:k, label:staffData.names[k]})), value: members[0] }
+  ], (values)=>{ previewingAsStaff = true; enterStaffPreview(values.who); }, null);
 });
 
 document.getElementById('myPointsBtn').addEventListener('click', ()=>{
