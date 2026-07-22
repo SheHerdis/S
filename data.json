@@ -338,17 +338,12 @@
       "helper1": "Shosho",
       "helper2": "Raz",
       "helper3": "Odo",
-      "owner1": "Bunny",
       "owners1": "Amazona",
       "owners2": "Q7",
       "owners3": "bunny"
     },
-    "points": {
-      "owner1": 0
-    },
-    "totalPoints": {
-      "owner1": 0
-    },
+    "points": {},
+    "totalPoints": {},
     "currentMonthKey": "2026-07"
   },
   "activity_log": [
@@ -478,12 +473,6 @@
     }
   ],
   "staff_config": [
-    {
-      "key": "owner1",
-      "role": "owners",
-      "label": "Owner",
-      "placeholder": "اسم الأونر"
-    },
     {
       "key": "ceo1",
       "role": "ceo",
