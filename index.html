@@ -972,6 +972,12 @@ function getRoleMembers(role){
     .filter(k=>k.startsWith(role))
     .map(k=>({ key:k, name: staffData.names[k] || STAFF_LABELS[k] }));
 }
+function getAllStaffMembers(){
+  return Object.keys(STAFF_LABELS)
+    .filter(k => (staffData.names[k]||'').trim() !== '')
+    .map(k=>({ key:k, name: staffData.names[k] || STAFF_LABELS[k] }))
+    .sort((a,b)=> a.name.localeCompare(b.name, 'ar'));
+}
 
 function genId(prefix){ return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
 
@@ -1739,8 +1745,8 @@ function onDailyTaskClick(taskId){
 
   if(isOwner){
     if(current){ completeDailyTask(taskId, null); return; }
-    const members = getRoleMembers(def.role);
-    if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
+    const members = getAllStaffMembers();
+    if(!members.length){ showToast('ما فيه ستاف مسجلة بعد', true); return; }
     openModal('مين سوت هذي المهمة؟', [
       { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
     ], (values)=>{ completeDailyTask(taskId, values.assignee); }, null);
@@ -1760,8 +1766,8 @@ function onWeeklyTaskClick(taskId){
 
   if(isOwner){
     if(current){ completeWeeklyTask(taskId, null); return; }
-    const members = getRoleMembers(def.role);
-    if(!members.length){ showToast('ما فيه أعضاء بهذا الرول', true); return; }
+    const members = getAllStaffMembers();
+    if(!members.length){ showToast('ما فيه ستاف مسجلة بعد', true); return; }
     openModal('مين سوت هذي المهمة؟', [
       { key:'assignee', label: def.label + ' — ' + def.points + ' نقطة', type:'select', options: members.map(m=>({value:m.key,label:m.name})), value: members[0].key }
     ], (values)=>{ completeWeeklyTask(taskId, values.assignee); }, null);
