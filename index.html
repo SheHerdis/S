@@ -740,7 +740,7 @@
 <div class="section" id="leaderboard">
   <div class="section-title">🏆 لوحة الصدارة</div>
   <div class="section-sub">ترتيب الشهر الحالي — يتصفر تلقائياً أول كل شهر</div>
-  <input type="text" id="lbSearch" placeholder="🔍 ابحثي عن اسم..." style="width:100%; margin-bottom:12px; background:rgba(255,255,255,.85); border:1.5px solid rgba(46,143,135,.25); border-radius:12px; padding:10px 12px; font-family:'Tajawal',sans-serif; font-size:12.5px; color:var(--ink); outline:none;">
+  <input type="text" id="lbSearch" placeholder="🔍 ابحثي عن اسم..." style="width:100%; margin-bottom:12px; background:rgba(255,255,255,.85); border:1.5px solid rgba(226,115,150,.25); border-radius:12px; padding:10px 12px; font-family:'Tajawal',sans-serif; font-size:12.5px; color:var(--ink); outline:none;">
   <div id="leaderboardList"></div>
 
   <div class="badges-legend">
@@ -3364,7 +3364,7 @@ function saveUsedIdeas(){ queueGhSave('ideas_used', usedIdeas); }
 
 function ideaUsedBadge(i){
   const u = usedIdeas[i.id];
-  if(!u) return '<span class="day-badge" style="background:var(--rose-soft); color:var(--rosegold-deep); border-color:rgba(74,168,147,.4);">🆕 ما جربناها</span>';
+  if(!u) return '<span class="day-badge" style="background:var(--rose-soft); color:var(--rosegold-deep); border-color:rgba(179,222,226,.4);">🆕 ما جربناها</span>';
   return '<span class="day-badge">✅ آخر مرة: ' + u.lastUsed.slice(5).replace('-','/') + (u.count>1?(' ×'+u.count):'') + '</span>';
 }
 
