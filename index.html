@@ -1110,6 +1110,7 @@ let dailyTasks = { date:'', tasks:{} };
 let weeklyTasks = { weekKey:'', tasks:{} };
 let dailyHistory = {};
 let staffStreaks = {}; // { staffKey: { current: N, lastDate: 'YYYY-MM-DD' } }
+let scheduleDone = { date:'', done:{}, pending:{}, approvals:{} };
 let activityLog = [];
 let monthArchive = [];
 
@@ -1213,6 +1214,14 @@ async function loadAll(){
 
   dailyHistory = dbCache.daily_history ? JSON.parse(JSON.stringify(dbCache.daily_history)) : {};
   staffStreaks = dbCache.staff_streaks ? JSON.parse(JSON.stringify(dbCache.staff_streaks)) : {};
+  if(dbCache.schedule_done && dbCache.schedule_done.date === todayKey){
+    scheduleDone = JSON.parse(JSON.stringify(dbCache.schedule_done));
+  } else {
+    scheduleDone = { date: todayKey, done:{}, pending:{}, approvals:{} };
+  }
+  if(!scheduleDone.done) scheduleDone.done = {};
+  if(!scheduleDone.pending) scheduleDone.pending = {};
+  if(!scheduleDone.approvals) scheduleDone.approvals = {};
 
   if(dbCache.weekly_tasks && dbCache.weekly_tasks.weekKey === currentWeekKey){
     weeklyTasks = JSON.parse(JSON.stringify(dbCache.weekly_tasks));
@@ -1731,6 +1740,10 @@ function getEffectiveStreak(staffKey){
   return 0; // انقطع الانتظام — لسه ما تصفر بالبيانات، بس نعرضه صفر
 }
 
+async function saveScheduleDone(){
+  scheduleDone.date = todayKey;
+  queueGhSave('schedule_done', scheduleDone);
+}
 async function saveStaffStreaks(){
   queueGhSave('staff_streaks', staffStreaks);
 }
@@ -1961,7 +1974,7 @@ function onDailyTaskClick(taskId){
   if(current || dailyTasks.pending[taskId]) return;
 
   if(!isStaff){ showToast('🔑 سجلي دخول من Staff Dashboard عشان تقدمين طلب', true); return; }
-  openProofFlow(false, taskId, def);
+  openProofFlow('daily', taskId, def);
 }
 
 function onWeeklyTaskClick(taskId){
@@ -1982,7 +1995,7 @@ function onWeeklyTaskClick(taskId){
   if(current || weeklyTasks.pending[taskId]) return;
 
   if(!isStaff){ showToast('🔑 سجلي دخول من Staff Dashboard عشان تقدمين طلب', true); return; }
-  openProofFlow(true, taskId, def);
+  openProofFlow('weekly', taskId, def);
 }
 
 function approveDailyTask(taskId){
@@ -2253,11 +2266,32 @@ function renderScheduleUI(){
     return;
   }
   container.innerHTML = scheduleConfig.map(s=>{
+    const doneBy = scheduleDone.done[s.id];
+    const pend = scheduleDone.pending[s.id];
+    const approver = scheduleDone.approvals[s.id];
+    let statusHtml = '', actionHtml = '';
+    if(doneBy){
+      const dn = staffData.names[doneBy] || STAFF_LABELS[doneBy] || '—';
+      statusHtml = `<div class="row"><span class="ico">✅</span><span>نُفّذت اليوم بواسطة <b>${escapeHtml(dn)}</b>${approver?` <span class="approver-tag">✅ قبلتها ${escapeHtml(approver)}</span>`:''}</span></div>`;
+    } else if(pend){
+      const pn = staffData.names[pend.staffKey] || STAFF_LABELS[pend.staffKey] || '—';
+      statusHtml = `<div class="row"><span class="ico">⏳</span><span>بانتظار الموافقة: <b>${escapeHtml(pn)}</b></span></div>`
+        + (pend.photo ? `<img class="proof-thumb" src="${pend.photo}" data-lightbox="1">` : '');
+      if(isOwner){
+        actionHtml = `<div class="pending-actions" style="padding:8px 0 0;"><button class="pulse-approve" data-schapprove="${s.id}">✅ موافقة</button><button class="pulse-reject" data-schreject="${s.id}">❌ رفض</button></div>`;
+      } else if(isStaff && staffKey === pend.staffKey){
+        actionHtml = `<div class="pending-actions" style="padding:8px 0 0;"><button class="pulse-reject" data-schcancel="${s.id}">↩️ إلغاء طلبي</button></div>`;
+      }
+    } else if(isStaff){
+      actionHtml = `<div class="schedule-card-actions"><button class="edit-ico-btn" data-schrequest="${s.id}">📸 طلب إنجاز هذا النشاط</button></div>`;
+    }
     const editRow = isOwner ? `<div class="schedule-card-actions"><button class="edit-ico-btn" data-editsch="${s.id}">✏️ تعديل</button></div>` : '';
     return `<div class="card ${s.highlight?'highlight':''}">
       <div class="card-top"><span class="day-name">${escapeHtml(s.icon||'')} ${escapeHtml(s.day)}</span><span class="day-badge">${escapeHtml(s.time)}</span></div>
       <div class="row"><span class="ico">📌</span><span>${escapeHtml(s.activity)}</span></div>
       <div class="row"><span class="ico">👥</span><span><b>${escapeHtml(s.team)}</b></span></div>
+      ${statusHtml}
+      ${actionHtml}
       ${editRow}
     </div>`;
   }).join('');
@@ -2287,7 +2321,51 @@ function openScheduleForm(id){
   } : null);
 }
 
+function approveScheduleItem(id){
+  const p = scheduleDone.pending[id];
+  if(!p) return;
+  const sc = scheduleConfig.find(x=>x.id===id);
+  scheduleDone.done[id] = p.staffKey;
+  scheduleDone.approvals[id] = ownerName || 'الأونرية';
+  delete scheduleDone.pending[id];
+  saveScheduleDone();
+  const nm = staffData.names[p.staffKey] || STAFF_LABELS[p.staffKey];
+  logActivity({ type:'task', staffKey:p.staffKey, staffName:nm, delta:0, reason:'✅ ' + (ownerName||'الأونرية') + ' وافقت على تنفيذ نشاط الجدول: ' + (sc?sc.activity:'') });
+  bumpStaffStreak(p.staffKey);
+  renderScheduleUI(); renderActivityFeed(); renderRequestsTab(); updateRequestsBadge();
+  showToast('✓ تم اعتماد التنفيذ');
+}
+function rejectScheduleItem(id){
+  if(!scheduleDone.pending[id]) return;
+  delete scheduleDone.pending[id];
+  saveScheduleDone();
+  renderScheduleUI(); renderRequestsTab(); updateRequestsBadge();
+  showToast('تم الرفض');
+}
+
 document.getElementById('scheduleContainer').addEventListener('click', (e)=>{
+  const req = e.target.closest('[data-schrequest]');
+  if(req){
+    const sc = scheduleConfig.find(x=>x.id===req.dataset.schrequest);
+    if(sc) openProofFlow('schedule', sc.id, { label: sc.activity, points: 0 });
+    return;
+  }
+  const ap = e.target.closest('[data-schapprove]');
+  if(ap && isOwner){ approveScheduleItem(ap.dataset.schapprove); return; }
+  const rj = e.target.closest('[data-schreject]');
+  if(rj && isOwner){ rejectScheduleItem(rj.dataset.schreject); return; }
+  const cn = e.target.closest('[data-schcancel]');
+  if(cn){
+    const id = cn.dataset.schcancel;
+    const p = scheduleDone.pending[id];
+    if(p && isStaff && p.staffKey === staffKey){
+      delete scheduleDone.pending[id];
+      saveScheduleDone();
+      renderScheduleUI(); updateRequestsBadge();
+      showToast('تم إلغاء طلبك');
+    }
+    return;
+  }
   const btn = e.target.closest('[data-editsch]');
   if(btn && isOwner) openScheduleForm(btn.dataset.editsch);
 });
@@ -3735,11 +3813,12 @@ loadAll = async function(){
 
 
 /* ═══════════ إرفاق صورة إثبات مع طلب إنجاز المهمة ═══════════ */
-let proofCtx = null; // { isWeekly, taskId, def }
+let proofCtx = null; // { kind: 'daily'|'weekly'|'schedule', taskId, def }
 
-function openProofFlow(isWeekly, taskId, def){
-  proofCtx = { isWeekly, taskId, def };
-  document.getElementById('proofModalTitle').textContent = 'تأكيد: ' + def.label + ' (' + def.points + ' نقطة)';
+function openProofFlow(kind, taskId, def){
+  proofCtx = { kind, taskId, def };
+  const pts = def.points ? ' (' + def.points + ' نقطة)' : '';
+  document.getElementById('proofModalTitle').textContent = 'تأكيد: ' + def.label + pts;
   document.getElementById('proofModal').classList.add('show');
 }
 function closeProofModal(){
@@ -3747,10 +3826,19 @@ function closeProofModal(){
 }
 function submitProofRequest(photoDataUrl){
   if(!proofCtx) return;
-  const { isWeekly, taskId } = proofCtx;
+  const { kind, taskId } = proofCtx;
   const entry = { staffKey: staffKey, ts: Date.now() };
   if(photoDataUrl) entry.photo = photoDataUrl;
-  if(isWeekly){
+  if(kind === 'schedule'){
+    scheduleDone.pending[taskId] = entry;
+    saveScheduleDone();
+    renderScheduleUI();
+    updateRequestsBadge();
+    proofCtx = null;
+    showToast(photoDataUrl ? '✓ أُرسل مع صورة الإثبات للأونرية' : '✓ أُرسل للأونرية للموافقة');
+    return;
+  }
+  if(kind === 'weekly'){
     weeklyTasks.pending[taskId] = entry;
     saveWeeklyTasks();
     renderWeeklyTasksUI();
@@ -3819,6 +3907,7 @@ document.getElementById('lightboxOverlay').addEventListener('click', ()=>{
 function countAllPending(){
   let n = Object.keys(pendingNewAccounts||{}).length + Object.keys(pendingSignups||{}).length;
   n += Object.keys(dailyTasks.pending||{}).length + Object.keys(weeklyTasks.pending||{}).length;
+  n += Object.keys(scheduleDone.pending||{}).length;
   return n;
 }
 function updateRequestsBadge(){
@@ -3872,6 +3961,26 @@ function renderRequestsTab(){
   }
 
   /* طلبات إنجاز مهام (يومية + أسبوعية) */
+  const schIds = Object.keys(scheduleDone.pending||{});
+  if(schIds.length){
+    html += '<div class="pulse-title" style="margin:14px 4px 8px;">📅 طلبات تنفيذ أنشطة الجدول</div>';
+    html += schIds.map(id=>{
+      const sc = scheduleConfig.find(x=>x.id===id);
+      if(!sc) return '';
+      const p = scheduleDone.pending[id];
+      const nm = staffData.names[p.staffKey] || STAFF_LABELS[p.staffKey] || '—';
+      const ph = p.photo ? '<img class="proof-thumb" src="' + p.photo + '" data-lightbox="1">' : '';
+      return '<div class="signup-req-card">' +
+        '<div class="signup-req-name">' + escapeHtml(sc.activity) + '</div>' +
+        '<div class="signup-req-meta">طلبتها: <b>' + escapeHtml(nm) + '</b> — ' + escapeHtml(sc.day) + ' ' + escapeHtml(sc.time) + '</div>' +
+        ph +
+        '<div class="pending-actions" style="padding:8px 0 0;">' +
+        '<button class="pulse-approve" data-reqapprovesch="' + id + '">✅ موافقة</button>' +
+        '<button class="pulse-reject" data-reqrejectsch="' + id + '">❌ رفض</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
   const dailyIds = Object.keys(dailyTasks.pending||{});
   const weeklyIds = Object.keys(weeklyTasks.pending||{});
   if(dailyIds.length || weeklyIds.length){
@@ -3970,6 +4079,11 @@ document.getElementById('requestsBox').addEventListener('click', (e)=>{
     showToast('تم الرفض');
     return;
   }
+
+  const asch = e.target.closest('[data-reqapprovesch]');
+  if(asch){ approveScheduleItem(asch.dataset.reqapprovesch); return; }
+  const rsch = e.target.closest('[data-reqrejectsch]');
+  if(rsch){ rejectScheduleItem(rsch.dataset.reqrejectsch); return; }
 
   const at = e.target.closest('[data-reqapprovetask]');
   if(at){ approveDailyTask(at.dataset.reqapprovetask); renderRequestsTab(); return; }
