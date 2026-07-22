@@ -644,7 +644,7 @@
   <div class="pearl-divider">✦</div>
 
   <div class="section-title" style="font-size:18px;">📆 المهام الأسبوعية</div>
-  <div class="section-sub">تتصفر أول كل أسبوع (السبت). مربوطة بالفعاليات الكبيرة — مو باليوميات</div>
+  <div class="section-sub">تتصفر أول كل أسبوع (السبت) — مهام بمسؤوليات أكبر (تلخيص الأسبوع، الفعالية الرئيسية...) عكس المهام اليومية الصغيرة</div>
 
   <div id="weeklyTasksContainer"></div>
 
@@ -1623,7 +1623,7 @@ function renderDailyTasksUI(){
   let html = '';
   order.forEach(roleName=>{
     html += `<div class="task-role-header"><span class="task-role-ico">${groups[roleName].ico}</span><span class="task-role-title">${escapeHtml(roleName)}</span></div>`;
-    html += `<div class="task-role-note">💡 أي وحدة بهذا الرول تقدر تسوي أي مهمة من هذي — كلهم متساويين بالنقاط</div>`;
+    html += `<div class="task-role-note">💡 هذي المهام مقسّمة حسب الرول المسؤول عادةً، لكن كأونرية تقدرين توثّقين أي مهمة لأي ستاف مهما كان رولها</div>`;
     groups[roleName].items.forEach(t=>{
       html += taskRowHtml(t, dailyTasks.tasks[t.id], false, dailyTasks.pending[t.id], dailyTasks.approvals);
     });
