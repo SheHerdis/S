@@ -487,7 +487,6 @@
     <div class="modal-title">👤 نقاطي</div>
     <div id="myStatsBody"></div>
     <div class="modal-actions">
-      <button class="modal-btn cancel" id="myStatsSwitch">تبديل الحساب</button>
       <button class="modal-btn save" id="myStatsClose">إغلاق</button>
     </div>
   </div>
@@ -3001,14 +3000,6 @@ document.getElementById('myPointsBtn').addEventListener('click', ()=>{
 document.getElementById('myStatsClose').addEventListener('click', ()=>{
   document.getElementById('myStatsModal').classList.remove('show');
 });
-document.getElementById('myStatsSwitch').addEventListener('click', ()=>{
-  document.getElementById('myStatsModal').classList.remove('show');
-  isStaff = false; staffKey = ''; staffName = '';
-  try{ localStorage.removeItem('staff_session'); }catch(e){}
-  updateOwnerUI();
-  showToast('تم تسجيل الخروج — سجلي بحساب ثاني من Staff Dashboard');
-});
-
 loadAll();
 
 /* ═══════════ ترقيات وظيفية — مزامنة حية + نسخ احتياطي + بحث ═══════════ */
