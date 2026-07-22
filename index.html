@@ -661,7 +661,7 @@
 
   <div class="pearl-divider">✦</div>
 
-  <div class="day-name" style="margin-bottom:8px; font-size:13px; display:flex; align-items:center; justify-content:space-between;"><span>🎉 فعاليات هالشهر (بجوائز خاصة)</span><span class="staff-role-count" id="eventsCount">0</span></div>
+  <div class="day-name" style="margin-bottom:8px; font-size:13px; display:flex; align-items:center; justify-content:space-between;"><span>🎉 فعاليات الشهر الخاصة (تتصفر تلقائياً كل شهر)</span><span class="staff-role-count" id="eventsCount">0</span></div>
   <div id="eventsContainer"></div>
   <button class="tpl-add-btn owner-only-btn" id="addEventBtn" disabled>➕ إضافة فعالية</button>
 </div>
@@ -936,12 +936,9 @@ const DEFAULT_WEEKLY_TASKS = [
 ];
 
 const DEFAULT_EVENTS = [
-  { id:'ev1', date:'', day:'الثلاثاء', title:'Tier List Night — رتبوا أي شي (أكلات، مشاهير، ترندات)', time:'8:00 م', team:'Event Team', reward:'Nitro أسبوع', highlight:false },
-  { id:'ev2', date:'', day:'الأربعاء', title:'Aux Battle — كل وحدة تحط أغنية والباقي يقيّمون', time:'9:00 م', team:'Event Team', reward:'رول خاص', highlight:false },
-  { id:'ev3', date:'', day:'الخميس', title:'Would You Rather + Hot Takes (رومة صوتية)', time:'9:00 م', team:'Helper', reward:'—', highlight:false },
-  { id:'ev4', date:'', day:'الجمعة', title:'Movie Night — تصويت على الفيلم ومشاهدة جماعية', time:'8:30 م', team:'CEO Lead', reward:'رول ذهبي + شاوت أوت', highlight:true },
-  { id:'ev5', date:'', day:'السبت', title:'Among Us / لعبة جماعية + كام لصوت', time:'9:00 م', team:'Event Team', reward:'Nitro Boost', highlight:false },
-  { id:'ev6', date:'', day:'الأحد', title:'Confessions مجهولة + نقاش خفيف', time:'9:00 م', team:'CEO Lead', reward:'—', highlight:true }
+  { id:'ev1', day:'تحددينه بالشهر', title:'🔄 يوم الانقلاب — الستاف يصيرون أعضاء وأعضاء مختارات يدرن السيرفر ليوم', time:'—', team:'الأونرية', reward:'رول "حاكمة اليوم" + شاوت أوت', highlight:true },
+  { id:'ev2', day:'تحددينه بالشهر', title:'🛍️ سوق She/Her — يوم تداول خدمات حقيقية بنقاط اللوحة', time:'—', team:'الكل', reward:'—', highlight:false },
+  { id:'ev3', day:'تحددينه بالشهر', title:'👯 توأم السيرفر — فورم توافق وإعلان توائم الشهر', time:'—', team:'CEO', reward:'رول مشترك + تحدي ثنائي', highlight:false }
 ];
 
 const DEFAULT_GOALS = [
@@ -953,6 +950,7 @@ const DEFAULT_GOALS = [
 
 let tasksConfig = { daily: [], weekly: [] };
 let eventsConfig = [];
+let eventsMonthKey = '';
 let goalsConfig = [];
 
 const DEFAULT_TEMPLATES = [
@@ -1179,6 +1177,8 @@ async function loadAll(){
     eventsConfig = JSON.parse(JSON.stringify(DEFAULT_EVENTS));
     dbCache.events_config = eventsConfig;
   }
+  eventsMonthKey = dbCache.events_month || '';
+  checkEventsMonthlyReset();
 
   if(dbCache.goals_config){
     goalsConfig = JSON.parse(JSON.stringify(dbCache.goals_config));
@@ -1242,6 +1242,19 @@ async function saveTasksConfig(){
 }
 async function saveEventsConfig(){
   queueGhSave('events_config', eventsConfig);
+  queueGhSave('events_month', eventsMonthKey);
+}
+function checkEventsMonthlyReset(){
+  if(!eventsMonthKey){
+    eventsMonthKey = currentMonthKey; // أول مرة — ما نمسح فعاليات موجودة بدون ما نعرف من أي شهر
+    return;
+  }
+  if(eventsMonthKey !== currentMonthKey){
+    eventsConfig = [];
+    eventsMonthKey = currentMonthKey;
+    saveEventsConfig();
+    if(isOwner) logActivity({ type:'reset', staffKey:'', staffName:'', reason:'بدأ شهر جديد — قائمة فعاليات الشهر اتصفرت تلقائياً' });
+  }
 }
 async function saveGoalsConfig(){
   queueGhSave('goals_config', goalsConfig);
@@ -2221,11 +2234,11 @@ function renderEventsUI(){
   container.innerHTML = eventsConfig.map(ev=>{
     const editRow = isOwner ? `<div class="card-edit-row"><button class="edit-ico-btn" data-editevent="${ev.id}">✏️ تعديل</button></div>` : '';
     return `<div class="card ${ev.highlight?'highlight':''}">
-      <span class="event-date-pill">${escapeHtml(ev.date)} — ${escapeHtml(ev.day)}</span>
+      <span class="event-date-pill">${escapeHtml(ev.day)}</span>
       <div class="event-name">${escapeHtml(ev.title)}</div>
-      <div class="row"><span class="ico">⏰</span><span>${escapeHtml(ev.time)}</span></div>
+      ${ev.time && ev.time !== '—' ? `<div class="row"><span class="ico">⏰</span><span>${escapeHtml(ev.time)}</span></div>` : ''}
       <div class="row"><span class="ico">👥</span><span><b>${escapeHtml(ev.team)}</b></span></div>
-      <span class="reward-tag">${escapeHtml(ev.reward)}</span>
+      ${ev.reward && ev.reward !== '—' ? `<span class="reward-tag">${escapeHtml(ev.reward)}</span>` : ''}
       ${editRow}
     </div>`;
   }).join('');
@@ -2234,15 +2247,14 @@ function renderEventsUI(){
 function openEventForm(id){
   const existing = id ? eventsConfig.find(e=>e.id===id) : null;
   openModal(existing ? 'تعديل فعالية' : 'فعالية جديدة', [
-    { key:'date', label:'التاريخ', type:'text', value: existing ? existing.date : '' },
-    { key:'day', label:'اليوم', type:'text', value: existing ? existing.day : '' },
+    { key:'day', label:'اليوم / متى بالشهر', type:'text', value: existing ? existing.day : '' },
     { key:'title', label:'اسم الفعالية', type:'text', value: existing ? existing.title : '' },
-    { key:'time', label:'الوقت', type:'text', value: existing ? existing.time : '' },
+    { key:'time', label:'الوقت (اختياري)', type:'text', value: existing ? existing.time : '' },
     { key:'team', label:'الفريق المسؤول', type:'text', value: existing ? existing.team : '' },
-    { key:'reward', label:'الجائزة', type:'text', value: existing ? existing.reward : '' },
+    { key:'reward', label:'الجائزة (اختياري)', type:'text', value: existing ? existing.reward : '' },
     { key:'highlight', label:'فعالية مميزة؟', type:'select', options:[{value:'no',label:'عادية'},{value:'yes',label:'مميزة ⭐'}], value: existing && existing.highlight ? 'yes' : 'no' }
   ], (values)=>{
-    const obj = { date:values.date, day:values.day, title:values.title, time:values.time, team:values.team, reward:values.reward, highlight: values.highlight==='yes' };
+    const obj = { day:values.day, title:values.title, time:values.time, team:values.team, reward:values.reward, highlight: values.highlight==='yes' };
     if(existing){ Object.assign(existing, obj); }
     else{ eventsConfig.push({ id: genId('ev'), ...obj }); }
     saveEventsConfig();
