@@ -606,7 +606,6 @@
   <div class="tabs" id="tabs">
     <div class="tab active owner-only" data-target="overview" style="display:none;"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-7h5v7"/></svg><span>نظرة عامة</span></div>
         <div class="tab owner-only" data-target="growth" style="display:none;"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 7-8"/><path d="M14 7h6v6"/></svg><span>النمو</span></div>
-        <div class="tab" data-target="ideas"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.8.7-1 1.5-1 2.5H9c0-1-.2-1.8-1-2.5A6 6 0 0 1 12 3z"/></svg><span>الأفكار</span></div>
         <div class="tab owner-only" data-target="requests" style="display:none;"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg><span class="tab-badge" id="requestsBadge">0</span><span>الطلبات</span></div>
     <div class="tab" data-target="schedule"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.2"/><path d="M16 3v4M8 3v4M3.5 10h17"/><circle cx="8" cy="14.5" r="1" fill="url(#goldIconGrad)" stroke="none"/><circle cx="12" cy="14.5" r="1" fill="url(#goldIconGrad)" stroke="none"/><circle cx="16" cy="14.5" r="1" fill="url(#goldIconGrad)" stroke="none"/></svg><span>الجدول</span></div>
     <div class="tab owner-only" data-target="staff" style="display:none;"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.3"/><path d="M2.7 20v-1.3a4.3 4.3 0 0 1 4.3-4.3h4a4.3 4.3 0 0 1 4.3 4.3V20"/><path d="M16 4.2a3.3 3.3 0 0 1 0 6.4"/><path d="M20 20v-1.3a4.3 4.3 0 0 0-2.7-4"/></svg><span>الستاف</span></div>
@@ -668,16 +667,6 @@
   <button class="tpl-add-btn owner-only-btn" id="addGrowthBtn" disabled>➕ تسجيل عدد الأعضاء الحالي</button>
   <button class="tpl-add-btn owner-only-btn" id="setGrowthTargetBtn" disabled>🎯 تعديل هدف الشهر</button>
   <div id="growthList"></div>
-</div>
-
-<div class="section" id="ideas">
-  <div class="section-title">💡 بنك الأفكار</div>
-  <div class="section-sub">ما فيه بعد اليوم "ما عندنا أفكار" — فلترتي حسب الروم، أو اسحبي فكرة عشوائية، وانسخيها بضغطة</div>
-  <button class="idea-lucky" id="luckyIdeaBtn">🎲 اسحبي لي فكرة الحين</button>
-  <div class="idea-chips" id="ideaChips"></div>
-  <div id="ideaFeatured"></div>
-  <div id="ideasList"></div>
-  <button class="tpl-add-btn owner-only-btn" id="addIdeaBtn" disabled>➕ إضافة فكرة خاصة فينا</button>
 </div>
 
 <div class="section" id="requests">
@@ -769,7 +758,20 @@
 </div>
 
 <div class="section" id="templates">
-  <div class="section-title" style="display:flex; align-items:center; justify-content:space-between;"><span>📢 قوالب النشر الجاهزة</span><span class="staff-role-count" id="templatesCount">0</span></div>
+  <div class="section-title">📢 القوالب</div>
+  <div class="section-sub">بنك الأفكار وقوالب النشر الجاهزة — كل شي تحتاجينه تنشرينه بمكان واحد</div>
+
+  <div class="day-name" style="margin-bottom:8px; font-size:14px;">💡 بنك الأفكار</div>
+  <div style="font-size:10.5px; color:var(--ink-soft); margin-bottom:12px;">ما فيه بعد اليوم "ما عندنا أفكار" — فلترتي حسب الروم، أو اسحبي فكرة عشوائية، وانسخيها بضغطة</div>
+  <button class="idea-lucky" id="luckyIdeaBtn">🎲 اسحبي لي فكرة الحين</button>
+  <div class="idea-chips" id="ideaChips"></div>
+  <div id="ideaFeatured"></div>
+  <div id="ideasList"></div>
+  <button class="tpl-add-btn owner-only-btn" id="addIdeaBtn" disabled>➕ إضافة فكرة خاصة فينا</button>
+
+  <div class="pearl-divider">✦</div>
+
+  <div class="section-title" style="font-size:18px; display:flex; align-items:center; justify-content:space-between;"><span>📢 قوالب النشر الجاهزة</span><span class="staff-role-count" id="templatesCount">0</span></div>
   <div class="section-sub">انسخي ولصقي مباشرة — الأونرية تقدر تعدّل وتضيف قوالب</div>
 
   <div id="templatesContainer"></div>
