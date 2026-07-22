@@ -502,6 +502,36 @@
 
 <div class="lightbox-overlay" id="lightboxOverlay"><img id="lightboxImg" src=""></div>
 
+<div class="modal-overlay" id="staffLinkModal">
+  <div class="modal-box proof-modal-box">
+    <div class="modal-title">👤 هل أنتِ أيضاً إحدى أعضاء فريق العمل؟</div>
+    <div style="font-size:11.5px; color:var(--ink-soft); line-height:1.85;">
+      عند اختيار <b style="color:var(--lagoon-deep);">"نعم، اربطي حسابي"</b> — سيُربط حسابك باسمك كعضوة فريق أيضاً، وستتمكنين من استخدام "نقاطي" وإنجاز المهام مثل بقية الفريق، مع احتفاظك بجميع صلاحيات المالكة.
+      <br><br>
+      عند اختيار <b style="color:var(--ink);">"لا، مالكة فقط"</b> — ستدخلين بصفتك مالكة السيرفر فقط.
+    </div>
+    <div class="proof-actions">
+      <button type="button" class="proof-btn camera" id="staffLinkYesBtn">✅ نعم، اربطي حسابي كستاف</button>
+      <button type="button" class="proof-btn skip" id="staffLinkNoBtn">لا، مالكة فقط</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="newAccountConfirmModal">
+  <div class="modal-box proof-modal-box">
+    <div class="modal-title">🆕 تأكيد طلب حساب جديد</div>
+    <div style="font-size:11.5px; color:var(--ink-soft); line-height:1.85;">
+      الاسم <b id="newAccConfirmName" style="color:var(--lagoon-deep);"></b> غير مسجّل حالياً بقائمة الستاف.
+      <br><br>
+      عند التأكيد، بيروح طلب انضمام كعضوة فريق جديدة كلياً للأونرية عشان توافق عليه وتحدد فريقك — وما راح تدخلين اللوحة إلا بعد الموافقة.
+    </div>
+    <div class="proof-actions">
+      <button type="button" class="proof-btn camera" id="newAccConfirmYesBtn">📩 تأكيد وإرسال الطلب</button>
+      <button type="button" class="proof-btn skip" id="newAccConfirmNoBtn">إلغاء، هذا مو اسمي</button>
+    </div>
+  </div>
+</div>
+
 <div class="app-shell">
 <div class="hero">
   <span class="hero-shell">🐚</span>
@@ -3228,16 +3258,32 @@ function refreshStaffNamesDatalist(){
       closeLogin();
 
       const linkable = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='');
-      if(linkable.length && confirm('👤 هل أنتِ أيضاً إحدى أعضاء فريق العمل؟\n\nعند اختيار "موافق" — سيُربط حسابك باسمك كعضوة فريق أيضاً، وستتمكنين من استخدام "نقاطي" وإنجاز المهام مثل بقية الفريق، مع احتفاظك بجميع صلاحيات المالكة.\nعند اختيار "إلغاء" — ستدخلين بصفتك مالكة فقط.')){
-        openModal('اختاري اسمك كستاف', [
-          { key:'who', label:'اسمك', type:'select', options: linkable.map(k=>({value:k, label:staffData.names[k]})), value: linkable[0] }
-        ], (values)=>{
-          isStaff = true; staffKey = values.who; staffName = staffData.names[values.who];
-          ownerLinkedStaffKey = values.who;
-          try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000, linkedStaffKey: values.who })); }catch(err){}
+      if(linkable.length){
+        document.getElementById('staffLinkModal').classList.add('show');
+        const yesBtn = document.getElementById('staffLinkYesBtn');
+        const noBtn = document.getElementById('staffLinkNoBtn');
+        const cleanup = ()=>{
+          document.getElementById('staffLinkModal').classList.remove('show');
+          yesBtn.onclick = null; noBtn.onclick = null;
+        };
+        yesBtn.onclick = ()=>{
+          cleanup();
+          openModal('اختاري اسمك كستاف', [
+            { key:'who', label:'اسمك', type:'select', options: linkable.map(k=>({value:k, label:staffData.names[k]})), value: linkable[0] }
+          ], (values)=>{
+            isStaff = true; staffKey = values.who; staffName = staffData.names[values.who];
+            ownerLinkedStaffKey = values.who;
+            try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000, linkedStaffKey: values.who })); }catch(err){}
+            updateOwnerUI();
+            showToast('✓ أهلاً ' + ownerName + ' — حسابك مربوط كستاف كمان');
+          }, null);
+        };
+        noBtn.onclick = ()=>{
+          cleanup();
+          try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000 })); }catch(err){}
           updateOwnerUI();
-          showToast('✓ أهلاً ' + ownerName + ' — حسابك مربوط كستاف كمان');
-        }, null);
+          showToast('✓ أهلاً ' + ownerName);
+        };
       } else {
         try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000 })); }catch(err){}
         updateOwnerUI();
@@ -3280,19 +3326,33 @@ function refreshStaffNamesDatalist(){
       return;
     }
 
-    /* الاسم مو موجود إطلاقاً — طلب حساب جديد كامل يروح للأونرية */
+    /* الاسم مو موجود إطلاقاً — طلب حساب جديد كامل يحتاج تأكيد قبل ما يروح للأونرية */
     const alreadyRequested = Object.keys(pendingNewAccounts).find(id => pendingNewAccounts[id].name === typedName);
     if(alreadyRequested){
       closeLogin();
       showToast('⏳ طلب حسابك لسه بانتظار موافقة الأونرية');
       return;
     }
-    const reqId = genId('newacc');
-    pendingNewAccounts[reqId] = { name: typedName, pin: entered, ts: Date.now() };
-    savePendingNewAccounts();
-    closeLogin();
-    renderPulse();
-    showToast('🆕 تم إرسال طلبك لإنشاء حساب جديد، بانتظار موافقة الأونرية');
+    document.getElementById('newAccConfirmName').textContent = typedName;
+    document.getElementById('newAccountConfirmModal').classList.add('show');
+    const yesBtn = document.getElementById('newAccConfirmYesBtn');
+    const noBtn = document.getElementById('newAccConfirmNoBtn');
+    const cleanup = ()=>{
+      document.getElementById('newAccountConfirmModal').classList.remove('show');
+      yesBtn.onclick = null; noBtn.onclick = null;
+    };
+    yesBtn.onclick = ()=>{
+      cleanup();
+      const reqId = genId('newacc');
+      pendingNewAccounts[reqId] = { name: typedName, pin: entered, ts: Date.now() };
+      savePendingNewAccounts();
+      closeLogin();
+      renderPulse();
+      showToast('🆕 تم إرسال طلبك لإنشاء حساب جديد، بانتظار موافقة الأونرية');
+    };
+    noBtn.onclick = ()=>{
+      cleanup();
+    };
   });
 })();
 
