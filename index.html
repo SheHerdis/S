@@ -419,6 +419,12 @@
   .lightbox-overlay{position:fixed; inset:0; background:rgba(20,30,32,.9); z-index:999; display:none; align-items:center; justify-content:center; padding:20px;}
   .lightbox-overlay.show{display:flex;}
   .lightbox-overlay img{max-width:100%; max-height:100%; border-radius:14px;}
+
+  /* ═══ تبويب الطلبات ═══ */
+  .tab{position:relative;}
+  .tab-badge{position:absolute; top:2px; left:6px; background:#C25B5B; color:#fff; font-size:8.5px; font-weight:800; min-width:15px; height:15px; border-radius:999px; display:none; align-items:center; justify-content:center; padding:0 3px; font-family:'Cairo',sans-serif; box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .tab-badge.show{display:flex;}
+  .req-empty{text-align:center; padding:36px 12px; color:var(--ink-soft); opacity:.7; font-size:12px;}
 </style>
 </head>
 <body>
@@ -469,8 +475,11 @@
     <form id="loginForm" action="#" method="post">
       <div class="modal-field">
         <label>اسمك بالسيرفر</label>
-        <input type="text" id="loginName" name="username" autocomplete="username" list="staffNamesList" placeholder="اختاري اسمك أو اكتبيه" autocapitalize="off" autocorrect="off">
-        <datalist id="staffNamesList"></datalist>
+        <select id="loginNameSelect" name="username" autocomplete="username"></select>
+      </div>
+      <div class="modal-field" id="loginNewNameWrap" style="display:none;">
+        <label>اكتبي اسمك</label>
+        <input type="text" id="loginNewName" placeholder="اسمك" autocapitalize="off" autocorrect="off">
       </div>
       <div class="modal-field">
         <label>الرقم السري (PIN)</label>
@@ -557,6 +566,7 @@
     <div class="tab active" data-target="overview"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-7h5v7"/></svg><span>نظرة عامة</span></div>
         <div class="tab" data-target="growth"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 7-8"/><path d="M14 7h6v6"/></svg><span>النمو</span></div>
         <div class="tab" data-target="ideas"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.8.7-1 1.5-1 2.5H9c0-1-.2-1.8-1-2.5A6 6 0 0 1 12 3z"/></svg><span>الأفكار</span></div>
+        <div class="tab owner-only" data-target="requests" style="display:none;"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg><span class="tab-badge" id="requestsBadge">0</span><span>الطلبات</span></div>
     <div class="tab" data-target="schedule"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.2"/><path d="M16 3v4M8 3v4M3.5 10h17"/><circle cx="8" cy="14.5" r="1" fill="url(#goldIconGrad)" stroke="none"/><circle cx="12" cy="14.5" r="1" fill="url(#goldIconGrad)" stroke="none"/><circle cx="16" cy="14.5" r="1" fill="url(#goldIconGrad)" stroke="none"/></svg><span>الجدول</span></div>
     <div class="tab" data-target="staff"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.3"/><path d="M2.7 20v-1.3a4.3 4.3 0 0 1 4.3-4.3h4a4.3 4.3 0 0 1 4.3 4.3V20"/><path d="M16 4.2a3.3 3.3 0 0 1 0 6.4"/><path d="M20 20v-1.3a4.3 4.3 0 0 0-2.7-4"/></svg><span>الستاف</span></div>
     <div class="tab" data-target="daily"><svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="url(#goldIconGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg><span>المهام</span></div>
@@ -634,6 +644,12 @@
   <div id="ideaFeatured"></div>
   <div id="ideasList"></div>
   <button class="tpl-add-btn owner-only-btn" id="addIdeaBtn" disabled>➕ إضافة فكرة خاصة فينا</button>
+</div>
+
+<div class="section" id="requests">
+  <div class="section-title">📥 الطلبات</div>
+  <div class="section-sub">كل الطلبات المعلّقة بمكان واحد — وافقي أو ارفضي من هنا مباشرة</div>
+  <div id="requestsBox"></div>
 </div>
 
 <div class="section" id="schedule">
@@ -3208,11 +3224,17 @@ loadAll = async function(){
 let pendingNewAccounts = {};
 async function savePendingNewAccounts(){ queueGhSave('pending_new_accounts', pendingNewAccounts); }
 
+const NEW_ACCOUNT_OPT = '__new_account__';
 function refreshStaffNamesDatalist(){
-  const dl = document.getElementById('staffNamesList');
-  if(!dl) return;
-  const names = Object.keys(staffData.names||{}).map(k=>staffData.names[k]).filter(n=>(n||'').trim()!=='');
-  dl.innerHTML = names.map(n=>'<option value="'+String(n).replace(/"/g,'&quot;')+'"></option>').join('');
+  const sel = document.getElementById('loginNameSelect');
+  if(!sel) return;
+  const names = Object.keys(staffData.names||{}).map(k=>staffData.names[k]).filter(n=>(n||'').trim()!=='').sort((a,b)=>a.localeCompare(b,'ar'));
+  const prev = sel.value;
+  sel.innerHTML =
+    '<option value="">اختاري اسمك</option>' +
+    names.map(n=>'<option value="'+escapeHtml(n)+'">'+escapeHtml(n)+'</option>').join('') +
+    '<option value="' + NEW_ACCOUNT_OPT + '">➕ اسمي مو موجود بالقائمة</option>';
+  if(prev && [...sel.options].some(o=>o.value===prev)) sel.value = prev;
 }
 
 (function(){
@@ -3222,10 +3244,22 @@ function refreshStaffNamesDatalist(){
 
   const modal = document.getElementById('loginModal');
   const form = document.getElementById('loginForm');
-  const nameInp = document.getElementById('loginName');
+  const nameSel = document.getElementById('loginNameSelect');
+  const newNameWrap = document.getElementById('loginNewNameWrap');
+  const newNameInp = document.getElementById('loginNewName');
   const pinInp = document.getElementById('loginPin');
 
-  function closeLogin(){ modal.classList.remove('show'); form.reset(); }
+  function closeLogin(){ modal.classList.remove('show'); form.reset(); newNameWrap.style.display = 'none'; }
+
+  nameSel.addEventListener('change', ()=>{
+    if(nameSel.value === NEW_ACCOUNT_OPT){
+      newNameWrap.style.display = '';
+      setTimeout(()=>newNameInp.focus(), 100);
+    } else {
+      newNameWrap.style.display = 'none';
+      newNameInp.value = '';
+    }
+  });
 
   btn.addEventListener('click', ()=>{
     if(isRealOwner || isStaff){
@@ -3237,17 +3271,22 @@ function refreshStaffNamesDatalist(){
       return;
     }
     refreshStaffNamesDatalist();
+    newNameWrap.style.display = 'none';
     modal.classList.add('show');
-    setTimeout(()=>{ nameInp.focus(); }, 150);
   });
   document.getElementById('loginCancel').addEventListener('click', closeLogin);
   modal.addEventListener('click', (e)=>{ if(e.target === modal) closeLogin(); });
 
   form.addEventListener('submit', (e)=>{
     e.preventDefault();
-    const typedName = nameInp.value.trim();
+    const isNewReq = nameSel.value === NEW_ACCOUNT_OPT;
+    const typedName = isNewReq ? newNameInp.value.trim() : nameSel.value.trim();
     const entered = pinInp.value.trim();
-    if(!entered || !typedName) return;
+    if(!entered || !typedName){
+      if(isNewReq && !typedName) showToast('اكتبي اسمك أول', true);
+      else if(!nameSel.value) showToast('اختاري اسمك أول', true);
+      return;
+    }
 
     /* أونرية بالـPIN الرئيسي؟ */
     if(entered === OWNER_PIN){
@@ -3512,6 +3551,196 @@ document.addEventListener('click', (e)=>{
 document.getElementById('lightboxOverlay').addEventListener('click', ()=>{
   document.getElementById('lightboxOverlay').classList.remove('show');
 });
+
+
+/* ═══════════ تبويب الطلبات — تجميع كل الطلبات المعلّقة بمكان واحد ═══════════ */
+function countAllPending(){
+  let n = Object.keys(pendingNewAccounts||{}).length + Object.keys(pendingSignups||{}).length;
+  n += Object.keys(dailyTasks.pending||{}).length + Object.keys(weeklyTasks.pending||{}).length;
+  return n;
+}
+function updateRequestsBadge(){
+  const b = document.getElementById('requestsBadge');
+  if(!b) return;
+  const n = countAllPending();
+  b.textContent = n > 9 ? '9+' : String(n);
+  b.classList.toggle('show', isOwner && n > 0);
+}
+
+function renderRequestsTab(){
+  const box = document.getElementById('requestsBox');
+  if(!box) return;
+  if(!isOwner){ box.innerHTML = '<div class="req-empty">🔒 هذا القسم يخص الأونرية بس</div>'; return; }
+
+  let html = '';
+
+  /* حسابات جديدة كلياً */
+  const newAccIds = Object.keys(pendingNewAccounts||{});
+  if(newAccIds.length){
+    html += '<div class="pulse-title" style="margin:14px 4px 8px;">🆕 طلبات حساب جديد</div>';
+    html += newAccIds.map(id=>{
+      const r = pendingNewAccounts[id];
+      return '<div class="signup-req-card">' +
+        '<div class="signup-req-name">' + escapeHtml(r.name) + '</div>' +
+        '<div class="signup-req-meta">طلبت حساب جديد بالكامل — مو موجودة بأي قائمة حالياً</div>' +
+        '<div class="pending-actions" style="padding:8px 0 0;">' +
+        '<button class="pulse-approve" data-reqapprovenewacc="' + id + '">✅ إنشاء حساب</button>' +
+        '<button class="pulse-reject" data-reqrejectnewacc="' + id + '">❌ رفض</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  /* تفعيل PIN لأسماء موجودة بالقائمة */
+  const signupKeys = Object.keys(pendingSignups||{});
+  if(signupKeys.length){
+    html += '<div class="pulse-title" style="margin:14px 4px 8px;">🆔 طلبات تفعيل حساب</div>';
+    html += signupKeys.map(k=>{
+      const slotInfo = staffConfig.find(s=>s.key===k);
+      const roleInfo = slotInfo ? ROLE_META[slotInfo.role] : null;
+      const roleTitle = roleInfo ? roleInfo.title : '—';
+      const slotLabel = slotInfo ? slotInfo.label : k;
+      return '<div class="signup-req-card">' +
+        '<div class="signup-req-name">' + escapeHtml(staffData.names[k]||STAFF_LABELS[k]) + '</div>' +
+        '<div class="signup-req-meta">' + (roleInfo?roleInfo.ico:'') + ' الفريق: <b>' + escapeHtml(roleTitle) + '</b> — التصنيف: <b>' + escapeHtml(slotLabel) + '</b></div>' +
+        '<div class="pending-actions" style="padding:8px 0 0;">' +
+        '<button class="pulse-approve" data-reqapprovesignup="' + k + '">✅ أيوة هي</button>' +
+        '<button class="pulse-reject" data-reqrejectsignup="' + k + '">❌ مو هي</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  /* طلبات إنجاز مهام (يومية + أسبوعية) */
+  const dailyIds = Object.keys(dailyTasks.pending||{});
+  const weeklyIds = Object.keys(weeklyTasks.pending||{});
+  if(dailyIds.length || weeklyIds.length){
+    html += '<div class="pulse-title" style="margin:14px 4px 8px;">✅ طلبات إنجاز مهام</div>';
+    html += dailyIds.map(taskId=>{
+      const def = tasksConfig.daily.find(t=>t.id===taskId);
+      if(!def) return '';
+      const p = dailyTasks.pending[taskId];
+      const name = staffData.names[p.staffKey] || STAFF_LABELS[p.staffKey] || '—';
+      const photoHtml = p.photo ? '<img class="proof-thumb" src="' + p.photo + '" data-lightbox="1">' : '';
+      return '<div class="signup-req-card">' +
+        '<div class="signup-req-name">' + escapeHtml(def.label) + ' <span class="wtask-pts">' + def.points + ' نقطة</span></div>' +
+        '<div class="signup-req-meta">طلبتها: <b>' + escapeHtml(name) + '</b> — مهمة يومية</div>' +
+        photoHtml +
+        '<div class="pending-actions" style="padding:8px 0 0;">' +
+        '<button class="pulse-approve" data-reqapprovetask="' + taskId + '">✅ موافقة</button>' +
+        '<button class="pulse-reject" data-reqrejecttask="' + taskId + '">❌ رفض</button>' +
+        '</div></div>';
+    }).join('');
+    html += weeklyIds.map(taskId=>{
+      const def = tasksConfig.weekly.find(t=>t.id===taskId);
+      if(!def) return '';
+      const p = weeklyTasks.pending[taskId];
+      const name = staffData.names[p.staffKey] || STAFF_LABELS[p.staffKey] || '—';
+      const photoHtml = p.photo ? '<img class="proof-thumb" src="' + p.photo + '" data-lightbox="1">' : '';
+      return '<div class="signup-req-card">' +
+        '<div class="signup-req-name">' + escapeHtml(def.label) + ' <span class="wtask-pts">' + def.points + ' نقطة</span></div>' +
+        '<div class="signup-req-meta">طلبتها: <b>' + escapeHtml(name) + '</b> — مهمة أسبوعية</div>' +
+        photoHtml +
+        '<div class="pending-actions" style="padding:8px 0 0;">' +
+        '<button class="pulse-approve" data-reqapprovewtask="' + taskId + '">✅ موافقة</button>' +
+        '<button class="pulse-reject" data-reqrejectwtask="' + taskId + '">❌ رفض</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  box.innerHTML = html || '<div class="req-empty">🎉 ما فيه طلبات معلّقة حالياً</div>';
+  updateRequestsBadge();
+}
+
+document.getElementById('requestsBox').addEventListener('click', (e)=>{
+  if(!isOwner) return;
+
+  const an = e.target.closest('[data-reqapprovenewacc]');
+  if(an){
+    const id = an.dataset.reqapprovenewacc;
+    const req = pendingNewAccounts[id];
+    if(!req) return;
+    const roleOptions = Object.keys(ROLE_META).map(r=>({ value:r, label: ROLE_META[r].title }));
+    openModal('أي فريق تنضم له ' + req.name + '؟', [
+      { key:'role', label:'الفريق', type:'select', options: roleOptions, value: roleOptions[0].value }
+    ], (values)=>{
+      const role = values.role;
+      let n = 1;
+      while(staffConfig.some(sc=>sc.key === role + n)) n++;
+      const key = role + n;
+      staffConfig.push({ key, role, label: req.name, placeholder:'اسم' });
+      rebuildStaffLabels();
+      staffData.names[key] = req.name;
+      staffPins[key] = req.pin;
+      delete pendingNewAccounts[id];
+      saveStaffConfig(); saveStaffData(); saveStaffPins(); savePendingNewAccounts();
+      renderStaff(); renderLeaderboard(); renderPulse(); renderRequestsTab();
+      showToast('✓ انضمت ' + req.name + ' كـ' + ROLE_META[role].title);
+    }, null);
+    return;
+  }
+  const rn = e.target.closest('[data-reqrejectnewacc]');
+  if(rn){
+    if(!confirm('متأكدة تبين ترفضين طلب هالحساب؟')) return;
+    delete pendingNewAccounts[rn.dataset.reqrejectnewacc];
+    savePendingNewAccounts();
+    renderPulse(); renderRequestsTab();
+    showToast('تم الرفض');
+    return;
+  }
+
+  const as = e.target.closest('[data-reqapprovesignup]');
+  if(as){
+    const key = as.dataset.reqapprovesignup;
+    const req = pendingSignups[key];
+    if(!req) return;
+    staffPins[key] = req.pin;
+    delete pendingSignups[key];
+    saveStaffPins(); savePendingSignups();
+    renderPulse(); renderRequestsTab();
+    showToast('✓ تم تفعيل حسابها');
+    return;
+  }
+  const rs = e.target.closest('[data-reqrejectsignup]');
+  if(rs){
+    if(!confirm('متأكدة تبين ترفضين هذا الطلب؟')) return;
+    delete pendingSignups[rs.dataset.reqrejectsignup];
+    savePendingSignups();
+    renderPulse(); renderRequestsTab();
+    showToast('تم الرفض');
+    return;
+  }
+
+  const at = e.target.closest('[data-reqapprovetask]');
+  if(at){ approveDailyTask(at.dataset.reqapprovetask); renderRequestsTab(); return; }
+  const rt = e.target.closest('[data-reqrejecttask]');
+  if(rt){ rejectDailyTask(rt.dataset.reqrejecttask); renderRequestsTab(); return; }
+  const awt = e.target.closest('[data-reqapprovewtask]');
+  if(awt){ approveWeeklyTask(awt.dataset.reqapprovewtask); renderRequestsTab(); return; }
+  const rwt = e.target.closest('[data-reqrejectwtask]');
+  if(rwt){ rejectWeeklyTask(rwt.dataset.reqrejectwtask); renderRequestsTab(); return; }
+});
+
+/* ربط تبويب الطلبات بدورة العرض */
+tabs.forEach(tab=>{
+  if(tab.dataset.target === 'requests'){
+    tab.addEventListener('click', ()=>renderRequestsTab());
+  }
+});
+const _origUpdateOwnerUI2 = updateOwnerUI;
+updateOwnerUI = function(){
+  _origUpdateOwnerUI2();
+  updateRequestsBadge();
+};
+const _origLoadAll6 = loadAll;
+loadAll = async function(){
+  await _origLoadAll6();
+  updateRequestsBadge();
+  if(document.getElementById('requests') && document.getElementById('requests').classList.contains('active')) renderRequestsTab();
+};
+(function waitReq6Init(){
+  const ov = document.getElementById('loadingOverlay');
+  if(ov && !ov.classList.contains('hide')){ setTimeout(waitReq6Init, 300); return; }
+  updateRequestsBadge();
+})();
 
 </script>
 
