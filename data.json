@@ -342,8 +342,12 @@
       "owners1": "Amazona",
       "owners2": "Q7"
     },
-    "points": {},
-    "totalPoints": {},
+    "points": {
+      "owner1": 15
+    },
+    "totalPoints": {
+      "owner1": 15
+    },
     "currentMonthKey": "2026-07"
   },
   "activity_log": [
@@ -544,5 +548,12 @@
     },
     "pending": {},
     "approvals": {}
+  },
+  "daily_history": {
+    "2026-07-22": {
+      "tasksDone": 1,
+      "totalTasks": 12,
+      "pointsAwarded": 15
+    }
   }
 }
