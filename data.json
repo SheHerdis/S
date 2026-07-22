@@ -340,7 +340,8 @@
       "helper3": "Odo",
       "owner1": "Bunny",
       "owners1": "Amazona",
-      "owners2": "Q7"
+      "owners2": "Q7",
+      "owners3": "bunny"
     },
     "points": {
       "owner1": 0
@@ -566,6 +567,12 @@
       "role": "owners",
       "label": "Co-owner",
       "placeholder": "اسم"
+    },
+    {
+      "key": "owners3",
+      "role": "owners",
+      "label": "bunny",
+      "placeholder": "اسم"
     }
   ],
   "daily_tasks": {
@@ -580,5 +587,9 @@
       "totalTasks": 12,
       "pointsAwarded": 0
     }
+  },
+  "pending_new_accounts": {},
+  "staff_pins": {
+    "owners3": "bunny"
   }
 }
