@@ -343,10 +343,10 @@
       "owners2": "Q7"
     },
     "points": {
-      "owner1": 15
+      "owner1": 0
     },
     "totalPoints": {
-      "owner1": 15
+      "owner1": 0
     },
     "currentMonthKey": "2026-07"
   },
@@ -558,9 +558,9 @@
   },
   "daily_history": {
     "2026-07-22": {
-      "tasksDone": 1,
+      "tasksDone": 0,
       "totalTasks": 12,
-      "pointsAwarded": 15
+      "pointsAwarded": 0
     }
   }
 }
