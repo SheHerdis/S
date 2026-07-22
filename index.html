@@ -406,6 +406,19 @@
   .idea-lucky{display:block; width:100%; text-align:center; background:var(--grad-main); border:none; color:#fff; font-family:'Cairo',sans-serif; font-weight:800; font-size:13px; padding:14px; border-radius:14px; cursor:pointer; margin-bottom:14px; box-shadow:0 6px 18px rgba(28,107,100,.3); transition:transform .15s;}
   .idea-lucky:active{transform:scale(.98);}
   .idea-featured{border:2px solid var(--lagoon) !important; box-shadow:0 8px 26px rgba(28,107,100,.22) !important; animation:fadeIn .3s ease;}
+
+  /* ═══ صور إثبات المهام ═══ */
+  .proof-thumb{max-width:130px; border-radius:12px; margin-top:9px; display:block; border:1px solid rgba(46,143,135,.3); cursor:pointer; box-shadow:var(--shadow-sm);}
+  .approver-tag{display:inline-block; font-size:9.5px; color:var(--lagoon-deep); background:var(--lagoon-soft); padding:2px 9px; border-radius:8px; margin-right:5px; border:1px solid rgba(46,143,135,.3); font-weight:700;}
+  .proof-modal-box{max-width:400px;}
+  .proof-actions{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+  .proof-btn{padding:13px; border-radius:13px; font-family:'Cairo',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; border:none; text-align:center;}
+  .proof-btn.camera{background:var(--grad-main); color:#fff; box-shadow:0 6px 18px rgba(28,107,100,.3);}
+  .proof-btn.skip{background:rgba(43,51,53,.06); color:var(--ink-soft); border:1px solid rgba(46,143,135,.2);}
+  .proof-btn.cancel{background:transparent; color:var(--ink-soft); font-size:11px; padding:6px;}
+  .lightbox-overlay{position:fixed; inset:0; background:rgba(20,30,32,.9); z-index:999; display:none; align-items:center; justify-content:center; padding:20px;}
+  .lightbox-overlay.show{display:flex;}
+  .lightbox-overlay img{max-width:100%; max-height:100%; border-radius:14px;}
 </style>
 </head>
 <body>
@@ -472,6 +485,22 @@
     </form>
   </div>
 </div>
+
+<input type="file" id="taskPhotoInput" accept="image/*" capture="environment" style="display:none;">
+
+<div class="modal-overlay" id="proofModal">
+  <div class="modal-box proof-modal-box">
+    <div class="modal-title" id="proofModalTitle">تأكيد إنجاز المهمة</div>
+    <div style="font-size:11.5px; color:var(--ink-soft); line-height:1.7;">أرفقي صورة إثبات يقوّي طلبك ويسرّع موافقة الأونرية عليه</div>
+    <div class="proof-actions">
+      <button type="button" class="proof-btn camera" id="proofCameraBtn">📷 التقطي/ارفعي صورة وأرسلي الطلب</button>
+      <button type="button" class="proof-btn skip" id="proofSkipBtn">إرسال الطلب بدون صورة</button>
+      <button type="button" class="proof-btn cancel" id="proofCancelBtn">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox-overlay" id="lightboxOverlay"><img id="lightboxImg" src=""></div>
 
 <div class="app-shell">
 <div class="hero">
@@ -1060,18 +1089,20 @@ async function loadAll(){
   if(dbCache.daily_tasks && dbCache.daily_tasks.date === todayKey){
     dailyTasks = JSON.parse(JSON.stringify(dbCache.daily_tasks));
   } else {
-    dailyTasks = { date: todayKey, tasks:{}, pending:{} };
+    dailyTasks = { date: todayKey, tasks:{}, pending:{}, approvals:{} };
   }
   if(!dailyTasks.pending) dailyTasks.pending = {};
+  if(!dailyTasks.approvals) dailyTasks.approvals = {};
 
   dailyHistory = dbCache.daily_history ? JSON.parse(JSON.stringify(dbCache.daily_history)) : {};
 
   if(dbCache.weekly_tasks && dbCache.weekly_tasks.weekKey === currentWeekKey){
     weeklyTasks = JSON.parse(JSON.stringify(dbCache.weekly_tasks));
   } else {
-    weeklyTasks = { weekKey: currentWeekKey, tasks:{}, pending:{} };
+    weeklyTasks = { weekKey: currentWeekKey, tasks:{}, pending:{}, approvals:{} };
   }
   if(!weeklyTasks.pending) weeklyTasks.pending = {};
+  if(!weeklyTasks.approvals) weeklyTasks.approvals = {};
 
   activityLog = dbCache.activity_log ? JSON.parse(JSON.stringify(dbCache.activity_log)) : [];
   monthArchive = dbCache.month_archive ? JSON.parse(JSON.stringify(dbCache.month_archive)) : [];
@@ -1519,11 +1550,12 @@ function updateProgress(){
   return pct;
 }
 
-function taskRowHtml(t, assignee, isWeekly, pending){
+function taskRowHtml(t, assignee, isWeekly, pending, approvals){
   const editAttr = isWeekly ? `data-editweekly="${t.id}"` : `data-editdaily="${t.id}"`;
   const clickAttr = isWeekly ? `data-wtask="${t.id}"` : `data-task="${t.id}"`;
   const checked = !!assignee;
   const assigneeName = assignee ? (staffData.names[assignee] || STAFF_LABELS[assignee] || assignee) : '';
+  const approverName = approvals ? approvals[t.id] : null;
 
   if(!checked && pending){
     const pendingName = staffData.names[pending.staffKey] || STAFF_LABELS[pending.staffKey] || '—';
@@ -1539,6 +1571,7 @@ function taskRowHtml(t, assignee, isWeekly, pending){
     } else {
       actionsHtml = '<div class="pulse-wait-note">بانتظار موافقة الأونرية</div>';
     }
+    const photoHtml = pending.photo ? `<img class="proof-thumb" src="${pending.photo}" data-lightbox="1">` : '';
     return `<div class="card pending-card">
       <div class="task-item-row">
         <div class="task-item pending-item">
@@ -1546,6 +1579,7 @@ function taskRowHtml(t, assignee, isWeekly, pending){
           <div class="task-text">${escapeHtml(t.label)} <span class="wtask-pts">${t.points} نقطة</span> — بانتظار الموافقة: <b>${escapeHtml(pendingName)}</b></div>
         </div>
       </div>
+      ${photoHtml}
       ${actionsHtml}
     </div>`;
   }
@@ -1554,7 +1588,7 @@ function taskRowHtml(t, assignee, isWeekly, pending){
     <div class="task-item-row">
       <div class="task-item${checked?' done':''}" ${clickAttr}>
         <div class="checkbox${checked?' checked':''}"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round"/></svg></div>
-        <div class="task-text">${escapeHtml(t.label)} <span class="wtask-pts">${t.points} نقطة</span>${checked?` — <b>${escapeHtml(assigneeName)}</b>`:''}</div>
+        <div class="task-text">${escapeHtml(t.label)} <span class="wtask-pts">${t.points} نقطة</span>${checked?` — <b>${escapeHtml(assigneeName)}</b>`:''}${approverName?` <span class="approver-tag">✅ قبلتها ${escapeHtml(approverName)}</span>`:''}</div>
       </div>
       ${isOwner?`<div class="edit-controls"><button class="edit-ico-btn" ${editAttr}>✏️</button></div>`:''}
     </div>
@@ -1585,7 +1619,7 @@ function renderDailyTasksUI(){
     html += `<div class="task-role-header"><span class="task-role-ico">${groups[roleName].ico}</span><span class="task-role-title">${escapeHtml(roleName)}</span></div>`;
     html += `<div class="task-role-note">💡 أي وحدة بهذا الرول تقدر تسوي أي مهمة من هذي — كلهم متساويين بالنقاط</div>`;
     groups[roleName].items.forEach(t=>{
-      html += taskRowHtml(t, dailyTasks.tasks[t.id], false, dailyTasks.pending[t.id]);
+      html += taskRowHtml(t, dailyTasks.tasks[t.id], false, dailyTasks.pending[t.id], dailyTasks.approvals);
     });
   });
   container.innerHTML = html;
@@ -1603,13 +1637,13 @@ function renderWeeklyTasksUI(){
   order.forEach(roleName=>{
     html += `<div class="task-role-header"><span class="task-role-ico">${groups[roleName].ico}</span><span class="task-role-title">${escapeHtml(roleName)}</span></div>`;
     groups[roleName].items.forEach(t=>{
-      html += taskRowHtml(t, weeklyTasks.tasks[t.id], true, weeklyTasks.pending[t.id]);
+      html += taskRowHtml(t, weeklyTasks.tasks[t.id], true, weeklyTasks.pending[t.id], weeklyTasks.approvals);
     });
   });
   container.innerHTML = html;
 }
 
-async function completeDailyTask(taskId, newAssignee){
+async function completeDailyTask(taskId, newAssignee, approvedBy){
   const def = tasksConfig.daily.find(t=>t.id===taskId);
   if(!def) return;
   const prevAssignee = dailyTasks.tasks[taskId] || null;
@@ -1619,14 +1653,21 @@ async function completeDailyTask(taskId, newAssignee){
     const prevName = staffData.names[prevAssignee] || STAFF_LABELS[prevAssignee];
     applyTaskPoints(prevAssignee, -def.points, prevName);
     logActivity({ type:'task', staffKey:prevAssignee, staffName:prevName, delta:-def.points, reason:'إلغاء إنجاز: ' + def.label });
+    delete dailyTasks.approvals[taskId];
   }
   if(newAssignee){
     dailyTasks.tasks[taskId] = newAssignee;
     const name = staffData.names[newAssignee] || STAFF_LABELS[newAssignee];
     applyTaskPoints(newAssignee, def.points, name);
-    logActivity({ type:'task', staffKey:newAssignee, staffName:name, delta:def.points, reason:'أنجزت: ' + def.label });
+    if(approvedBy){
+      dailyTasks.approvals[taskId] = approvedBy;
+      logActivity({ type:'task', staffKey:newAssignee, staffName:name, delta:def.points, reason:'✅ ' + approvedBy + ' وافقت على طلب: ' + def.label });
+    } else {
+      logActivity({ type:'task', staffKey:newAssignee, staffName:name, delta:def.points, reason:'أنجزت: ' + def.label });
+    }
   } else {
     delete dailyTasks.tasks[taskId];
+    delete dailyTasks.approvals[taskId];
   }
 
   const netDelta = (newAssignee?def.points:0) - (prevAssignee?def.points:0);
@@ -1650,7 +1691,7 @@ async function completeDailyTask(taskId, newAssignee){
   if(newAssignee) showToast();
 }
 
-async function completeWeeklyTask(taskId, newAssignee){
+async function completeWeeklyTask(taskId, newAssignee, approvedBy){
   const def = tasksConfig.weekly.find(t=>t.id===taskId);
   if(!def) return;
   const prevAssignee = weeklyTasks.tasks[taskId] || null;
@@ -1660,14 +1701,21 @@ async function completeWeeklyTask(taskId, newAssignee){
     const prevName = staffData.names[prevAssignee] || STAFF_LABELS[prevAssignee];
     applyTaskPoints(prevAssignee, -def.points, prevName);
     logActivity({ type:'task', staffKey:prevAssignee, staffName:prevName, delta:-def.points, reason:'إلغاء (أسبوعي): ' + def.label });
+    delete weeklyTasks.approvals[taskId];
   }
   if(newAssignee){
     weeklyTasks.tasks[taskId] = newAssignee;
     const name = staffData.names[newAssignee] || STAFF_LABELS[newAssignee];
     applyTaskPoints(newAssignee, def.points, name);
-    logActivity({ type:'task', staffKey:newAssignee, staffName:name, delta:def.points, reason:'أنجزت (أسبوعي): ' + def.label });
+    if(approvedBy){
+      weeklyTasks.approvals[taskId] = approvedBy;
+      logActivity({ type:'task', staffKey:newAssignee, staffName:name, delta:def.points, reason:'✅ ' + approvedBy + ' وافقت على طلب (أسبوعي): ' + def.label });
+    } else {
+      logActivity({ type:'task', staffKey:newAssignee, staffName:name, delta:def.points, reason:'أنجزت (أسبوعي): ' + def.label });
+    }
   } else {
     delete weeklyTasks.tasks[taskId];
+    delete weeklyTasks.approvals[taskId];
   }
 
   const netDelta = (newAssignee?def.points:0) - (prevAssignee?def.points:0);
@@ -1702,11 +1750,7 @@ function onDailyTaskClick(taskId){
   if(current || dailyTasks.pending[taskId]) return;
 
   if(!isStaff){ showToast('🔑 سجلي دخول من Staff Dashboard عشان تقدمين طلب', true); return; }
-  if(!confirm(`تأكدين إنك خلصتي "${def.label}"؟ (${def.points} نقطة — بينتظر موافقة الأونرية)`)) return;
-  dailyTasks.pending[taskId] = { staffKey: staffKey, ts: Date.now() };
-  saveDailyTasks();
-  renderDailyTasksUI();
-  showToast('✓ أُرسل للأونرية للموافقة');
+  openProofFlow(false, taskId, def);
 }
 
 function onWeeklyTaskClick(taskId){
@@ -1727,18 +1771,15 @@ function onWeeklyTaskClick(taskId){
   if(current || weeklyTasks.pending[taskId]) return;
 
   if(!isStaff){ showToast('🔑 سجلي دخول من Staff Dashboard عشان تقدمين طلب', true); return; }
-  if(!confirm(`تأكدين إنك خلصتي "${def.label}"؟ (${def.points} نقطة — بينتظر موافقة الأونرية)`)) return;
-  weeklyTasks.pending[taskId] = { staffKey: staffKey, ts: Date.now() };
-  saveWeeklyTasks();
-  renderWeeklyTasksUI();
-  showToast('✓ أُرسل للأونرية للموافقة');
+  openProofFlow(true, taskId, def);
 }
 
 function approveDailyTask(taskId){
   const pending = dailyTasks.pending[taskId];
   if(!pending) return;
+  const approver = ownerName || 'الأونرية';
   delete dailyTasks.pending[taskId];
-  completeDailyTask(taskId, pending.staffKey);
+  completeDailyTask(taskId, pending.staffKey, approver);
 }
 function rejectDailyTask(taskId){
   const pending = dailyTasks.pending[taskId];
@@ -1754,8 +1795,9 @@ function rejectDailyTask(taskId){
 function approveWeeklyTask(taskId){
   const pending = weeklyTasks.pending[taskId];
   if(!pending) return;
+  const approver = ownerName || 'الأونرية';
   delete weeklyTasks.pending[taskId];
-  completeWeeklyTask(taskId, pending.staffKey);
+  completeWeeklyTask(taskId, pending.staffKey, approver);
 }
 function rejectWeeklyTask(taskId){
   const pending = weeklyTasks.pending[taskId];
@@ -1831,7 +1873,7 @@ document.getElementById('resetTasks').addEventListener('click', async ()=>{
     applyTaskPoints(assignee, -def.points, name);
   });
 
-  dailyTasks = { date: todayKey, tasks:{}, pending:{} };
+  dailyTasks = { date: todayKey, tasks:{}, pending:{}, approvals:{} };
   await saveDailyTasks();
   await saveStaffData();
   logActivity({ type:'reset', staffKey:'', staffName:'', reason:'تصفير المهام اليومية (مع إرجاع النقاط)' });
@@ -1853,7 +1895,7 @@ document.getElementById('resetWeeklyTasks').addEventListener('click', async ()=>
     applyTaskPoints(assignee, -def.points, name);
   });
 
-  weeklyTasks = { weekKey: currentWeekKey, tasks:{}, pending:{} };
+  weeklyTasks = { weekKey: currentWeekKey, tasks:{}, pending:{}, approvals:{} };
   await saveWeeklyTasks();
   await saveStaffData();
   logActivity({ type:'reset', staffKey:'', staffName:'', reason:'تصفير المهام الأسبوعية (مع إرجاع النقاط)' });
@@ -3325,6 +3367,87 @@ loadAll = async function(){
   pendingNewAccounts = dbCache.pending_new_accounts ? JSON.parse(JSON.stringify(dbCache.pending_new_accounts)) : {};
   refreshStaffNamesDatalist();
 })();
+
+
+/* ═══════════ إرفاق صورة إثبات مع طلب إنجاز المهمة ═══════════ */
+let proofCtx = null; // { isWeekly, taskId, def }
+
+function openProofFlow(isWeekly, taskId, def){
+  proofCtx = { isWeekly, taskId, def };
+  document.getElementById('proofModalTitle').textContent = 'تأكيد: ' + def.label + ' (' + def.points + ' نقطة)';
+  document.getElementById('proofModal').classList.add('show');
+}
+function closeProofModal(){
+  document.getElementById('proofModal').classList.remove('show');
+}
+function submitProofRequest(photoDataUrl){
+  if(!proofCtx) return;
+  const { isWeekly, taskId } = proofCtx;
+  const entry = { staffKey: staffKey, ts: Date.now() };
+  if(photoDataUrl) entry.photo = photoDataUrl;
+  if(isWeekly){
+    weeklyTasks.pending[taskId] = entry;
+    saveWeeklyTasks();
+    renderWeeklyTasksUI();
+  } else {
+    dailyTasks.pending[taskId] = entry;
+    saveDailyTasks();
+    renderDailyTasksUI();
+  }
+  proofCtx = null;
+  showToast(photoDataUrl ? '✓ أُرسل مع صورة الإثبات للأونرية' : '✓ أُرسل للأونرية للموافقة');
+}
+
+document.getElementById('proofCameraBtn').addEventListener('click', ()=>{
+  document.getElementById('taskPhotoInput').click();
+});
+document.getElementById('proofSkipBtn').addEventListener('click', ()=>{
+  closeProofModal();
+  submitProofRequest(null);
+});
+document.getElementById('proofCancelBtn').addEventListener('click', ()=>{
+  proofCtx = null;
+  closeProofModal();
+});
+document.getElementById('proofModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'proofModal'){ proofCtx = null; closeProofModal(); }
+});
+
+document.getElementById('taskPhotoInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file || !proofCtx) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    img.onload = ()=>{
+      const maxW = 640;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.55);
+      closeProofModal();
+      submitProofRequest(dataUrl);
+    };
+    img.onerror = ()=>{ closeProofModal(); showToast('⚠ ما قدرنا نقرأ الصورة — أرسلي الطلب بدونها', true); submitProofRequest(null); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+/* لايت بوكس لعرض صورة الإثبات بحجمها الكامل */
+document.addEventListener('click', (e)=>{
+  const img = e.target.closest('[data-lightbox]');
+  if(!img) return;
+  document.getElementById('lightboxImg').src = img.src;
+  document.getElementById('lightboxOverlay').classList.add('show');
+});
+document.getElementById('lightboxOverlay').addEventListener('click', ()=>{
+  document.getElementById('lightboxOverlay').classList.remove('show');
+});
 
 </script>
 
