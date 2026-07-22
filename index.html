@@ -3387,7 +3387,16 @@ function ideaRooms(){
   allIdeas().forEach(i=>{ if(set.indexOf(i.room) === -1) set.push(i.room); });
   return ['الكل'].concat(set);
 }
-function ideaCopyText(i){ return 'السلام عليكم بنات She/Her 🐚\n\n💡 ' + i.title + '\n' + i.desc + '\n\nيلا نبدأ، نبيكم كلكم تشاركون! 💛'; }
+function ideaCopyText(i){
+  return 'السلام عليكم بنات She/Her 🐚💕\n\n' +
+         'اليوم جايبين لكم فعالية حلوة ونبي كلكم تشاركون فيها 👀✨\n\n' +
+         '『 ' + i.title + ' 』\n\n' +
+         '📌 شنو الفكرة؟\n' + i.desc + '\n\n' +
+         '📍 وين؟ برومة ' + i.room + '\n' +
+         '⏰ متى؟ من الحين وطول اليوم\n\n' +
+         'اللي تشارك بتاخذ تفاعل وحب من الكل 💛\n' +
+         'يلا لا تكونون خجولات — ابدون وردوا على بعض! 🔥';
+}
 function saveUsedIdeas(){ queueGhSave('ideas_used', usedIdeas); }
 
 function ideaUsedBadge(i){
