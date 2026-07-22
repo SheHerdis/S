@@ -3543,7 +3543,27 @@ function refreshStaffNamesDatalist(){
       closeLogin();
 
       const linkable = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='');
-      if(linkable.length){
+
+      /* إذا سبق وأجابت على هالسؤال بجهازها، ما نسألها مرة ثانية — نطبّق نفس اختيارها تلقائياً */
+      let prevAnswer = null;
+      try{ prevAnswer = JSON.parse(localStorage.getItem('owner_link_choice') || 'null'); }catch(err){}
+
+      function finishOwnerLogin(linkedKey){
+        if(linkedKey && staffData.names[linkedKey]){
+          isStaff = true; staffKey = linkedKey; staffName = staffData.names[linkedKey];
+          ownerLinkedStaffKey = linkedKey;
+        }
+        try{
+          localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000, linkedStaffKey: linkedKey || null }));
+          localStorage.setItem('owner_link_choice', JSON.stringify({ linked: !!linkedKey, key: linkedKey || null }));
+        }catch(err){}
+        updateOwnerUI();
+        showToast(linkedKey ? ('✓ أهلاً ' + ownerName + ' — حسابك مربوط كستاف كمان') : ('✓ أهلاً ' + ownerName));
+      }
+
+      if(prevAnswer !== null){
+        finishOwnerLogin(prevAnswer.linked ? prevAnswer.key : null);
+      } else if(linkable.length){
         document.getElementById('staffLinkModal').classList.add('show');
         const yesBtn = document.getElementById('staffLinkYesBtn');
         const noBtn = document.getElementById('staffLinkNoBtn');
@@ -3555,24 +3575,14 @@ function refreshStaffNamesDatalist(){
           cleanup();
           openModal('اختاري اسمك كستاف', [
             { key:'who', label:'اسمك', type:'select', options: linkable.map(k=>({value:k, label:staffData.names[k]})), value: linkable[0] }
-          ], (values)=>{
-            isStaff = true; staffKey = values.who; staffName = staffData.names[values.who];
-            ownerLinkedStaffKey = values.who;
-            try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000, linkedStaffKey: values.who })); }catch(err){}
-            updateOwnerUI();
-            showToast('✓ أهلاً ' + ownerName + ' — حسابك مربوط كستاف كمان');
-          }, null);
+          ], (values)=>{ finishOwnerLogin(values.who); }, null);
         };
         noBtn.onclick = ()=>{
           cleanup();
-          try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000 })); }catch(err){}
-          updateOwnerUI();
-          showToast('✓ أهلاً ' + ownerName);
+          finishOwnerLogin(null);
         };
       } else {
-        try{ localStorage.setItem('owner_session', JSON.stringify({ name: ownerName, exp: Date.now() + 30*24*3600*1000 })); }catch(err){}
-        updateOwnerUI();
-        showToast('✓ أهلاً ' + ownerName);
+        finishOwnerLogin(null);
       }
       return;
     }
