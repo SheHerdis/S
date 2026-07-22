@@ -425,6 +425,12 @@
   .tab-badge{position:absolute; top:2px; left:6px; background:#C25B5B; color:#fff; font-size:8.5px; font-weight:800; min-width:15px; height:15px; border-radius:999px; display:none; align-items:center; justify-content:center; padding:0 3px; font-family:'Cairo',sans-serif; box-shadow:0 2px 6px rgba(0,0,0,.25);}
   .tab-badge.show{display:flex;}
   .req-empty{text-align:center; padding:36px 12px; color:var(--ink-soft); opacity:.7; font-size:12px;}
+
+  .highlight-compact{display:flex; align-items:center; gap:10px; padding:11px 14px;}
+  .highlight-compact .hc-ico{font-size:18px; flex:0 0 auto;}
+  .highlight-compact .hc-body{flex:1; font-size:11.5px; color:var(--ink); line-height:1.6;}
+  .highlight-compact .hc-body b{color:var(--lagoon-deep);}
+  .highlight-compact .hc-reward{flex:0 0 auto; font-size:9.5px; color:var(--rosegold-deep); background:var(--rose-soft); padding:3px 9px; border-radius:8px; border:1px solid rgba(74,168,147,.3); white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -601,14 +607,7 @@
 
   <div class="pearl-divider">✦</div>
 
-  <div class="card highlight"><div class="card-top"><span class="day-name">⭐ حدث الأسبوع</span></div>
-    <div class="row"><span class="ico">🎬</span><span>الجمعة 8:30 م — Movie Night ومشاهدة جماعية بقيادة <b>CEO Lead</b></span></div></div>
-
-  <div class="card"><div class="card-top"><span class="day-name">🏆 كيف تكسبين نقاط؟</span></div>
-    <div class="row"><span class="ico">✅</span><span>كل مهمة يومية تخلصينها = نقاط تلقائية</span></div>
-    <div class="row"><span class="ico">🎁</span><span>الأونرية تقدر تضيف نقاط تقدير يدوياً مع سبب</span></div>
-    <div class="row"><span class="ico">🔄</span><span>النقاط تتصفر أول كل شهر — منافسة جديدة كل مرة!</span></div>
-    <div class="row"><span class="ico">👑</span><span>صاحبة أعلى نقاط بنهاية الشهر تدخل "قاعة الشهرة"</span></div></div>
+  <div id="weeklyHighlightCard"></div>
 
   <div class="pearl-divider">✦</div>
 
@@ -742,6 +741,14 @@
 <div class="section" id="reference">
   <div class="section-title">الأدوار والمسؤوليات</div>
   <div class="section-sub">كل رتبة إلها هوية وهدف واضح — مو بس "راقبي الشات وردي على الأعضاء"</div>
+
+  <div class="card"><div class="card-top"><span class="day-name">🏆 كيف تكسبين نقاط؟</span></div>
+    <div class="row"><span class="ico">✅</span><span>كل مهمة يومية تخلصينها = نقاط تلقائية</span></div>
+    <div class="row"><span class="ico">🎁</span><span>الأونرية تقدر تضيف نقاط تقدير يدوياً مع سبب</span></div>
+    <div class="row"><span class="ico">🔄</span><span>النقاط تتصفر أول كل شهر — منافسة جديدة كل مرة!</span></div>
+    <div class="row"><span class="ico">👑</span><span>صاحبة أعلى نقاط بنهاية الشهر تدخل "قاعة الشهرة"</span></div></div>
+
+  <div class="pearl-divider">✦</div>
 
   <div class="card role-card">
     <div class="role-card-title">👑 CEO — Vision Team</div>
@@ -1221,7 +1228,7 @@ async function loadAll(){
   renderHistory();
   renderActivityFeed();
   renderTrend();
-  renderOverviewStats(); renderPulse();
+  renderOverviewStats(); renderPulse(); renderWeeklyHighlight();
   updateOwnerUI();
 
   document.getElementById('loadingOverlay').classList.add('hide');
@@ -1293,7 +1300,7 @@ function logActivity(entry){
   activityLog.unshift({ ts: Date.now(), owner: ownerName || 'الأونرية', ...entry });
   if(activityLog.length > 60) activityLog = activityLog.slice(0,60);
   saveActivityLog();
-  renderOverviewStats(); renderPulse();
+  renderOverviewStats(); renderPulse(); renderWeeklyHighlight();
 }
 
 function timeAgo(ts){
@@ -1331,7 +1338,7 @@ tabs.forEach(tab=>{
     window.scrollTo({top:0, behavior:'smooth'});
     if(tab.dataset.target === 'leaderboard'){ renderLeaderboard(); renderHallOfFame(); }
     if(tab.dataset.target === 'history'){ renderHistory(); renderActivityFeed(); }
-    if(tab.dataset.target === 'overview'){ renderTrend(); renderOverviewStats(); renderPulse(); }
+    if(tab.dataset.target === 'overview'){ renderTrend(); renderOverviewStats(); renderPulse(); renderWeeklyHighlight(); }
   });
 });
 
@@ -2206,6 +2213,7 @@ function renderEventsUI(){
   const container = document.getElementById('eventsContainer');
   const countEl = document.getElementById('eventsCount');
   if(countEl) countEl.textContent = eventsConfig.length;
+  renderWeeklyHighlight();
   if(!eventsConfig.length){
     container.innerHTML = '<div class="lb-empty">🐚 ما فيه فعاليات مضافة بعد</div>';
     return;
@@ -2399,31 +2407,10 @@ function renderPulse(){
   const el = document.getElementById('pulseBox');
   if(!el) return;
 
-  // ٠. طلبات بانتظار الموافقة
-  const pendingDailyCount = Object.keys(dailyTasks.pending||{}).length;
-  const pendingWeeklyCount = Object.keys(weeklyTasks.pending||{}).length;
-  const totalPending = pendingDailyCount + pendingWeeklyCount;
-  const approvalHtml = totalPending
-    ? `<div class="pulse-block pulse-alert"><div class="pulse-title">🔔 بانتظار موافقتك</div><div class="pulse-row"><span class="pulse-dot pulse-dot-gold"></span><span>${totalPending} طلب إنجاز مهمة يحتاج موافقة — روحي تاب "المهام"</span></div></div>`
-    : '';
-
-  const signupKeys = Object.keys(pendingSignups);
-  const signupHtml = signupKeys.length
-    ? `<div class="pulse-block pulse-alert"><div class="pulse-title">🆔 طلبات تسجيل جديدة</div>${signupKeys.map(k=>{
-        const slotInfo = staffConfig.find(s=>s.key===k);
-        const roleInfo = slotInfo ? ROLE_META[slotInfo.role] : null;
-        const roleTitle = roleInfo ? roleInfo.title : '—';
-        const slotLabel = slotInfo ? slotInfo.label : k;
-        return `
-        <div class="signup-req-card">
-          <div class="signup-req-name">${escapeHtml(staffData.names[k]||STAFF_LABELS[k])}</div>
-          <div class="signup-req-meta">${roleInfo?roleInfo.ico:''} الفريق: <b>${escapeHtml(roleTitle)}</b> — التصنيف: <b>${escapeHtml(slotLabel)}</b></div>
-          <div class="pending-actions" style="padding:8px 0 0;">
-            <button class="pulse-approve" data-approvesignup="${k}">✅ أيوة هي</button>
-            <button class="pulse-reject" data-rejectsignup="${k}">❌ مو هي</button>
-          </div>
-        </div>`;
-      }).join('')}</div>`
+  // ٠. ملخص موحّد لكل الطلبات المعلّقة — التنفيذ الفعلي صار بس من تبويب "الطلبات"
+  const totalAllPending = isOwner ? countAllPending() : 0;
+  const summaryHtml = totalAllPending
+    ? `<div class="pulse-block pulse-alert" data-gotorequests="1" style="cursor:pointer;"><div class="pulse-title">🔔 عندك ${totalAllPending} طلب${totalAllPending>1?'ات':''} بانتظارك</div><div class="pulse-row"><span class="pulse-dot pulse-dot-gold"></span><span>افتحي تبويب "📥 الطلبات" للموافقة أو الرفض</span></div></div>`
     : '';
 
   // ١. مهام اليوم اللي لسه ما تسوّت
@@ -2463,40 +2450,35 @@ function renderPulse(){
     : `<div class="pulse-row"><span class="pulse-dot pulse-dot-green"></span><span>الكل نشيطة خلال آخر ٣ أيام 👍</span></div>`;
 
   el.innerHTML = `
-    ${isOwner ? approvalHtml : ''}
-    ${isOwner ? signupHtml : ''}
+    ${summaryHtml}
     <div class="pulse-block"><div class="pulse-title">📋 مهام اليوم المتبقية</div>${pendingHtml}</div>
     <div class="pulse-block"><div class="pulse-title">🔥 الأكثر نشاطاً هالأسبوع</div>${topHtml}</div>
     <div class="pulse-block"><div class="pulse-title">⏳ تحتاج متابعة</div>${inactiveHtml}</div>
   `;
 }
-
 document.getElementById('pulseBox').addEventListener('click', (e)=>{
-  const approveBtn = e.target.closest('[data-approvesignup]');
-  if(approveBtn){
-    if(!isOwner) return;
-    const key = approveBtn.dataset.approvesignup;
-    const req = pendingSignups[key];
-    if(!req) return;
-    staffPins[key] = req.pin;
-    delete pendingSignups[key];
-    saveStaffPins();
-    savePendingSignups();
-    renderPulse();
-    showToast('✓ تم تفعيل حسابها');
-    return;
-  }
-  const rejectBtn = e.target.closest('[data-rejectsignup]');
-  if(rejectBtn){
-    if(!isOwner) return;
-    const key = rejectBtn.dataset.rejectsignup;
-    if(!confirm('متأكدة تبين ترفضين هذا الطلب؟')) return;
-    delete pendingSignups[key];
-    savePendingSignups();
-    renderPulse();
-    showToast('تم الرفض');
+  if(e.target.closest('[data-gotorequests]')){
+    const reqTab = document.querySelector('.tab[data-target="requests"]');
+    if(reqTab) reqTab.click();
   }
 });
+
+
+function renderWeeklyHighlight(){
+  const box = document.getElementById('weeklyHighlightCard');
+  if(!box) return;
+  const ev = (eventsConfig||[]).find(e=>e.highlight) || (eventsConfig||[])[0];
+  if(!ev){
+    box.innerHTML = '';
+    return;
+  }
+  box.innerHTML = `
+    <div class="card highlight highlight-compact">
+      <span class="hc-ico">⭐</span>
+      <div class="hc-body"><b>${escapeHtml(ev.day||'')} ${escapeHtml(ev.time||'')}</b> — ${escapeHtml(ev.title||'')}</div>
+      ${ev.reward && ev.reward !== '—' ? `<span class="hc-reward">🎁 ${escapeHtml(ev.reward)}</span>` : ''}
+    </div>`;
+}
 
 function renderOverviewStats(){
   const filledCount = Object.keys(STAFF_LABELS).filter(k=> (staffData.names[k]||'').trim() !== '').length;
@@ -3393,70 +3375,6 @@ function refreshStaffNamesDatalist(){
   });
 })();
 
-/* ═══════════ الأونرية: الموافقة على حسابات جديدة كلياً ═══════════ */
-const _origRenderPulse = renderPulse;
-renderPulse = function(){
-  _origRenderPulse();
-  if(!isOwner) return;
-  const el = document.getElementById('pulseBox');
-  if(!el) return;
-  const reqIds = Object.keys(pendingNewAccounts);
-  if(!reqIds.length) return;
-  const html = '<div class="pulse-block pulse-alert"><div class="pulse-title">🆕 طلبات حساب جديد (أسماء غير مسجلة)</div>' +
-    reqIds.map(id=>{
-      const r = pendingNewAccounts[id];
-      return '<div class="signup-req-card">' +
-        '<div class="signup-req-name">' + escapeHtml(r.name) + '</div>' +
-        '<div class="signup-req-meta">طلبت حساب جديد بالكامل — مو موجودة بأي قائمة حالياً</div>' +
-        '<div class="pending-actions" style="padding:8px 0 0;">' +
-        '<button class="pulse-approve" data-approvenewacc="' + id + '">✅ إنشاء حساب</button>' +
-        '<button class="pulse-reject" data-rejectnewacc="' + id + '">❌ رفض</button>' +
-        '</div></div>';
-    }).join('') + '</div>';
-  el.insertAdjacentHTML('afterbegin', html);
-};
-
-document.getElementById('pulseBox').addEventListener('click', (e)=>{
-  const appr = e.target.closest('[data-approvenewacc]');
-  if(appr){
-    if(!isOwner) return;
-    const id = appr.dataset.approvenewacc;
-    const req = pendingNewAccounts[id];
-    if(!req) return;
-    const roleOptions = Object.keys(ROLE_META).map(r=>({ value:r, label: ROLE_META[r].title }));
-    openModal('أي فريق تنضم له ' + req.name + '؟', [
-      { key:'role', label:'الفريق', type:'select', options: roleOptions, value: roleOptions[0].value }
-    ], (values)=>{
-      const role = values.role;
-      let n = 1;
-      while(staffConfig.some(sc=>sc.key === role + n)) n++;
-      const key = role + n;
-      staffConfig.push({ key, role, label: req.name, placeholder:'اسم' });
-      rebuildStaffLabels();
-      staffData.names[key] = req.name;
-      staffPins[key] = req.pin;
-      delete pendingNewAccounts[id];
-      saveStaffConfig();
-      saveStaffData();
-      saveStaffPins();
-      savePendingNewAccounts();
-      renderStaff();
-      renderLeaderboard();
-      renderPulse();
-      showToast('✓ انضمت ' + req.name + ' كـ' + ROLE_META[role].title);
-    }, null);
-    return;
-  }
-  const rej = e.target.closest('[data-rejectnewacc]');
-  if(rej){
-    if(!isOwner) return;
-    if(!confirm('متأكدة تبين ترفضين طلب هالحساب؟')) return;
-    delete pendingNewAccounts[rej.dataset.rejectnewacc];
-    savePendingNewAccounts();
-    renderPulse();
-    showToast('تم الرفض');
-  }
-});
 
 const _origLoadAll5 = loadAll;
 loadAll = async function(){
