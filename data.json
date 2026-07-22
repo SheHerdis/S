@@ -352,6 +352,15 @@
   },
   "activity_log": [
     {
+      "ts": 1784699166502,
+      "owner": "bunny",
+      "type": "task",
+      "staffKey": "owner1",
+      "staffName": "Bunny",
+      "delta": 15,
+      "reason": "أنجزت: نشر \"سؤال اليوم\" الصباحي وتثبيته لفتح نقاش"
+    },
+    {
       "ts": 1784698706913,
       "owner": "bunny",
       "type": "task",
@@ -552,7 +561,9 @@
   ],
   "daily_tasks": {
     "date": "2026-07-22",
-    "tasks": {},
+    "tasks": {
+      "admin_qotd": "owner1"
+    },
     "pending": {},
     "approvals": {}
   },
