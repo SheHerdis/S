@@ -1311,7 +1311,7 @@ document.getElementById('ownerToggle').addEventListener('click', ()=>{
     isOwner = true; isRealOwner = true;
 
     const linkable = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='');
-    if(linkable.length && confirm('👤 هل انتِ أيضاً وحدة من الستاف؟\n\nإذا "موافق" — بنربط حسابك باسمك كستاف كمان، وتقدرين تستخدمين "نقاطي" وتنجزين مهام مثل باقي الفريق، وتحتفظين بكل صلاحيات الأونرية.\nإذا "إلغاء" — بتدخلين كأونرية بس.')){
+    if(linkable.length && confirm('👤 هل أنتِ أيضاً إحدى أعضاء فريق العمل؟\n\nعند اختيار "موافق" — سيُربط حسابك باسمك كعضوة فريق أيضاً، وستتمكنين من استخدام "نقاطي" وإنجاز المهام مثل بقية الفريق، مع احتفاظك بجميع صلاحيات المالكة.\nعند اختيار "إلغاء" — ستدخلين بصفتك مالكة فقط.')){
       openModal('اختاري اسمك كستاف', [
         { key:'who', label:'اسمك', type:'select', options: linkable.map(k=>({value:k, label:staffData.names[k]})), value: linkable[0] }
       ], (values)=>{
@@ -3228,7 +3228,7 @@ function refreshStaffNamesDatalist(){
       closeLogin();
 
       const linkable = Object.keys(STAFF_LABELS).filter(k=>(staffData.names[k]||'').trim()!=='');
-      if(linkable.length && confirm('👤 هل انتِ أيضاً وحدة من الستاف؟\n\nإذا "موافق" — بنربط حسابك باسمك كستاف كمان، وتقدرين تستخدمين "نقاطي" وتنجزين مهام مثل باقي الفريق، وتحتفظين بكل صلاحيات الأونرية.\nإذا "إلغاء" — بتدخلين كأونرية بس.')){
+      if(linkable.length && confirm('👤 هل أنتِ أيضاً إحدى أعضاء فريق العمل؟\n\nعند اختيار "موافق" — سيُربط حسابك باسمك كعضوة فريق أيضاً، وستتمكنين من استخدام "نقاطي" وإنجاز المهام مثل بقية الفريق، مع احتفاظك بجميع صلاحيات المالكة.\nعند اختيار "إلغاء" — ستدخلين بصفتك مالكة فقط.')){
         openModal('اختاري اسمك كستاف', [
           { key:'who', label:'اسمك', type:'select', options: linkable.map(k=>({value:k, label:staffData.names[k]})), value: linkable[0] }
         ], (values)=>{
