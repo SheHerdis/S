@@ -1765,7 +1765,7 @@ function renderDailyTasksUI(){
   let html = '';
   order.forEach(roleName=>{
     html += `<div class="task-role-header"><span class="task-role-ico">${groups[roleName].ico}</span><span class="task-role-title">${escapeHtml(roleName)}</span></div>`;
-    html += `<div class="task-role-note">💡 هذي المهام مقسّمة حسب الرول المسؤول عادةً، لكن كأونرية تقدرين توثّقين أي مهمة لأي ستاف مهما كان رولها</div>`;
+    html += `<div class="task-role-note">💡 هذي المهام مقسّمة حسب الرول المسؤول عادةً — إذا ما تم إنجازها من الطرف المسؤول، يقدر يسويها أي ستاف ثانية مهما كان رولها</div>`;
     groups[roleName].items.forEach(t=>{
       html += taskRowHtml(t, dailyTasks.tasks[t.id], false, dailyTasks.pending[t.id], dailyTasks.approvals);
     });
