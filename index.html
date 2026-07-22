@@ -239,6 +239,7 @@
   .lb-rank{flex:0 0 auto; font-family:'Cormorant Garamond',serif; font-weight:800; font-size:21px; color:var(--lagoon-deep); width:30px; text-align:center;}
   .lb-info{flex:1;}
   .lb-name{font-family:'Cairo',sans-serif; font-weight:700; font-size:13px; color:var(--ink);}
+  .streak-chip{display:inline-block; font-size:9px; font-weight:700; background:rgba(226,115,150,.14); color:var(--rosegold-deep); padding:2px 7px; border-radius:999px; border:1px solid rgba(226,115,150,.3); margin-right:4px; vertical-align:middle;}
   .lb-role{font-size:9.5px; color:var(--ink-soft); opacity:.8;}
   .lb-points{flex:0 0 auto; text-align:center;}
   .lb-points-num{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:18px; color:var(--gold1);}
@@ -1109,6 +1110,7 @@ let staffData = { names:{}, points:{}, totalPoints:{}, currentMonthKey:'' };
 let dailyTasks = { date:'', tasks:{} };
 let weeklyTasks = { weekKey:'', tasks:{} };
 let dailyHistory = {};
+let staffStreaks = {}; // { staffKey: { current: N, lastDate: 'YYYY-MM-DD' } }
 let activityLog = [];
 let monthArchive = [];
 
@@ -1211,6 +1213,7 @@ async function loadAll(){
   if(!dailyTasks.approvals) dailyTasks.approvals = {};
 
   dailyHistory = dbCache.daily_history ? JSON.parse(JSON.stringify(dbCache.daily_history)) : {};
+  staffStreaks = dbCache.staff_streaks ? JSON.parse(JSON.stringify(dbCache.staff_streaks)) : {};
 
   if(dbCache.weekly_tasks && dbCache.weekly_tasks.weekKey === currentWeekKey){
     weeklyTasks = JSON.parse(JSON.stringify(dbCache.weekly_tasks));
@@ -1648,28 +1651,31 @@ document.getElementById('staffContainer').addEventListener('click', e=>{
     const key = customBtn.dataset.customaward;
     const name = staffData.names[key] || STAFF_LABELS[key];
 
-    const raw = prompt('🎯 كم نقطة تبين تضيفين؟ (اكتبي رقم سالب للخصم، مثال: -5)');
-    if(raw === null) return;
-    const d = parseInt(raw.trim(), 10);
-    if(isNaN(d) || d === 0){ showToast('⚠ اكتبي رقم صحيح', true); return; }
+    openModal('🎯 نقاط مخصصة لـ' + name, [
+      { key:'amount', label:'كم نقطة؟ (رقم سالب للخصم، مثال: -5)', type:'number', value:'' },
+      { key:'reason', label:'السبب (إلزامي — يظهر بسجل النشاط)', type:'text', value:'' }
+    ], (values)=>{
+      const d = values.amount;
+      const reason = (values.reason||'').trim();
+      if(!d || d === 0){ showToast('⚠ اكتبي رقم صحيح', true); return; }
+      if(!reason){ showToast('⚠ لازم تكتبين سبب — عشان الشفافية مع الفريق', true); return; }
 
-    const reason = prompt(`سبب ${d>0?'الإضافة':'الخصم'} (اختياري):`) || '';
+      const oldPts = staffData.points[key]||0;
+      const newPts = Math.max(0, oldPts + d);
+      staffData.points[key] = newPts;
+      staffData.totalPoints[key] = Math.max(0, (staffData.totalPoints[key]||0) + d);
 
-    const oldPts = staffData.points[key]||0;
-    const newPts = Math.max(0, oldPts + d);
-    staffData.points[key] = newPts;
-    staffData.totalPoints[key] = Math.max(0, (staffData.totalPoints[key]||0) + d);
+      saveStaffData();
+      addPointsToHistory(d);
+      logActivity({ type:'manual_points', staffKey:key, staffName:name, delta:d, reason });
+      if(d > 0) checkBadgeCrossing(oldPts, newPts, name);
 
-    saveStaffData();
-    addPointsToHistory(d);
-    logActivity({ type:'manual_points', staffKey:key, staffName:name, delta:d, reason });
-    if(d > 0) checkBadgeCrossing(oldPts, newPts, name);
-
-    renderStaff();
-    renderLeaderboard();
-    renderActivityFeed();
-    renderTrend();
-    showToast();
+      renderStaff();
+      renderLeaderboard();
+      renderActivityFeed();
+      renderTrend();
+      showToast();
+    }, null);
     return;
   }
 
@@ -1716,6 +1722,34 @@ function applyTaskPoints(staffKey, delta, name){
   staffData.totalPoints[staffKey] = Math.max(0, (staffData.totalPoints[staffKey]||0) + delta);
   if(delta > 0) checkBadgeCrossing(oldPts, newPts, name || STAFF_LABELS[staffKey]);
   return delta;
+}
+
+function getEffectiveStreak(staffKey){
+  const s = staffStreaks[staffKey];
+  if(!s || !s.current) return 0;
+  const yesterday = new Date(kuwaitNow().getTime() - 86400000).toISOString().slice(0,10);
+  if(s.lastDate === todayKey || s.lastDate === yesterday) return s.current;
+  return 0; // انقطع الانتظام — لسه ما تصفر بالبيانات، بس نعرضه صفر
+}
+
+async function saveStaffStreaks(){
+  queueGhSave('staff_streaks', staffStreaks);
+}
+function bumpStaffStreak(staffKey){
+  if(!staffKey) return;
+  const yesterday = new Date(kuwaitNow().getTime() - 86400000).toISOString().slice(0,10);
+  const s = staffStreaks[staffKey] || { current: 0, lastDate: '' };
+  if(s.lastDate === todayKey){
+    return; // already counted today
+  }
+  if(s.lastDate === yesterday){
+    s.current += 1;
+  } else {
+    s.current = 1;
+  }
+  s.lastDate = todayKey;
+  staffStreaks[staffKey] = s;
+  saveStaffStreaks();
 }
 
 function updateProgress(){
@@ -1836,6 +1870,7 @@ async function completeDailyTask(taskId, newAssignee, approvedBy){
     dailyTasks.tasks[taskId] = newAssignee;
     const name = staffData.names[newAssignee] || STAFF_LABELS[newAssignee];
     applyTaskPoints(newAssignee, def.points, name);
+    bumpStaffStreak(newAssignee);
     if(approvedBy){
       dailyTasks.approvals[taskId] = approvedBy;
       logActivity({ type:'task', staffKey:newAssignee, staffName:name, delta:def.points, reason:'✅ ' + approvedBy + ' وافقت على طلب: ' + def.label });
@@ -2535,9 +2570,11 @@ function renderLeaderboard(){
     const rank = i+1;
     const rankClass = rank===1?'rank1':rank===2?'rank2':rank===3?'rank3':'';
     const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
+    const streak = getEffectiveStreak(e.key);
+    const streakHtml = streak >= 2 ? `<span class="streak-chip">🔥 ${streak} أيام</span>` : '';
     return `<div class="lb-item ${rankClass}">
       <div class="lb-rank">${medal}</div>
-      <div class="lb-info"><div class="lb-name">${getBadge(e.points)} ${escapeHtml(e.name)}</div><div class="lb-role">${e.label}</div></div>
+      <div class="lb-info"><div class="lb-name">${getBadge(e.points)} ${escapeHtml(e.name)} ${streakHtml}</div><div class="lb-role">${e.label}</div></div>
       <div class="lb-points"><div class="lb-points-num">${e.points}</div><div class="lb-points-label">نقطة</div></div>
     </div>`;
   }).join('');
