@@ -8,31 +8,31 @@
 <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Cormorant+Garamond:wght@500;600;700&family=Cairo:wght@400;600;700;800&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* ═══ She/Her — Pearl · Blush Rose · Gold ═══ */
-    --pearl:#FDFCFA; --pearl-2:#FBF1F4;
-    --lagoon:#C86E8E; --lagoon-deep:#9C4F68; --lagoon-soft:rgba(200,110,142,.14);
-    --rosegold:#C9A050; --rosegold-deep:#9A7530; --rose-soft:rgba(201,160,80,.16);
-    --gold:#C9A050; --gold-deep:#9A7530; --gold-soft:rgba(201,160,80,.16);
-    --ink:#332A2E; --ink-soft:#6B5C63;
-    --green-done:#3E8E63;
-    --gold1:#B98A1F; --silver1:#9AA6AC; --bronze1:#B5744A;
-    --hero-gold:#F0BFD3; --hero-gold-deep:#C86E8E;
+    /* ═══ She/Her — Petal Rouge · Pink Mist · Petal Frost · Beige · Light Blue ═══ */
+    --pearl:#FFFFFF; --pearl-2:#FDF6FA;
+    --lagoon:#EB9AB2; --lagoon-deep:#E27396; --lagoon-soft:rgba(226,115,150,.14);
+    --rosegold:#B3DEE2; --rosegold-deep:#E27396; --rose-soft:rgba(179,222,226,.20);
+    --gold:#B3DEE2; --gold-deep:#E27396; --gold-soft:rgba(179,222,226,.20);
+    --ink:#4A3540; --ink-soft:#8A6B78;
+    --green-done:#E27396;
+    --gold1:#E27396; --silver1:#9AA6AC; --bronze1:#B5744A;
+    --hero-gold:#EFCFE3; --hero-gold-deep:#E27396;
     /* legacy aliases so nothing breaks */
     --dusk:var(--pearl); --dusk-2:var(--pearl-2);
-    --sunset-1:var(--rosegold); --sunset-2:#E8A8BE;
+    --sunset-1:var(--rosegold); --sunset-2:#EFCFE3;
     --rose:var(--rosegold); --rose-deep:var(--rosegold-deep);
     --gold-light:var(--gold-deep);
     --cream:var(--ink); --shell:var(--ink-soft);
-    --card-line:rgba(200,110,142,.22);
+    --card-line:rgba(226,115,150,.22);
     --mosaic-pattern:
       repeating-linear-gradient(0deg, rgba(255,255,255,.55) 0, rgba(255,255,255,.55) 1px, transparent 1px, transparent 13px),
       repeating-linear-gradient(90deg, rgba(255,255,255,.55) 0, rgba(255,255,255,.55) 1px, transparent 1px, transparent 13px),
-      radial-gradient(circle at 12% 18%, #F6D9E3 0%, transparent 38%),
-      radial-gradient(circle at 68% 12%, #EFC9DC 0%, transparent 40%),
-      radial-gradient(circle at 30% 55%, #D98CA8 0%, transparent 42%),
-      radial-gradient(circle at 85% 50%, #F0E3D8 0%, transparent 38%),
-      radial-gradient(circle at 15% 85%, #C86E8E 0%, transparent 40%),
-      radial-gradient(circle at 75% 88%, #F6D9E3 0%, transparent 42%),
+      radial-gradient(circle at 12% 18%, #EFCFE3 0%, transparent 38%),
+      radial-gradient(circle at 68% 12%, #B3DEE2 0%, transparent 40%),
+      radial-gradient(circle at 30% 55%, #EB9AB2 0%, transparent 42%),
+      radial-gradient(circle at 85% 50%, #ECF2D8 0%, transparent 38%),
+      radial-gradient(circle at 15% 85%, #E27396 0%, transparent 40%),
+      radial-gradient(circle at 75% 88%, #EFCFE3 0%, transparent 42%),
       linear-gradient(135deg, var(--lagoon-deep), var(--lagoon));
     --card-bg:linear-gradient(165deg, rgba(255,255,255,.92), rgba(246,241,234,.75));
     --shadow-sm:0 2px 10px rgba(156,79,104,.07);
@@ -142,7 +142,7 @@
   .stat-label{font-size:9.5px; color:var(--ink-soft); font-weight:600; margin-top:3px;}
   .pearl-divider{text-align:center; color:var(--rosegold); font-size:15px; margin:14px 0; opacity:.5;}
 
-  .trend-box{display:flex; align-items:center; justify-content:space-between; background:linear-gradient(165deg, rgba(62,142,99,.12), rgba(255,255,255,.9)); border:1px solid rgba(62,142,99,.35); border-radius:16px; padding:13px 15px; margin-bottom:12px; box-shadow:var(--shadow-sm);}
+  .trend-box{display:flex; align-items:center; justify-content:space-between; background:linear-gradient(165deg, rgba(179,222,226,.12), rgba(255,255,255,.9)); border:1px solid rgba(179,222,226,.35); border-radius:16px; padding:13px 15px; margin-bottom:12px; box-shadow:var(--shadow-sm);}
   .trend-box.down{background:linear-gradient(165deg, rgba(156,79,104,.12), rgba(255,255,255,.9)); border-color:rgba(156,79,104,.35);}
   .trend-label{font-size:11px; color:var(--ink-soft);}
   .trend-val{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:21px; color:var(--green-done);}
@@ -158,7 +158,7 @@
   .pending-actions{display:flex; gap:8px; padding:0 14px 12px;}
   .pulse-approve, .pulse-reject{flex:1; font-size:11px; font-weight:700; padding:9px; border-radius:11px; cursor:pointer; font-family:'Cairo',sans-serif; border:1px solid; transition:transform .15s;}
   .pulse-approve:active, .pulse-reject:active{transform:scale(.97);}
-  .pulse-approve{background:rgba(62,142,99,.14); border-color:rgba(62,142,99,.4); color:var(--green-done);}
+  .pulse-approve{background:rgba(179,222,226,.14); border-color:rgba(179,222,226,.4); color:var(--green-done);}
   .pulse-reject{background:var(--rose-soft); border-color:rgba(156,79,104,.4); color:var(--rosegold-deep);}
   .pulse-wait-note{font-size:10px; color:var(--ink-soft); padding:0 14px 12px; opacity:.8;}
   .pulse-block{background:rgba(255,255,255,.8); border:1px solid rgba(200,110,142,.18); border-radius:14px; padding:12px 14px; margin-bottom:10px; box-shadow:var(--shadow-sm);}
@@ -192,7 +192,7 @@
   .slot-actions{display:flex; gap:6px; justify-content:flex-end; border-top:1px dashed rgba(200,110,142,.18); padding-top:8px;}
   .pt-btn{font-size:10.5px; font-weight:700; padding:7px 13px; border-radius:10px; border:1px solid rgba(200,110,142,.3); cursor:pointer; font-family:'Cairo',sans-serif; white-space:nowrap; transition:transform .15s;}
   .pt-btn:active{transform:scale(.96);}
-  .pt-plus{background:rgba(62,142,99,.16); color:var(--green-done); border-color:rgba(62,142,99,.35);}
+  .pt-plus{background:rgba(179,222,226,.16); color:var(--green-done); border-color:rgba(179,222,226,.35);}
   .pt-minus{background:var(--rose-soft); color:var(--rosegold-deep); border-color:rgba(156,79,104,.35);}
 
   /* ═══ Tasks ═══ */
@@ -311,8 +311,8 @@
   .task-role-note{background:linear-gradient(165deg, rgba(200,110,142,.06), rgba(255,255,255,.75)); border:1px dashed rgba(200,110,142,.3); border-radius:14px; padding:12px 14px; font-size:11.5px; color:var(--ink-soft); margin-bottom:12px; line-height:1.65;}
   .wtask-pts{font-size:9.5px; color:var(--gold-deep); background:rgba(201,160,80,.14); padding:2px 8px; border-radius:7px; margin-right:6px; border:1px solid rgba(201,160,80,.3); white-space:nowrap; display:inline-block;}
 
-  .tpl-add-btn{display:block; width:100%; text-align:center; background:rgba(62,142,99,.1); border:1.5px dashed rgba(62,142,99,.45); color:var(--green-done); font-family:'Cairo',sans-serif; font-weight:700; font-size:11.5px; padding:11px; border-radius:13px; cursor:pointer; margin-bottom:14px; transition:all .2s;}
-  .tpl-add-btn:hover:not(:disabled){background:rgba(62,142,99,.16);}
+  .tpl-add-btn{display:block; width:100%; text-align:center; background:rgba(179,222,226,.1); border:1.5px dashed rgba(179,222,226,.45); color:var(--green-done); font-family:'Cairo',sans-serif; font-weight:700; font-size:11.5px; padding:11px; border-radius:13px; cursor:pointer; margin-bottom:14px; transition:all .2s;}
+  .tpl-add-btn:hover:not(:disabled){background:rgba(179,222,226,.16);}
   .tpl-add-btn:disabled{opacity:.35; cursor:not-allowed;}
 
   .task-item-row{display:flex; align-items:center; gap:6px;}
@@ -461,8 +461,8 @@
 <svg width="0" height="0" style="position:absolute;">
   <defs>
     <linearGradient id="goldIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#C86E8E"/>
-      <stop offset="100%" stop-color="#C9A050"/>
+      <stop offset="0%" stop-color="#E27396"/>
+      <stop offset="100%" stop-color="#B3DEE2"/>
     </linearGradient>
   </defs>
 </svg>
