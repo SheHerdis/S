@@ -340,7 +340,8 @@
       "helper3": "Odo",
       "owners1": "Amazona",
       "owners2": "Q7",
-      "owners3": "bunny"
+      "owners3": "bunny",
+      "owners4": "Bunny test"
     },
     "points": {},
     "totalPoints": {},
@@ -562,6 +563,12 @@
       "role": "owners",
       "label": "bunny",
       "placeholder": "اسم"
+    },
+    {
+      "key": "owners4",
+      "role": "owners",
+      "label": "Bunny test",
+      "placeholder": "اسم"
     }
   ],
   "daily_tasks": {
@@ -579,6 +586,7 @@
   },
   "pending_new_accounts": {},
   "staff_pins": {
-    "owners3": "bunny"
+    "owners3": "bunny",
+    "owners4": "Bunny"
   }
 }
