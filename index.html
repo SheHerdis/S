@@ -3118,8 +3118,18 @@ const DEFAULT_IDEAS = [
  {id:'i36', room:'فعاليات كبرى', title:'⏳ كبسولة الزمن', desc:'روم يفتح أسبوع واحد: كل وحدة تكتب رسالة لنفسها بعد ٦ شهور. الروم ينقفل ويختفي، وبعد ٦ شهور بالضبط ينفتح — فعالية وحدة تضمن رجعة الكل بعد نص سنة.'},
  {id:'i37', room:'فعاليات كبرى', title:'🛍️ سوق She/Her', desc:'يوم تداول بالنقاط: البنات يفتحون "محلات" يبيعون فيها خدمات حقيقية (أرسم لك بروفايل، أسوي لك بلايليست، أساعدك بواجبك) والدفع بنقاط اللوحة — يعطي النقاط قيمة فعلية.'},
  {id:'i38', room:'فعاليات كبرى', title:'👯 توأم السيرفر', desc:'فورم توافق شهري (أسئلة ذوق وشخصية) والستاف تطلع أعلى نسب التوافق وتعلن "توائم الشهر" — ولهم تحدي ثنائي خاص ورول مشترك.'},
+ /* رومات لايف */
+ {id:'i39', room:'رومات لايف', title:'🎭 دخول متنكرة', desc:'عضوة تدخل روم لايف (Ocean Stars أو Tidal Waves) بدون ما تعرّف عن نفسها وتسولف ٥ دقايق بس بصوتها. الباقي يحاولون يخمنون شخصيتها من كلامها قبل لا تكشف مين هي.'},
+ {id:'i40', room:'رومات لايف', title:'🚪 جولة الستاف السريعة', desc:'الستاف تسوي جولة كل نص ساعة تتنقل فيها بين رومات اللايف المختلفة (Seashell، Caval Cute، Pull Me..) — توزع الأعضاء بين الرومات وتكسر التكتلات وتخلي كل روم يشتعل شوي بدورها.'},
+ {id:'i41', room:'رومات لايف', title:'🎙️ راديو الليل', desc:'وحدة من الستاف "تقدم برنامج" لمدة ساعة بروم لايف — سؤال اليوم، تريند، حكاية غريبة صارت لها — والباقي يتصلون (يدخلون المايك) يشاركون رأيهم زي راديو حقيقي.'},
+ {id:'i42', room:'رومات لايف', title:'🤫 تحدي الصمت', desc:'تحدي كوميدي: أطول وحدة تقدر تضل بالروم بدون ما تحكي وهي الكل يحاول يضحكها أو يستفزها بالكلام تاخذ لقب "أهدأ أعصاب بالسيرفر" ذاك اليوم.'},
+ /* الاقتراحات */
+ {id:'i43', room:'الاقتراحات', title:'🗳️ اقتراح الأسبوع يتنفذ فعلاً', desc:'كل أسبوع تختار الستاف أفضل اقتراح من روم Suggestions وتنفذه خلال نفس الأسبوع، وتعلن بوضوح "هذا الاقتراح تحقق بسبب [اسم العضوة]" — يشجع الكل يقترح لأنه يشوف اقتراحاته تتحول لواقع فعلاً.'},
+ /* التصويت */
+ {id:'i44', room:'التصويت', title:'⚔️ تصويت ثنائي يومي', desc:'سؤال يومي بخيارين متناقضين وممتعين (فلم أو مسلسل، صيف أو شتاء، حلو أو مالح) بروم vote، والنتيجة النهائية تُعلن آخر اليوم بشكل درامي مع النسب.'},
 ];
 let customIdeas = [];
+let usedIdeas = {}; // { ideaId: { lastUsed: 'YYYY-MM-DD', count: N } }
 let ideaFilter = 'الكل';
 
 function allIdeas(){ return DEFAULT_IDEAS.concat(customIdeas); }
@@ -3129,6 +3139,13 @@ function ideaRooms(){
   return ['الكل'].concat(set);
 }
 function ideaCopyText(i){ return '💡 **' + i.title + '**\n' + i.desc; }
+function saveUsedIdeas(){ queueGhSave('ideas_used', usedIdeas); }
+
+function ideaUsedBadge(i){
+  const u = usedIdeas[i.id];
+  if(!u) return '<span class="day-badge" style="background:var(--rose-soft); color:var(--rosegold-deep); border-color:rgba(74,168,147,.4);">🆕 ما جربناها</span>';
+  return '<span class="day-badge">✅ آخر مرة: ' + u.lastUsed.slice(5).replace('-','/') + (u.count>1?(' ×'+u.count):'') + '</span>';
+}
 
 function renderIdeasUI(){
   const chips = document.getElementById('ideaChips');
@@ -3141,10 +3158,11 @@ function renderIdeasUI(){
   const items = allIdeas().filter(i=> ideaFilter==='الكل' || i.room===ideaFilter);
   list.innerHTML = items.map(i=>`
     <div class="card">
-      <div class="card-top"><span class="day-name">${i.title}</span><span class="day-badge">${i.room}</span></div>
+      <div class="card-top"><span class="day-name">${i.title}</span>${ideaUsedBadge(i)}</div>
       <div class="row"><span>${escapeHtml(i.desc)}</span></div>
       <div class="card-edit-row">
         <button class="edit-ico-btn" data-copyidea="${i.id}">📋 نسخ للديسكورد</button>
+        ${isOwner ? `<button class="edit-ico-btn" data-usedidea="${i.id}">✅ سويناها</button>` : ''}
         ${(isOwner && i.custom) ? `<button class="edit-ico-btn danger" data-delidea="${i.id}">🗑</button>` : ''}
       </div>
     </div>`).join('') || '<div class="lb-empty">ما فيه أفكار بهالتصنيف</div>';
@@ -3161,6 +3179,16 @@ document.getElementById('ideasList').addEventListener('click', (e)=>{
   if(cp){
     const idea = allIdeas().find(i=>i.id===cp.dataset.copyidea);
     if(idea) copyIdeaText(ideaCopyText(idea));
+    return;
+  }
+  const used = e.target.closest('[data-usedidea]');
+  if(used && isOwner){
+    const id = used.dataset.usedidea;
+    const prev = usedIdeas[id];
+    usedIdeas[id] = { lastUsed: todayKey, count: (prev?prev.count:0) + 1 };
+    saveUsedIdeas();
+    renderIdeasUI();
+    showToast('✅ سجلناها كمجرّبة');
     return;
   }
   const del = e.target.closest('[data-delidea]');
@@ -3185,41 +3213,67 @@ function copyIdeaText(txt){
 document.getElementById('luckyIdeaBtn').addEventListener('click', ()=>{
   const pool = allIdeas().filter(i=> ideaFilter==='الكل' || i.room===ideaFilter);
   if(!pool.length) return;
-  const pick = pool[Math.floor(Math.random()*pool.length)];
+
+  const unused = pool.filter(i=>!usedIdeas[i.id]);
+  let pick;
+  if(unused.length){
+    pick = unused[Math.floor(Math.random()*unused.length)];
+  } else {
+    const sorted = pool.slice().sort((a,b)=> usedIdeas[a.id].lastUsed < usedIdeas[b.id].lastUsed ? -1 : 1);
+    const staleHalf = sorted.slice(0, Math.max(1, Math.ceil(sorted.length/2)));
+    pick = staleHalf[Math.floor(Math.random()*staleHalf.length)];
+  }
+
   const f = document.getElementById('ideaFeatured');
   f.innerHTML = `
     <div class="card idea-featured">
-      <div class="card-top"><span class="day-name">🎲 ${pick.title}</span><span class="day-badge">${pick.room}</span></div>
+      <div class="card-top"><span class="day-name">🎲 ${pick.title}</span>${ideaUsedBadge(pick)}</div>
       <div class="row"><span>${escapeHtml(pick.desc)}</span></div>
-      <div class="card-edit-row"><button class="edit-ico-btn" data-luckycopy="1">📋 نسخ للديسكورد</button></div>
+      <div class="card-edit-row">
+        <button class="edit-ico-btn" data-luckycopy="1">📋 نسخ للديسكورد</button>
+        ${isOwner ? `<button class="edit-ico-btn" data-luckyused="1">✅ سويناها</button>` : ''}
+      </div>
     </div>`;
   f.querySelector('[data-luckycopy]').addEventListener('click', ()=>copyIdeaText(ideaCopyText(pick)));
+  const usedBtn = f.querySelector('[data-luckyused]');
+  if(usedBtn) usedBtn.addEventListener('click', ()=>{
+    const prev = usedIdeas[pick.id];
+    usedIdeas[pick.id] = { lastUsed: todayKey, count: (prev?prev.count:0) + 1 };
+    saveUsedIdeas();
+    renderIdeasUI();
+    const badgeEl = f.querySelector('.card-top .day-badge');
+    if(badgeEl) badgeEl.outerHTML = ideaUsedBadge(pick);
+    showToast('✅ سجلناها كمجرّبة');
+  });
   f.scrollIntoView({behavior:'smooth', block:'center'});
 });
 document.getElementById('addIdeaBtn').addEventListener('click', ()=>{
   if(!isOwner) return;
-  const room = prompt('لأي روم/تصنيف هالفكرة؟ (مثال: الشات العام)');
-  if(!room) return;
-  const title = prompt('عنوان الفكرة (قصير مع إيموجي):');
-  if(!title) return;
-  const desc = prompt('اشرحي الفكرة وطريقة تنفيذها:');
-  if(!desc) return;
-  customIdeas.push({ id: genId('idea'), room: room.trim(), title: title.trim(), desc: desc.trim(), custom: true });
-  queueGhSave('ideas_custom', customIdeas);
-  renderIdeasUI();
-  showToast('💡 انضافت الفكرة');
+  openModal('إضافة فكرة خاصة فينا', [
+    { key:'room', label:'لأي روم/تصنيف؟', type:'text', value:'' },
+    { key:'title', label:'عنوان الفكرة (قصير مع إيموجي)', type:'text', value:'' },
+    { key:'desc', label:'اشرحي الفكرة وطريقة تنفيذها', type:'textarea', value:'' }
+  ], (values)=>{
+    if(!values.room.trim() || !values.title.trim() || !values.desc.trim()){ showToast('⚠ عبّي كل الحقول', true); return; }
+    customIdeas.push({ id: genId('idea'), room: values.room.trim(), title: values.title.trim(), desc: values.desc.trim(), custom: true });
+    queueGhSave('ideas_custom', customIdeas);
+    renderIdeasUI();
+    showToast('💡 انضافت الفكرة');
+  }, null);
 });
 
 const _origLoadAll3 = loadAll;
 loadAll = async function(){
   await _origLoadAll3();
   customIdeas = Array.isArray(dbCache.ideas_custom) ? dbCache.ideas_custom.slice() : [];
+  usedIdeas = (dbCache.ideas_used && typeof dbCache.ideas_used === 'object') ? JSON.parse(JSON.stringify(dbCache.ideas_used)) : {};
   renderIdeasUI();
 };
 (function waitIdeasInit(){
   const ov = document.getElementById('loadingOverlay');
   if(ov && !ov.classList.contains('hide')){ setTimeout(waitIdeasInit, 300); return; }
   customIdeas = Array.isArray(dbCache.ideas_custom) ? dbCache.ideas_custom.slice() : [];
+  usedIdeas = (dbCache.ideas_used && typeof dbCache.ideas_used === 'object') ? JSON.parse(JSON.stringify(dbCache.ideas_used)) : {};
   renderIdeasUI();
 })();
 
