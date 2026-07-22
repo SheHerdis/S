@@ -352,6 +352,15 @@
   },
   "activity_log": [
     {
+      "ts": 1784698706913,
+      "owner": "bunny",
+      "type": "task",
+      "staffKey": "owner1",
+      "staffName": "Bunny",
+      "delta": -15,
+      "reason": "إلغاء إنجاز: نشر \"سؤال اليوم\" الصباحي وتثبيته لفتح نقاش"
+    },
+    {
       "ts": 1784698703053,
       "owner": "bunny",
       "type": "task",
@@ -543,9 +552,7 @@
   ],
   "daily_tasks": {
     "date": "2026-07-22",
-    "tasks": {
-      "admin_qotd": "owner1"
-    },
+    "tasks": {},
     "pending": {},
     "approvals": {}
   },
