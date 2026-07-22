@@ -2836,14 +2836,29 @@ document.getElementById('restoreFile').addEventListener('change', async (e)=>{
 /* ═══════════ نظام نمو السيرفر ═══════════ */
 let growthLog = [];
 let growthTarget = 0;
+let growthTargetMonthKey = '';
 function syncGrowthFromCache(){
   growthLog = Array.isArray(dbCache.growth_log) ? dbCache.growth_log.slice() : [];
   growthLog.sort((a,b)=> a.date < b.date ? -1 : 1);
   growthTarget = parseInt(dbCache.growth_target) || 0;
+  growthTargetMonthKey = dbCache.growth_target_month || '';
+  checkGrowthMonthlyReset();
 }
 function saveGrowthData(){
   queueGhSave('growth_log', growthLog);
   queueGhSave('growth_target', growthTarget);
+  queueGhSave('growth_target_month', growthTargetMonthKey);
+}
+function checkGrowthMonthlyReset(){
+  if(!growthTargetMonthKey){
+    growthTargetMonthKey = currentMonthKey; // أول مرة — ما نمسح هدف موجود بدون ما نعرف من أي شهر
+    return;
+  }
+  if(growthTargetMonthKey !== currentMonthKey){
+    growthTarget = 0;
+    growthTargetMonthKey = currentMonthKey;
+    saveGrowthData();
+  }
 }
 function renderGrowthUI(){
   const sum = document.getElementById('growthSummary');
@@ -2857,15 +2872,16 @@ function renderGrowthUI(){
   const delta = (last && prev) ? last.count - prev.count : 0;
   const deltaTxt = delta === 0 ? '—' : (delta > 0 ? '▲ +' + delta : '▼ ' + delta);
   const pct = growthTarget > 0 ? Math.min(100, Math.round(cur / growthTarget * 100)) : 0;
+  const monthLabel = ARABIC_MONTHS[parseInt(currentMonthKey.split('-')[1],10)-1];
 
   sum.innerHTML = `
     <div class="stat-grid" style="grid-template-columns:1fr 1fr 1fr;">
       <div class="stat-box"><span class="stat-num">${cur}</span><span class="stat-label">👥 الأعضاء الحين</span></div>
       <div class="stat-box"><span class="stat-num" style="${delta<0?'-webkit-text-fill-color:#B14A4A;':''}">${deltaTxt}</span><span class="stat-label">منذ آخر تسجيل</span></div>
-      <div class="stat-box"><span class="stat-num">${growthTarget||'—'}</span><span class="stat-label">🎯 هدف الشهر</span></div>
+      <div class="stat-box"><span class="stat-num">${growthTarget||'—'}</span><span class="stat-label">🎯 هدف ${monthLabel}</span></div>
     </div>
     ${growthTarget>0 ? `<div class="progress-label"><span>التقدم نحو الهدف</span><span>${pct}%</span></div>
-    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;"></div></div>` : ''}
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;"></div></div>` : `<div class="note" style="margin-top:6px;">💡 ما فيه هدف محدد لشهر ${monthLabel} بعد${isOwner?' — اضغطي "تعديل هدف الشهر"':''}</div>`}
   `;
 
   const view = growthLog.slice(-10);
@@ -2889,27 +2905,33 @@ function renderGrowthUI(){
 }
 document.getElementById('addGrowthBtn').addEventListener('click', ()=>{
   if(!isOwner) return;
-  const v = prompt('كم عدد أعضاء السيرفر الحالي؟ (رقم فقط)');
-  if(v === null) return;
-  const n = parseInt(v.trim());
-  if(isNaN(n) || n < 0){ showToast('⚠ اكتبي رقم صحيح', true); return; }
-  growthLog = growthLog.filter(g=>g.date !== todayKey);
-  growthLog.push({ date: todayKey, count: n });
-  growthLog.sort((a,b)=> a.date < b.date ? -1 : 1);
-  saveGrowthData();
-  renderGrowthUI(); renderHealth();
-  showToast('📈 تم تسجيل ' + n + ' عضو');
+  openModal('تسجيل عدد الأعضاء', [
+    { key:'count', label:'كم عدد أعضاء السيرفر الحالي؟', type:'number', value:'' }
+  ], (values)=>{
+    const n = values.count;
+    if(!n || n < 1){ showToast('⚠ اكتبي رقم صحيح', true); return; }
+    growthLog = growthLog.filter(g=>g.date !== todayKey);
+    growthLog.push({ date: todayKey, count: n });
+    growthLog.sort((a,b)=> a.date < b.date ? -1 : 1);
+    saveGrowthData();
+    renderGrowthUI(); renderHealth();
+    showToast('📈 تم تسجيل ' + n + ' عضو');
+  }, null);
 });
 document.getElementById('setGrowthTargetBtn').addEventListener('click', ()=>{
   if(!isOwner) return;
-  const v = prompt('شنو هدف عدد الأعضاء لنهاية الشهر؟', growthTarget || '');
-  if(v === null) return;
-  const n = parseInt(v.trim());
-  if(isNaN(n) || n <= 0){ showToast('⚠ اكتبي رقم صحيح', true); return; }
-  growthTarget = n;
-  saveGrowthData();
-  renderGrowthUI();
-  showToast('🎯 تم تحديد الهدف: ' + n);
+  const monthLabel = ARABIC_MONTHS[parseInt(currentMonthKey.split('-')[1],10)-1];
+  openModal('هدف نمو ' + monthLabel, [
+    { key:'target', label:'كم هدف عدد الأعضاء بنهاية ' + monthLabel + '؟', type:'number', value: growthTarget || '' }
+  ], (values)=>{
+    const n = values.target;
+    if(!n || n < 1){ showToast('⚠ اكتبي رقم صحيح', true); return; }
+    growthTarget = n;
+    growthTargetMonthKey = currentMonthKey;
+    saveGrowthData();
+    renderGrowthUI();
+    showToast('🎯 تم تحديد هدف ' + monthLabel + ': ' + n);
+  }, null);
 });
 document.getElementById('growthList').addEventListener('click', (e)=>{
   const btn = e.target.closest('[data-delgrowth]');
