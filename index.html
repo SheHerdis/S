@@ -147,10 +147,8 @@
   .pearl-divider{text-align:center; color:var(--rosegold); font-size:15px; margin:14px 0; opacity:.5;}
 
   .trend-box{display:flex; align-items:center; justify-content:space-between; background:linear-gradient(165deg, rgba(179,222,226,.12), rgba(255,255,255,.9)); border:1px solid rgba(179,222,226,.35); border-radius:16px; padding:13px 15px; margin-bottom:12px; box-shadow:var(--shadow-sm);}
-  .trend-box.down{background:linear-gradient(165deg, rgba(156,79,104,.12), rgba(255,255,255,.9)); border-color:rgba(156,79,104,.35);}
   .trend-label{font-size:11px; color:var(--ink-soft);}
   .trend-val{font-family:'Cormorant Garamond',serif; font-weight:800; font-size:21px; color:var(--green-done);}
-  .trend-box.down .trend-val{color:var(--rosegold-deep);}
 
   .signup-req-card{background:rgba(255,255,255,.8); border:1px solid rgba(201,160,80,.35); border-radius:14px; padding:11px 13px; margin-bottom:8px; box-shadow:var(--shadow-sm);}
   .signup-req-name{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:15px; color:var(--ink);}
@@ -169,7 +167,6 @@
   .pulse-title{font-family:'Cormorant Garamond',serif; font-weight:700; font-size:14px; color:var(--lagoon-deep); margin-bottom:7px;}
   .pulse-row{display:flex; align-items:center; gap:8px; font-size:11px; color:var(--ink); padding:3px 0; line-height:1.5;}
   .pulse-dot{width:7px; height:7px; border-radius:50%; flex:0 0 auto;}
-  .pulse-dot-red{background:var(--rosegold-deep);}
   .pulse-dot-green{background:var(--green-done);}
   .pulse-dot-gold{background:var(--gold1);}
   .pulse-role{color:var(--ink-soft); font-size:9.5px;}
@@ -197,7 +194,6 @@
   .pt-btn{font-size:10.5px; font-weight:700; padding:7px 13px; border-radius:10px; border:1px solid rgba(200,110,142,.3); cursor:pointer; font-family:'Cairo',sans-serif; white-space:nowrap; transition:transform .15s;}
   .pt-btn:active{transform:scale(.96);}
   .pt-plus{background:rgba(179,222,226,.16); color:var(--green-done); border-color:rgba(179,222,226,.35);}
-  .pt-minus{background:var(--rose-soft); color:var(--rosegold-deep); border-color:rgba(156,79,104,.35);}
 
   /* ═══ Tasks ═══ */
   .task-item{display:flex; align-items:flex-start; gap:10px; padding:10px 4px; border-bottom:1px solid rgba(200,110,142,.12); cursor:pointer; transition:opacity .2s;}
@@ -211,8 +207,6 @@
   .task-item.done .task-text{opacity:.4; text-decoration:line-through;}
   .lock-ico{font-size:10px; opacity:.5;}
 
-  .reset-btn{display:block; width:100%; text-align:center; background:var(--rose-soft); border:1.5px solid rgba(156,79,104,.45); color:var(--rosegold-deep); font-family:'Cairo',sans-serif; font-weight:700; font-size:11.5px; padding:11px; border-radius:12px; cursor:pointer; margin-top:6px; transition:all .2s;}
-  .reset-btn:hover:not(:disabled){background:rgba(156,79,104,.2);}
   .reset-btn:disabled{opacity:.4; cursor:not-allowed;}
 
   .progress-bar-wrap{background:rgba(200,110,142,.1); border-radius:999px; height:9px; margin-bottom:14px; overflow:hidden;}
@@ -232,7 +226,6 @@
   /* ═══ Templates ═══ */
   .tpl-card{margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid rgba(200,110,142,.12);}
   .tpl-owner-row{display:flex; gap:8px; margin-top:8px;}
-  .tpl-del{color:var(--rosegold-deep) !important; border-color:rgba(156,79,104,.4) !important;}
   .template-box{background:rgba(255,255,255,.7); border:1px dashed rgba(200,110,142,.35); border-radius:14px; padding:13px; font-size:11px; color:var(--ink-soft); line-height:1.75; white-space:pre-wrap; margin-bottom:8px;}
   .copy-btn{background:var(--lagoon-soft); border:1px solid rgba(200,110,142,.4); color:var(--lagoon-deep); font-family:'Cairo',sans-serif; font-weight:700; font-size:10.5px; padding:8px 16px; border-radius:10px; cursor:pointer; margin-bottom:14px; transition:all .2s;}
   .copy-btn:hover{background:rgba(200,110,142,.2);}
@@ -278,7 +271,6 @@
 
   .save-toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0; background:var(--lagoon-deep); color:#fff; padding:10px 22px; border-radius:999px; font-size:11.5px; font-weight:700; font-family:'Cairo',sans-serif; z-index:100; transition:all .3s ease; pointer-events:none; box-shadow:0 8px 22px rgba(156,79,104,.35);}
   .save-toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
-  .save-toast.error{background:var(--rosegold-deep);}
 
   footer{text-align:center; padding:20px 14px 10px; color:var(--ink-soft); font-size:9px; opacity:.55;}
   footer .foot-script{font-family:'Tangerine',cursive; font-size:22px; color:var(--rosegold); display:block; margin-bottom:2px;}
@@ -324,7 +316,6 @@
   .edit-controls{display:flex; gap:4px; flex:0 0 auto;}
   .edit-ico-btn{background:var(--lagoon-soft); border:1px solid rgba(200,110,142,.3); color:var(--lagoon-deep); font-size:11px; padding:6px 8px; border-radius:9px; cursor:pointer; transition:transform .15s;}
   .edit-ico-btn:active{transform:scale(.94);}
-  .edit-ico-btn.danger{background:var(--rose-soft); border-color:rgba(156,79,104,.35); color:var(--rosegold-deep);}
 
   .event-card-editable, .goal-card-editable{position:relative;}
   .card-edit-row{display:flex; gap:6px; margin-top:10px; padding-top:9px; border-top:1px solid rgba(200,110,142,.12);}
@@ -348,7 +339,6 @@
   .modal-btn:active{transform:scale(.97);}
   .modal-btn.save{background:var(--grad-main); color:#fff; box-shadow:0 6px 18px rgba(156,79,104,.3);}
   .modal-btn.cancel{background:rgba(43,51,53,.06); color:var(--ink-soft); border:1px solid rgba(200,110,142,.2);}
-  .modal-btn.delete{background:var(--rose-soft); color:var(--rosegold-deep); border:1px solid rgba(156,79,104,.35);}
   .modal-field textarea{width:100%; min-height:110px; background:rgba(255,255,255,.85); border:1.5px solid rgba(200,110,142,.25); border-radius:12px; padding:11px; color:var(--ink); font-family:'Tajawal',sans-serif; font-size:12.5px; resize:vertical; line-height:1.6; outline:none; transition:border-color .2s;}
   .cat-edit-btns{display:flex; gap:4px; margin-left:8px;}
   .schedule-card-actions{display:flex; gap:6px; margin-top:8px; padding-top:9px; border-top:1px solid rgba(200,110,142,.12);}
@@ -395,7 +385,7 @@
   /* ═══ أفعال الحذف/الرفض بلون تحذيري مستقل ═══ */
   .pulse-reject{background:rgba(194,91,91,.1); border-color:rgba(194,91,91,.4); color:#B14A4A;}
   .pt-minus{background:rgba(194,91,91,.12); color:#B14A4A; border-color:rgba(194,91,91,.35);}
-  .reset-btn{background:rgba(194,91,91,.1); border-color:rgba(194,91,91,.45); color:#B14A4A;}
+  .reset-btn{display:block; width:100%; text-align:center; background:rgba(194,91,91,.1); border:1.5px solid rgba(194,91,91,.45); color:#B14A4A; font-family:'Cairo',sans-serif; font-weight:700; font-size:11.5px; padding:11px; border-radius:12px; cursor:pointer; margin-top:6px; transition:all .2s;}
   .reset-btn:hover:not(:disabled){background:rgba(194,91,91,.18);}
   .modal-btn.delete{background:rgba(194,91,91,.12); color:#B14A4A; border:1px solid rgba(194,91,91,.35);}
   .edit-ico-btn.danger{background:rgba(194,91,91,.1); border-color:rgba(194,91,91,.35); color:#B14A4A;}
@@ -1610,7 +1600,7 @@ function renderStaff(){
           <span class="slot-points" data-points="${s.key}">${pts} ⭐</span>
         </div>
         <div class="slot-actions owner-only" style="display:${isOwner?'flex':'none'};">
-          <button class="pt-btn slot-del-btn" data-delslot="${s.key}" style="background:rgba(217,139,122,0.15); border-color:rgba(217,139,122,0.4); color:var(--rose-deep); padding:6px 9px;">🗑</button>
+          <button class="pt-btn slot-del-btn" data-delslot="${s.key}" style="background:rgba(194,91,91,.1); border-color:rgba(194,91,91,.35); color:#B14A4A; padding:6px 9px;">🗑</button>
           <button class="pt-btn pt-plus" data-customaward="${s.key}">🎯 نقاط مخصصة</button>
         </div>
       </div>`;
@@ -1791,10 +1781,9 @@ function renderDailyTasksUI(){
     return;
   }
   const { groups, order } = groupTasksByRole(tasksConfig.daily);
-  let html = '';
+  let html = '<div class="task-role-note">💡 هذي المهام مقسّمة حسب الرول المسؤول عادةً — إذا ما تم إنجازها من الطرف المسؤول، يقدر يسويها أي ستاف ثانية مهما كان رولها</div>';
   order.forEach(roleName=>{
     html += `<div class="task-role-header"><span class="task-role-ico">${groups[roleName].ico}</span><span class="task-role-title">${escapeHtml(roleName)}</span></div>`;
-    html += `<div class="task-role-note">💡 هذي المهام مقسّمة حسب الرول المسؤول عادةً — إذا ما تم إنجازها من الطرف المسؤول، يقدر يسويها أي ستاف ثانية مهما كان رولها</div>`;
     groups[roleName].items.forEach(t=>{
       html += taskRowHtml(t, dailyTasks.tasks[t.id], false, dailyTasks.pending[t.id], dailyTasks.approvals);
     });
